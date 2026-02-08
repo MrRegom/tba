@@ -82,98 +82,100 @@
         }
 
         /* =========================================
-           3. ICONOS Y ESTILOS DE BARRA LATERAL
+           3. ESTILOS DE BARRA LATERAL (ESTÁTICO)
            ========================================= */
-        /* Estilo base de los iconos */
         .navbar-nav .nav-link i {
             display: inline-block;
             font-size: 20px;
-            margin-right: 0.5rem;
-            /* Espacio reducido en expandido */
+            margin-right: 0.8rem;
             text-align: center;
-        }
-
-        /* En colapsado: Centrar y quitar margen */
-        html[data-sidebar-size="sm"] .navbar-nav .nav-link i,
-        html[data-sidebar-size="sm-hover"] .navbar-nav .nav-link i {
-            margin-right: 0 !important;
-            font-size: 24px;
-            /* Un poco más grande para destacar */
-            width: 100%;
-        }
-
-        /* Ajuste fino del link en colapsado */
-        html[data-sidebar-size="sm"] .navbar-nav .nav-link,
-        html[data-sidebar-size="sm-hover"] .navbar-nav .nav-link {
-            padding: 12px 0 !important;
-            justify-content: center;
+            width: 24px;
         }
 
         /* =========================================
-           4. LAYOUT FIX (Barra Azul vs Menu Blanco & Colapso)
+           4. LAYOUT FIX (Menu Estático 240px)
            ========================================= */
 
-        /* ESTADO EXPANDIDO (Default - 220px para ahorrar espacio) */
+        /* ESCRITORIO (>= 992px): SIEMPRE EXPANDIDO */
         @media (min-width: 992px) {
 
-            /* Sidebar Normal */
+            /* 1. Sidebar Fijo */
             .app-menu.navbar-menu {
-                width: 220px !important;
-                /* Reducido de 250px */
+                width: 240px !important;
                 z-index: 1004;
-                transition: none !important;
+                position: fixed;
+                left: 0;
+                bottom: 0;
+                top: 0;
+                padding-bottom: 0;
             }
 
-            /* Contenido Normal */
+            /* 2. Brand Box Fijo */
+            .navbar-brand-box {
+                width: 240px !important;
+            }
+
+            /* 3. Contenido Empujado a la Derecha */
             #page-topbar,
             .footer {
-                left: 220px !important;
-                width: calc(100% - 220px) !important;
-                transition: none !important;
+                left: 240px !important;
+                width: calc(100% - 240px) !important;
                 z-index: 1005;
             }
 
             .main-content {
-                margin-left: 220px !important;
-                transition: none !important;
+                margin-left: 240px !important;
+                min-height: 100vh;
             }
 
-            /* Navbar brand box width correction */
-            .navbar-brand-box {
-                width: 220px !important;
-            }
-
-            /* --- ESTADO COLAPSADO (Clase que agrega el JS al body) --- */
-            /* IMPORTANTE: Tratamos 'sm' y 'sm-hover' IGUAL para evitar expansión al pasar el mouse */
-            html[data-sidebar-size="sm"] .app-menu.navbar-menu,
-            html[data-sidebar-size="sm-hover"] .app-menu.navbar-menu {
-                width: 70px !important;
-                /* Solo iconos */
-                position: fixed;
-            }
-
-            html[data-sidebar-size="sm"] .navbar-brand-box,
-            html[data-sidebar-size="sm-hover"] .navbar-brand-box {
-                width: 70px !important;
-                padding: 0 !important;
-                justify-content: center !important;
-            }
-
-            /* Ocultar textos y logo grande en colapsado */
-            html[data-sidebar-size="sm"] .menu-title,
-            html[data-sidebar-size="sm"] .nav-link span,
-            html[data-sidebar-size="sm"] .logo-lg,
-            html[data-sidebar-size="sm-hover"] .menu-title,
-            html[data-sidebar-size="sm-hover"] .nav-link span,
-            html[data-sidebar-size="sm-hover"] .logo-lg {
+            /* 4. Ocultar Botón Hamburguesa en escritorio */
+            .topnav-hamburger {
                 display: none !important;
             }
 
-            /* Ocultar flechas de dropdown en colapsado */
-            html[data-sidebar-size="sm"] .menu-dropdown .dropdown-icon,
-            html[data-sidebar-size="sm-hover"] .menu-dropdown .dropdown-icon {
+            /* 5. Asegurar visibilidad de textos */
+            .menu-title,
+            .nav-link span,
+            .logo-lg {
+                display: block !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
+
+            .logo-sm {
                 display: none !important;
             }
+        }
+
+        /* MÓVIL / TABLET (< 992px) */
+        @media (max-width: 991.98px) {
+            #page-topbar {
+                left: 0 !important;
+                width: 100% !important;
+            }
+
+            .main-content {
+                margin-left: 0 !important;
+            }
+
+            .footer {
+                left: 0 !important;
+                width: 100% !important;
+            }
+
+            .topnav-hamburger {
+                display: block !important;
+            }
+        }
+
+        display: none !important;
+        }
+
+        /* Ocultar flechas de dropdown en colapsado */
+        html[data-sidebar-size="sm"] .menu-dropdown .dropdown-icon,
+        html[data-sidebar-size="sm-hover"] .menu-dropdown .dropdown-icon {
+            display: none !important;
+        }
         }
 
         /* Mostrar logo pequeño en colapsado */
