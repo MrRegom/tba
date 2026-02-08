@@ -42,66 +42,35 @@
     <!-- CSS: Corrección Definitiva V3 (Logo centrado y Sin Hover) -->
     <style>
         /* =========================================
-           1. HOVER KILLER (Muerte al Hover)
+           1. ESTILOS DE BARRA LATERAL (ESTÁTICO & COMPACTO)
            ========================================= */
-        /* Forzar que el modo 'sm-hover' se comporte EXACTAMENTE como 'sm' (fijo pequeño) */
-        html[data-sidebar-size="sm-hover"] .navbar-menu:hover,
-        html[data-sidebar-size="sm-hover"] .navbar-menu {
-            width: var(--vz-vertical-menu-width-sm) !important;
-        }
 
-        /* Ocultar textos en modo sm-hover incluso al pasar el mouse */
-        html[data-sidebar-size="sm-hover"] .navbar-menu:hover .nav-link span,
-        html[data-sidebar-size="sm-hover"] .navbar-menu:hover .menu-title,
-        html[data-sidebar-size="sm-hover"] .navbar-menu:hover .badge {
-            display: none !important;
-        }
-
-        /* =========================================
-           2. LOGO CORRECTION (Todo centrado)
-           ========================================= */
-        /* Asegurar que el contenedor del logo tenga el ancho correcto y esté centrado */
-        html[data-sidebar-size="sm-hover"] .navbar-brand-box {
-            width: var(--vz-vertical-menu-width-sm) !important;
-            padding: 0 !important;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: transparent;
-        }
-
-        /* Ocultar logo grande en modo pequeño */
-        html[data-sidebar-size="sm-hover"] .navbar-brand-box .logo-lg {
-            display: none !important;
-        }
-
-        /* Mostrar logo pequeño y centrarlo */
-        html[data-sidebar-size="sm-hover"] .navbar-brand-box .logo-sm {
-            display: block !important;
-            margin: 0 auto;
-        }
-
-        /* =========================================
-           3. ESTILOS DE BARRA LATERAL (ESTÁTICO)
-           ========================================= */
+        /* Iconos alineados y compactos */
         .navbar-nav .nav-link i {
             display: inline-block;
             font-size: 20px;
-            margin-right: 0.8rem;
+            margin-right: 10px;
             text-align: center;
             width: 24px;
         }
 
+        /* Enlaces del menú compactos */
+        .navbar-nav .nav-link {
+            padding: 10px 15px !important;
+            /* Más compacto verticalmente */
+            font-size: 0.95rem;
+        }
+
         /* =========================================
-           4. LAYOUT FIX (Menu Estático 240px)
+           2. LAYOUT FIX (Menu Estático 220px)
            ========================================= */
 
         /* ESCRITORIO (>= 992px): SIEMPRE EXPANDIDO */
         @media (min-width: 992px) {
 
-            /* 1. Sidebar Fijo */
+            /* Sidebar Fijo a 220px */
             .app-menu.navbar-menu {
-                width: 240px !important;
+                width: 220px !important;
                 z-index: 1004;
                 position: fixed;
                 left: 0;
@@ -110,30 +79,55 @@
                 padding-bottom: 0;
             }
 
-            /* 2. Brand Box Fijo */
+            /* Container del Logo */
             .navbar-brand-box {
-                width: 240px !important;
+                width: 220px !important;
             }
 
-            /* 3. Contenido Empujado a la Derecha */
-            #page-topbar,
-            .footer {
-                left: 240px !important;
-                width: calc(100% - 240px) !important;
+            /* Contenido y Footer empujados 220px a la derecha */
+            #page-topbar {
+                left: 220px !important;
+                width: calc(100% - 220px) !important;
                 z-index: 1005;
             }
 
-            .main-content {
-                margin-left: 240px !important;
-                min-height: 100vh;
+            .footer {
+                left: 220px !important;
+                width: calc(100% - 220px) !important;
             }
 
-            /* 4. Ocultar Botón Hamburguesa en escritorio */
+            /* El contenido principal DEBE llenar el espacio restante */
+            .main-content {
+                margin-left: 220px !important;
+                width: calc(100% - 220px) !important;
+                min-height: 100vh;
+                padding: 0 !important;
+                /* Evitar paddings externos */
+            }
+
+            /* Asegurar que el container interno use el 100% */
+            .page-content {
+                padding: 1.5rem 1.5rem !important;
+                width: 100% !important;
+            }
+
+            .container-fluid {
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: none !important;
+                width: 100% !important;
+            }
+
+            /* Ocultar elementos de colapso */
             .topnav-hamburger {
                 display: none !important;
             }
 
-            /* 5. Asegurar visibilidad de textos */
+            .logo-sm {
+                display: none !important;
+            }
+
+            /* Asegurar visibilidad */
             .menu-title,
             .nav-link span,
             .logo-lg {
@@ -141,13 +135,9 @@
                 opacity: 1 !important;
                 visibility: visible !important;
             }
-
-            .logo-sm {
-                display: none !important;
-            }
         }
 
-        /* MÓVIL / TABLET (< 992px) */
+        /* MÓVIL / TABLET (< 992px): Overlay Clásico */
         @media (max-width: 991.98px) {
             #page-topbar {
                 left: 0 !important;
@@ -156,6 +146,7 @@
 
             .main-content {
                 margin-left: 0 !important;
+                width: 100% !important;
             }
 
             .footer {
@@ -166,64 +157,11 @@
             .topnav-hamburger {
                 display: block !important;
             }
-        }
 
-        display: none !important;
-        }
-
-        /* Ocultar flechas de dropdown en colapsado */
-        html[data-sidebar-size="sm"] .menu-dropdown .dropdown-icon,
-        html[data-sidebar-size="sm-hover"] .menu-dropdown .dropdown-icon {
-            display: none !important;
-        }
-        }
-
-        /* Mostrar logo pequeño en colapsado */
-        html[data-sidebar-size="sm"] .logo-sm,
-        html[data-sidebar-size="sm-hover"] .logo-sm {
-            display: block !important;
-        }
-
-        /* Contenido Ajustado al Colapso (AQUÍ ESTÁ LA MAGIA) */
-        html[data-sidebar-size="sm"] #page-topbar,
-        html[data-sidebar-size="sm"] .footer,
-        html[data-sidebar-size="sm-hover"] #page-topbar,
-        html[data-sidebar-size="sm-hover"] .footer {
-            left: 70px !important;
-            width: calc(100% - 70px) !important;
-        }
-
-        html[data-sidebar-size="sm"] .main-content,
-        html[data-sidebar-size="sm-hover"] .main-content {
-            margin-left: 70px !important;
-        }
-        }
-
-        /* MÓVIL / TABLET */
-        @media (max-width: 991.98px) {
-            #page-topbar {
-                left: 0 !important;
-                width: 100% !important;
+            /* El menú flota sobre el contenido */
+            .navbar-menu {
+                z-index: 9999 !important;
             }
-
-            .main-content {
-                margin-left: 0 !important;
-            }
-
-            .footer {
-                left: 0 !important;
-                width: 100% !important;
-            }
-
-            /*.navbar-menu { z-index: 1006 !important; }*/
-        }
-
-
-        /* El menú se comporta como overlay */
-        .navbar-menu {
-            z-index: 1006 !important;
-            /* Por encima del topbar en móvil */
-        }
         }
     </style>
     {% endblock css %}
