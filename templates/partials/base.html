@@ -82,60 +82,65 @@
         }
 
         /* =========================================
-           3. ICONOS (Alineación perfecta y Estilo)
+           3. ICONOS Y ESTILOS DE BARRA LATERAL
            ========================================= */
-        /* Centrar los iconos en la barra pequeña */
+        /* Estilo base de los iconos */
+        .navbar-nav .nav-link i {
+            display: inline-block;
+            font-size: 20px;
+            margin-right: 0.5rem;
+            /* Espacio reducido en expandido */
+            text-align: center;
+        }
+
+        /* En colapsado: Centrar y quitar margen */
         html[data-sidebar-size="sm"] .navbar-nav .nav-link i,
         html[data-sidebar-size="sm-hover"] .navbar-nav .nav-link i {
             margin-right: 0 !important;
-            text-align: center;
-            font-size: 22px;
-            /* Tamaño ajustado y limpio */
+            font-size: 24px;
+            /* Un poco más grande para destacar */
             width: 100%;
-            display: block;
         }
 
-        /* Ajuste fino del contenedor del link en colapsado */
+        /* Ajuste fino del link en colapsado */
         html[data-sidebar-size="sm"] .navbar-nav .nav-link,
         html[data-sidebar-size="sm-hover"] .navbar-nav .nav-link {
-            padding: 10px 0 !important;
-            display: flex;
+            padding: 12px 0 !important;
             justify-content: center;
-            align-items: center;
         }
 
         /* =========================================
            4. LAYOUT FIX (Barra Azul vs Menu Blanco & Colapso)
            ========================================= */
 
-        /* ESTADO EXPANDIDO (Default) */
+        /* ESTADO EXPANDIDO (Default - 220px para ahorrar espacio) */
         @media (min-width: 992px) {
 
             /* Sidebar Normal */
             .app-menu.navbar-menu {
-                width: 250px !important;
+                width: 220px !important;
+                /* Reducido de 250px */
                 z-index: 1004;
                 transition: none !important;
-                /* Evitar animaciones raras */
             }
 
             /* Contenido Normal */
             #page-topbar,
             .footer {
-                left: 250px !important;
-                width: calc(100% - 250px) !important;
+                left: 220px !important;
+                width: calc(100% - 220px) !important;
                 transition: none !important;
                 z-index: 1005;
             }
 
             .main-content {
-                margin-left: 250px !important;
+                margin-left: 220px !important;
                 transition: none !important;
             }
 
             /* Navbar brand box width correction */
             .navbar-brand-box {
-                width: 250px !important;
+                width: 220px !important;
             }
 
             /* --- ESTADO COLAPSADO (Clase que agrega el JS al body) --- */
@@ -154,10 +159,12 @@
                 justify-content: center !important;
             }
 
-            /* Ocultar textos en colapsado */
+            /* Ocultar textos y logo grande en colapsado */
             html[data-sidebar-size="sm"] .menu-title,
             html[data-sidebar-size="sm"] .nav-link span,
             html[data-sidebar-size="sm"] .logo-lg,
+            html[data-sidebar-size="sm-hover"] .menu-title,
+            html[data-sidebar-size="sm-hover"] .nav-link span,
             html[data-sidebar-size="sm-hover"] .logo-lg {
                 display: none !important;
             }
@@ -167,26 +174,27 @@
             html[data-sidebar-size="sm-hover"] .menu-dropdown .dropdown-icon {
                 display: none !important;
             }
+        }
 
-            /* Mostrar logo pequeño en colapsado */
-            html[data-sidebar-size="sm"] .logo-sm,
-            html[data-sidebar-size="sm-hover"] .logo-sm {
-                display: block !important;
-            }
+        /* Mostrar logo pequeño en colapsado */
+        html[data-sidebar-size="sm"] .logo-sm,
+        html[data-sidebar-size="sm-hover"] .logo-sm {
+            display: block !important;
+        }
 
-            /* Contenido Ajustado al Colapso (AQUÍ ESTÁ LA MAGIA) */
-            html[data-sidebar-size="sm"] #page-topbar,
-            html[data-sidebar-size="sm"] .footer,
-            html[data-sidebar-size="sm-hover"] #page-topbar,
-            html[data-sidebar-size="sm-hover"] .footer {
-                left: 70px !important;
-                width: calc(100% - 70px) !important;
-            }
+        /* Contenido Ajustado al Colapso (AQUÍ ESTÁ LA MAGIA) */
+        html[data-sidebar-size="sm"] #page-topbar,
+        html[data-sidebar-size="sm"] .footer,
+        html[data-sidebar-size="sm-hover"] #page-topbar,
+        html[data-sidebar-size="sm-hover"] .footer {
+            left: 70px !important;
+            width: calc(100% - 70px) !important;
+        }
 
-            html[data-sidebar-size="sm"] .main-content,
-            html[data-sidebar-size="sm-hover"] .main-content {
-                margin-left: 70px !important;
-            }
+        html[data-sidebar-size="sm"] .main-content,
+        html[data-sidebar-size="sm-hover"] .main-content {
+            margin-left: 70px !important;
+        }
         }
 
         /* MÓVIL / TABLET */
