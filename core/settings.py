@@ -27,7 +27,12 @@ DEBUG = env.bool('DJANGO_DEBUG')
 # DEBUG = False
 
 # Permitir todos los hosts (útil para desarrollo, pero especificar hosts específicos en producción)
-ALLOWED_HOSTS = env.list('DJANGO_ALLOWED_HOSTS')
+ALLOWED_HOSTS = env.list('DJANGO_ALLOWED_HOSTS', default=['*'])
+
+# Asegurar que el dominio de capacitación siempre esté permitido
+if 'capacitacion.logisticatba.cloud' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('capacitacion.logisticatba.cloud')
+    ALLOWED_HOSTS.append('.logisticatba.cloud')
 
 # Application definition
 
