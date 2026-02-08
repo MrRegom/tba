@@ -1,0 +1,340 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                    <h4 class="mb-sm-0">{{ titulo }}</h4>
+                    <div class="page-title-right">
+                        <ol class="breadcrumb m-0">
+                            <li class="breadcrumb-item"><a href="{% url 'dashboard_analytics' %}">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'activos:lista_movimientos' %}">Movimientos</a></li>
+                            <li class="breadcrumb-item active">{{ action }}</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" id="form-movimiento">
+            {% csrf_token %}
+            <input type="hidden" name="pin_confirmado" id="pin_confirmado" value="false">
+            <input type="hidden" name="activos_seleccionados" id="activos_seleccionados" value="">
+            
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                        <p class="mb-0">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- PASO 1: Búsqueda y Selección de Activos -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0 text-white">
+                                <i class="ri-search-line me-2"></i>Paso 1: Buscar y Seleccionar Activos
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Buscar Activos</label>
+                                    <input type="text" class="form-control" id="busqueda-activos" 
+                                           placeholder="Buscar por nombre, código o número de serie...">
+                                    <small class="text-muted">Ejemplo: "Toldo", "TOL-", "3x3 Azul"</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Categoría</label>
+                                    <select class="form-select" id="filtro-categoria">
+                                        <option value="">Todas las categorías</option>
+                                        {% for cat in categorias %}
+                                        <option value="{{ cat.id }}">{{ cat.nombre }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Estado</label>
+                                    <select class="form-select" id="filtro-estado">
+                                        <option value="">Todos los estados</option>
+                                        {% for est in estados %}
+                                        <option value="{{ est.id }}">{{ est.nombre }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Tabla de resultados -->
+                            <div id="tabla-activos-container" style="display: none;">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th width="50">
+                                                    <input type="checkbox" id="seleccionar-todos" class="form-check-input">
+                                                </th>
+                                                <th>Código</th>
+                                                <th>Nombre</th>
+                                                <th>Categoría</th>
+                                                <th>Estado</th>
+                                                <th>Marca</th>
+                                                <th>N° Serie</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tabla-activos-body">
+                                            <!-- Se llenará dinámicamente -->
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Paginación -->
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <div id="info-paginacion" class="text-muted"></div>
+                                    <nav>
+                                        <ul class="pagination mb-0" id="paginacion-activos">
+                                            <!-- Se llenará dinámicamente -->
+                                        </ul>
+                                    </nav>
+                                </div>
+                            </div>
+
+                            <!-- Mensaje cuando no hay búsqueda -->
+                            <div id="mensaje-inicial" class="alert alert-info">
+                                <i class="ri-information-line me-2"></i>
+                                Ingrese un término de búsqueda para encontrar activos disponibles.
+                            </div>
+
+                            <!-- Mensaje cuando no hay resultados -->
+                            <div id="mensaje-sin-resultados" class="alert alert-warning" style="display: none;">
+                                <i class="ri-alert-line me-2"></i>
+                                No se encontraron activos con los criterios de búsqueda.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card de activos seleccionados -->
+                    <div class="card" id="card-activos-seleccionados" style="display: none;">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="card-title mb-0 text-white">
+                                <i class="ri-checkbox-circle-line me-2"></i>
+                                Activos Seleccionados (<span id="contador-seleccionados">0</span>)
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="lista-activos-seleccionados" class="list-group">
+                                <!-- Se llenará dinámicamente -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 2: Detalles del Movimiento -->
+            <div class="row" id="seccion-detalles-movimiento" style="display: none;">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="card-title mb-0 text-white">
+                                <i class="ri-file-list-3-line me-2"></i>Paso 2: Detalles del Movimiento
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label class="form-label">Nuevo Estado <span class="text-danger">*</span></label>
+                                    {{ form.estado_nuevo }}
+                                    {% if form.estado_nuevo.errors %}<div class="invalid-feedback d-block">{{ form.estado_nuevo.errors }}</div>{% endif %}
+                                    <small class="text-muted">
+                                        Estado al que cambiarán todos los activos seleccionados.
+                                        <span id="mensaje-estado-actual" class="text-info d-none">
+                                            <i class="ri-information-line"></i> Se auto-rellenó con el estado actual de los activos seleccionados.
+                                        </span>
+                                    </small>
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">{{ form.ubicacion_destino.label }}</label>
+                                    {{ form.ubicacion_destino }}
+                                    {% if form.ubicacion_destino.errors %}<div class="invalid-feedback d-block">{{ form.ubicacion_destino.errors }}</div>{% endif %}
+                                    <small class="text-muted">Ubicación física donde se encuentran los activos</small>
+                                </div>
+                                <div class="col-md-12 mb-3">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="incluir_responsable" checked>
+                                        <label class="form-check-label" for="incluir_responsable">
+                                            <strong>Incluir responsable en este movimiento</strong>
+                                        </label>
+                                        <small class="text-muted d-block mt-1">Marque esta opción si el movimiento requiere asignar un responsable. No requerido para estado "Baja".</small>
+                                    </div>
+                                    
+                                    <div id="campo-responsable-container">
+                                        <label class="form-label" for="id_responsable_movimiento">{{ form.responsable.label }}</label>
+                                        <select name="responsable" class="form-select" id="id_responsable_movimiento">
+                                            <option value="">---------</option>
+                                            {% for choice in form.responsable.field.queryset %}
+                                                <option value="{{ choice.pk }}" {% if form.responsable.value == choice.pk %}selected{% endif %}>
+                                                    {{ choice.get_full_name|default:choice.username }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                        {% if form.responsable.errors %}<div class="invalid-feedback d-block">{{ form.responsable.errors }}</div>{% endif %}
+                                        <small class="text-muted">Usuario responsable de los activos (requerirá PIN si se selecciona).</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Otros Detalles</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label class="form-label">{{ form.taller.label }}</label>
+                                    {{ form.taller }}
+                                    {% if form.taller.errors %}<div class="invalid-feedback d-block">{{ form.taller.errors }}</div>{% endif %}
+                                    <small class="text-muted">Taller asociado al movimiento (opcional)</small>
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">{{ form.proveniencia.label }}</label>
+                                    {{ form.proveniencia }}
+                                    {% if form.proveniencia.errors %}<div class="invalid-feedback d-block">{{ form.proveniencia.errors }}</div>{% endif %}
+                                    <small class="text-muted">Origen o procedencia del activo (opcional)</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Observaciones</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label class="form-label">{{ form.observaciones.label }}</label>
+                                    {{ form.observaciones }}
+                                    {% if form.observaciones.errors %}<div class="invalid-feedback d-block">{{ form.observaciones.errors }}</div>{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="text-end">
+                        <a href="{% url 'activos:lista_movimientos' %}" class="btn btn-light">
+                            <i class="ri-close-line me-1"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary" id="btn-registrar-movimiento" disabled>
+                            <i class="ri-save-line me-1"></i> Registrar Movimiento(s)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de Confirmación de PIN -->
+<div class="modal fade" id="pinConfirmationModal" tabindex="-1" aria-labelledby="pinConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title text-white" id="pinConfirmationModalLabel">
+                    <i class="ri-lock-line me-2"></i>Confirmar Movimiento con PIN
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Se registrarán <strong id="modal-cantidad-activos"></strong> movimiento(s) para:</p>
+                <div id="modal-lista-activos" class="mb-3" style="max-height: 200px; overflow-y: auto;">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+                <p>El responsable será: <strong id="modal-responsable-info"></strong></p>
+                <div class="mb-3">
+                    <label for="pinInput" class="form-label">
+                        Ingrese el PIN de <span id="modal-responsable-nombre"></span>:
+                    </label>
+                    <input type="password" class="form-control" id="pinInput" 
+                           maxlength="4" pattern="[0-9]{4}" inputmode="numeric" placeholder="••••">
+                    <div id="pinError" class="invalid-feedback d-block"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirmPinBtn">
+                    <i class="ri-check-line me-1"></i> Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/activos/movimiento-multiple.js' %}"></script>
+<script>
+/**
+ * Validación condicional: Si el estado es "Baja", sugiere desmarcar el checkbox
+ * de responsable ya que no es requerido.
+ */
+function validarResponsableBaja(selectEstado) {
+    const incluirResponsableCheckbox = document.getElementById('incluir_responsable');
+    
+    if (!selectEstado || !incluirResponsableCheckbox) return;
+    
+    const estadoSeleccionado = selectEstado.options[selectEstado.selectedIndex];
+    const codigoEstado = estadoSeleccionado ? estadoSeleccionado.text.toUpperCase() : '';
+    const esBaja = codigoEstado.includes('BAJA') || codigoEstado.includes('DADO DE BAJA');
+    
+    if (esBaja) {
+        // Estado Baja: sugerir desmarcar el checkbox de responsable
+        // No lo desmarcamos automáticamente, solo informamos
+        const campoContainer = document.getElementById('campo-responsable-container');
+        if (campoContainer && incluirResponsableCheckbox.checked) {
+            // Mostrar mensaje informativo (opcional, se puede quitar si no se desea)
+            console.log('Estado de Baja seleccionado: El responsable no es requerido para este tipo de movimiento.');
+        }
+    }
+}
+
+// Ejecutar validación al cambiar el estado
+document.addEventListener('DOMContentLoaded', function() {
+    const estadoSelect = document.getElementById('id_estado_nuevo');
+    if (estadoSelect) {
+        // Ejecutar al cargar
+        validarResponsableBaja(estadoSelect);
+        
+        // Ejecutar al cambiar el estado
+        estadoSelect.addEventListener('change', function() {
+            validarResponsableBaja(this);
+        });
+    }
+});
+</script>
+{% endblock %}

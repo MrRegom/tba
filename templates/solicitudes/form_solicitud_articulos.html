@@ -1,0 +1,274 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <div class="container-fluid">
+        <!-- start page title -->
+        <div class="row">
+            <div class="col-12">
+                <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                    <h4 class="mb-sm-0">{{ titulo }}</h4>
+                    <div class="page-title-right">
+                        <ol class="breadcrumb m-0">
+                            <li class="breadcrumb-item"><a href="{% url 'dashboard_analytics' %}">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'solicitudes:lista_solicitudes_articulos' %}">Solicitudes de Artículos</a></li>
+                            <li class="breadcrumb-item active">{{ action }}</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- end page title -->
+
+        <form method="post" id="formSolicitud">
+            {% csrf_token %}
+
+            <div class="row">
+                <!-- Información General -->
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="ri-file-list-3-line align-middle me-1"></i> Información General
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label for="{{ form.tipo_solicitud.id_for_label }}" class="form-label">
+                                        {{ form.tipo_solicitud.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.tipo_solicitud }}
+                                    {% if form.tipo_solicitud.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.tipo_solicitud.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-12">
+                                    <label for="{{ form.fecha_requerida.id_for_label }}" class="form-label">
+                                        {{ form.fecha_requerida.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.fecha_requerida }}
+                                    {% if form.fecha_requerida.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.fecha_requerida.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-12">
+                                    <label for="{{ form.bodega_origen.id_for_label }}" class="form-label">
+                                        {{ form.bodega_origen.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.bodega_origen }}
+                                    {% if form.bodega_origen.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.bodega_origen.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estructura Organizacional -->
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="ri-building-line align-middle me-1"></i> Estructura Organizacional
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label for="{{ form.departamento.id_for_label }}" class="form-label">
+                                        {{ form.departamento.label }}
+                                    </label>
+                                    {{ form.departamento }}
+                                    {% if form.departamento.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.departamento.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-12">
+                                    <label for="{{ form.area.id_for_label }}" class="form-label">
+                                        {{ form.area.label }}
+                                    </label>
+                                    {{ form.area }}
+                                    {% if form.area.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.area.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-12">
+                                    <label for="{{ form.equipo.id_for_label }}" class="form-label">
+                                        {{ form.equipo.label }}
+                                    </label>
+                                    {{ form.equipo }}
+                                    {% if form.equipo.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.equipo.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Motivo y Observaciones -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="ri-message-3-line align-middle me-1"></i> Motivo y Observaciones
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label for="{{ form.motivo.id_for_label }}" class="form-label">
+                                        {{ form.motivo.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.motivo }}
+                                    {% if form.motivo.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.motivo.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-12">
+                                    <label for="{{ form.observaciones.id_for_label }}" class="form-label">
+                                        {{ form.observaciones.label }}
+                                    </label>
+                                    {{ form.observaciones }}
+                                    {% if form.observaciones.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.observaciones.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detalles -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">Artículos Solicitados</h5>
+                                <button type="button" class="btn btn-sm btn-primary" id="btn-agregar-articulo">
+                                    <i class="ri-add-line"></i> Agregar Artículo
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-nowrap" id="tabla-articulos">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 35%">Artículo <span class="text-danger">*</span></th>
+                                            <th style="width: 15%">Cantidad <span class="text-danger">*</span></th>
+                                            <th style="width: 40%">Observaciones</th>
+                                            <th style="width: 10%" class="text-center">Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody-articulos">
+                                        <!-- Las filas se agregarán dinámicamente vía JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div id="sin-articulos" class="text-center text-muted py-4">
+                                <i class="ri-inbox-line" style="font-size: 3rem;"></i>
+                                <p class="mb-0">No hay artículos agregados. Haga clic en "Agregar Artículo" para comenzar.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="text-end">
+                        <a href="{% url 'solicitudes:lista_solicitudes_articulos' %}" class="btn btn-light">
+                            <i class="ri-close-line"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="ri-save-line"></i> {{ action }} Solicitud
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<!-- Modal para seleccionar artículo -->
+<div class="modal fade" id="modalArticulo" tabindex="-1" aria-labelledby="modalArticuloLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalArticuloLabel">Seleccionar Artículo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Buscar Artículo</label>
+                    <input type="text" class="form-control" id="buscar-articulo" placeholder="Buscar por código o nombre...">
+                </div>
+                <div class="table-responsive" style="max-height: 400px;">
+                    <table class="table table-hover">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>Código</th>
+                                <th>Nombre</th>
+                                <th>Categoría</th>
+                                <th>Stock</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-lista-articulos">
+                            {% for articulo in articulos %}
+                            <tr data-articulo-id="{{ articulo.id }}"
+                                data-articulo-codigo="{{ articulo.codigo }}"
+                                data-articulo-nombre="{{ articulo.nombre }}"
+                                data-articulo-unidad="{% for u in articulo.unidades_medida.all %}{{ u.simbolo }}{% if not forloop.last %}, {% endif %}{% empty %}unidad{% endfor %}">
+                                <td><code>{{ articulo.codigo }}</code></td>
+                                <td>{{ articulo.nombre }}</td>
+                                <td>{{ articulo.categoria.nombre }}</td>
+                                <td>{{ articulo.stock_actual }} {% for u in articulo.unidades_medida.all %}{{ u.simbolo }}{% if not forloop.last %}, {% endif %}{% empty %}unidad{% endfor %}</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-success btn-seleccionar-articulo">
+                                        <i class="ri-check-line"></i> Seleccionar
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/solicitudes/crear-solicitud-articulos.js' %}"></script>
+{% endblock %}

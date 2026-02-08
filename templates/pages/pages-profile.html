@@ -1,0 +1,471 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Perfil de Usuario{% endblock title %}
+
+{% block content %}
+<div class="page-content">
+    <div class="container-fluid">
+        <!-- Page Title -->
+        <div class="row">
+            <div class="col-12">
+                <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                    <h4 class="mb-sm-0">Mi Perfil</h4>
+                    <div class="page-title-right">
+                        <ol class="breadcrumb m-0">
+                            <li class="breadcrumb-item"><a href="{% url 'dashboard_analytics' %}">Dashboard</a></li>
+                            <li class="breadcrumb-item active">Perfil</li>
+                        </ol>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="row">
+            <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="bg-light p-3 rounded">
+                                        <div class="nav flex-md-column nav-pills text-center gap-2" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                                        <a class="nav-link {% if not active_tab or active_tab == 'profile' %}active{% endif %}" 
+                                           id="profile-tab" 
+                                           data-bs-toggle="pill" 
+                                           href="#profile" 
+                                           role="tab" 
+                                           aria-controls="profile" 
+                                           aria-selected="true">
+                                            <i class="ri-user-line me-2"></i>Mi Perfil
+                                        </a>
+                                        <a class="nav-link {% if active_tab == 'pin' %}active{% endif %}" 
+                                           id="pin-tab" 
+                                           data-bs-toggle="pill" 
+                                           href="#pin" 
+                                           role="tab" 
+                                           aria-controls="pin" 
+                                           aria-selected="false" 
+                                           tabindex="-1">
+                                            <i class="ri-lock-password-line me-2"></i>Gestionar PIN
+                                        </a>
+                                        <a class="nav-link {% if active_tab == 'password' %}active{% endif %}" 
+                                           id="password-tab" 
+                                           data-bs-toggle="pill" 
+                                           href="#password" 
+                                           role="tab" 
+                                           aria-controls="password" 
+                                           aria-selected="false" 
+                                           tabindex="-1">
+                                            <i class="ri-key-line me-2"></i>Cambiar Contraseña
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                                <div class="col-md-9">
+                                    <div class="tab-content mt-4 mt-md-0" id="v-pills-tabContent">
+                                    <!-- Tab: Mi Perfil -->
+                                    <div class="tab-pane fade {% if not active_tab or active_tab == 'profile' %}show active{% endif %}" 
+                                         id="profile" 
+                                         role="tabpanel" 
+                                         aria-labelledby="profile-tab">
+                                        <h5 class="card-title mb-4">
+                                            <i class="ri-user-line me-2"></i>Información Personal
+                                        </h5>
+                                        
+                                        <form method="post" action="{% url 'pages:profile' %}" enctype="multipart/form-data">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="update_profile">
+                                            
+                                            {% if profile_form.non_field_errors %}
+                                                <div class="alert alert-danger">
+                                                    {% for error in profile_form.non_field_errors %}
+                                                        <p class="mb-0">{{ error }}</p>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                            
+                                            <!-- Foto de Perfil -->
+                                            <div class="row mb-4">
+                                                <div class="col-lg-12">
+                                                    <div class="text-center">
+                                                        <div class="profile-user position-relative d-inline-block mx-auto mb-3">
+                                                            {% if foto_perfil %}
+                                                                <img src="{{ foto_perfil.url }}" alt="Foto de Perfil" id="profile-img" class="avatar-xl rounded-circle object-fit-cover border img-thumbnail user-profile-image">
+                                                            {% else %}
+                                                                <img src="{% static 'images/users/avatar-1.jpg' %}" alt="Foto de Perfil" id="profile-img" class="avatar-xl rounded-circle object-fit-cover border img-thumbnail user-profile-image">
+                                                            {% endif %}
+                                                            <div class="avatar-xs p-0 rounded-circle profile-photo-edit position-absolute end-0 bottom-0">
+                                                                <input id="profile-img-file-input" type="file" name="foto_perfil" class="profile-img-file-input d-none" accept="image/*">
+                                                                <label for="profile-img-file-input" class="profile-photo-edit avatar-xs">
+                                                                    <span class="avatar-title rounded-circle bg-light text-body cursor-pointer">
+                                                                        <i class="ri-camera-line"></i>
+                                                                    </span>
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <h5 class="mb-1">{{ user.get_full_name|default:user.username }}</h5>
+                                                        {% if cargo_actual %}
+                                                            <p class="text-muted mb-0">
+                                                                <i class="ri-briefcase-line me-1"></i>{{ cargo_actual.nombre }}
+                                                            </p>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="row">
+                                                <!-- Campos de User -->
+                                                <div class="col-lg-6">
+                                                    <div class="mb-3">
+                                                        <label for="{{ profile_form.first_name.id_for_label }}" class="form-label">
+                                                            {{ profile_form.first_name.label }}
+                                                        </label>
+                                                        {{ profile_form.first_name }}
+                                                        {% if profile_form.first_name.errors %}
+                                                            <div class="invalid-feedback d-block">
+                                                                {{ profile_form.first_name.errors }}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="col-lg-6">
+                                                    <div class="mb-3">
+                                                        <label for="{{ profile_form.last_name.id_for_label }}" class="form-label">
+                                                            {{ profile_form.last_name.label }}
+                                                        </label>
+                                                        {{ profile_form.last_name }}
+                                                        {% if profile_form.last_name.errors %}
+                                                            <div class="invalid-feedback d-block">
+                                                                {{ profile_form.last_name.errors }}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="col-lg-12">
+                                                    <div class="mb-3">
+                                                        <label for="{{ profile_form.email.id_for_label }}" class="form-label">
+                                                            {{ profile_form.email.label }}
+                                                        </label>
+                                                        {{ profile_form.email }}
+                                                        {% if profile_form.email.errors %}
+                                                            <div class="invalid-feedback d-block">
+                                                                {{ profile_form.email.errors }}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Campos de Persona -->
+                                                <div class="col-12">
+                                                    <hr class="my-3">
+                                                    <h6 class="mb-3"><i class="ri-user-line me-2"></i>Datos Personales</h6>
+                                                </div>
+                                                
+                                                <div class="col-lg-6">
+                                                    <div class="mb-3">
+                                                        <label for="{{ profile_form.nombres.id_for_label }}" class="form-label">
+                                                            {{ profile_form.nombres.label }} <span class="text-danger">*</span>
+                                                        </label>
+                                                        {{ profile_form.nombres }}
+                                                        {% if profile_form.nombres.errors %}
+                                                            <div class="invalid-feedback d-block">
+                                                                {{ profile_form.nombres.errors }}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="col-lg-6">
+                                                    <div class="mb-3">
+                                                        <label for="{{ profile_form.apellido1.id_for_label }}" class="form-label">
+                                                            {{ profile_form.apellido1.label }} <span class="text-danger">*</span>
+                                                        </label>
+                                                        {{ profile_form.apellido1 }}
+                                                        {% if profile_form.apellido1.errors %}
+                                                            <div class="invalid-feedback d-block">
+                                                                {{ profile_form.apellido1.errors }}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="col-lg-6">
+                                                    <div class="mb-3">
+                                                        <label for="{{ profile_form.apellido2.id_for_label }}" class="form-label">
+                                                            {{ profile_form.apellido2.label }}
+                                                        </label>
+                                                        {{ profile_form.apellido2 }}
+                                                        {% if profile_form.apellido2.errors %}
+                                                            <div class="invalid-feedback d-block">
+                                                                {{ profile_form.apellido2.errors }}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="col-lg-6">
+                                                    <div class="mb-3">
+                                                        <label for="{{ profile_form.sexo.id_for_label }}" class="form-label">
+                                                            {{ profile_form.sexo.label }} <span class="text-danger">*</span>
+                                                        </label>
+                                                        {{ profile_form.sexo }}
+                                                        {% if profile_form.sexo.errors %}
+                                                            <div class="invalid-feedback d-block">
+                                                                {{ profile_form.sexo.errors }}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="col-lg-6">
+                                                    <div class="mb-3">
+                                                        <label for="{{ profile_form.fecha_nacimiento.id_for_label }}" class="form-label">
+                                                            {{ profile_form.fecha_nacimiento.label }} <span class="text-danger">*</span>
+                                                        </label>
+                                                        {{ profile_form.fecha_nacimiento }}
+                                                        {% if profile_form.fecha_nacimiento.errors %}
+                                                            <div class="invalid-feedback d-block">
+                                                                {{ profile_form.fecha_nacimiento.errors }}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="col-lg-3">
+                                                    <div class="mb-3">
+                                                        <label for="{{ profile_form.talla.id_for_label }}" class="form-label">
+                                                            {{ profile_form.talla.label }}
+                                                        </label>
+                                                        {{ profile_form.talla }}
+                                                        {% if profile_form.talla.help_text %}
+                                                            <small class="form-text text-muted">{{ profile_form.talla.help_text }}</small>
+                                                        {% endif %}
+                                                        {% if profile_form.talla.errors %}
+                                                            <div class="invalid-feedback d-block">
+                                                                {{ profile_form.talla.errors }}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="col-lg-3">
+                                                    <div class="mb-3">
+                                                        <label for="{{ profile_form.numero_zapato.id_for_label }}" class="form-label">
+                                                            {{ profile_form.numero_zapato.label }}
+                                                        </label>
+                                                        {{ profile_form.numero_zapato }}
+                                                        {% if profile_form.numero_zapato.help_text %}
+                                                            <small class="form-text text-muted">{{ profile_form.numero_zapato.help_text }}</small>
+                                                        {% endif %}
+                                                        {% if profile_form.numero_zapato.errors %}
+                                                            <div class="invalid-feedback d-block">
+                                                                {{ profile_form.numero_zapato.errors }}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="col-lg-12">
+                                                    <div class="hstack gap-2 justify-content-end">
+                                                        <button type="submit" class="btn btn-primary">
+                                                            <i class="ri-save-line me-1"></i> Guardar Cambios
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                                            </div>
+                                    
+                                    <!-- Tab: Gestionar PIN -->
+                                    <div class="tab-pane fade {% if active_tab == 'pin' %}show active{% endif %}" 
+                                         id="pin" 
+                                         role="tabpanel" 
+                                         aria-labelledby="pin-tab">
+                                        <h5 class="card-title mb-4">
+                                            <i class="ri-lock-password-line me-2"></i>Gestión de PIN
+                                        </h5>
+                                        
+                                        {% if tiene_pin %}
+                                            <div class="alert alert-info">
+                                                <i class="ri-information-line me-2"></i>
+                                                Ya tienes un PIN configurado. Puedes cambiarlo ingresando un nuevo PIN.
+                                                            </div>
+                                        {% else %}
+                                            <div class="alert alert-warning">
+                                                <i class="ri-alert-line me-2"></i>
+                                                No tienes un PIN configurado. Configura uno para poder confirmar movimientos de inventario.
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <form method="post" action="{% url 'pages:profile' %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="update_pin">
+                                            
+                                            {% if pin_form.non_field_errors %}
+                                                <div class="alert alert-danger">
+                                                    {% for error in pin_form.non_field_errors %}
+                                                        <p class="mb-0">{{ error }}</p>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                            
+                                            <div class="row">
+                                                <div class="col-lg-6">
+                                                    <div class="mb-3">
+                                                        <label for="{{ pin_form.pin.id_for_label }}" class="form-label">
+                                                            {{ pin_form.pin.label }}
+                                                        </label>
+                                                        {{ pin_form.pin }}
+                                                        {% if pin_form.pin.errors %}
+                                                            <div class="invalid-feedback d-block">
+                                                                {{ pin_form.pin.errors }}
+                                                            </div>
+                                                        {% endif %}
+                                                        {% if pin_form.pin.help_text %}
+                                                            <small class="form-text text-muted">{{ pin_form.pin.help_text }}</small>
+                                                        {% endif %}
+                                                    </div>
+                                                            </div>
+                                            
+                                                <div class="col-lg-6">
+                                                    <div class="mb-3">
+                                                        <label for="{{ pin_form.pin_confirmacion.id_for_label }}" class="form-label">
+                                                            {{ pin_form.pin_confirmacion.label }}
+                                                        </label>
+                                                        {{ pin_form.pin_confirmacion }}
+                                                        {% if pin_form.pin_confirmacion.errors %}
+                                                            <div class="invalid-feedback d-block">
+                                                                {{ pin_form.pin_confirmacion.errors }}
+                                                            </div>
+                                                        {% endif %}
+                                                        {% if pin_form.pin_confirmacion.help_text %}
+                                                            <small class="form-text text-muted">{{ pin_form.pin_confirmacion.help_text }}</small>
+                                                        {% endif %}
+                                                        </div>
+                                                    </div>
+                                            
+                                                    <div class="col-lg-12">
+                                                    <div class="card bg-light">
+                                                            <div class="card-body">
+                                                            <h6 class="fs-sm mb-3">Requisitos del PIN:</h6>
+                                                            <ul class="mb-0">
+                                                                <li>Debe tener exactamente <strong>4 dígitos</strong></li>
+                                                                <li>Solo puede contener <strong>números</strong> (0-9)</li>
+                                                                <li>Se usa para confirmar movimientos de inventario</li>
+                                                            </ul>
+                                                        </div>
+                                                </div>
+                                            </div>
+                                            
+                                                <div class="col-lg-12">
+                                                    <div class="hstack gap-2 justify-content-end mt-3">
+                                                        <button type="submit" class="btn btn-primary">
+                                                            <i class="ri-save-line me-1"></i> 
+                                                            {% if tiene_pin %}Actualizar PIN{% else %}Configurar PIN{% endif %}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    
+                                    <!-- Tab: Cambiar Contraseña -->
+                                    <div class="tab-pane fade {% if active_tab == 'password' %}show active{% endif %}" 
+                                         id="password" 
+                                         role="tabpanel" 
+                                         aria-labelledby="password-tab">
+                                        <h5 class="card-title mb-4">
+                                            <i class="ri-key-line me-2"></i>Cambiar Contraseña
+                                        </h5>
+                                        
+                                        <div class="alert alert-info">
+                                            <i class="ri-information-line me-2"></i>
+                                            Para cambiar tu contraseña, haz clic en el botón de abajo. Serás redirigido a la página de cambio de contraseña.
+                                        </div>
+                                        
+                                        <div class="text-center">
+                                            <a href="{% url 'pages:change_password' %}" class="btn btn-primary">
+                                                <i class="ri-key-line me-1"></i> Cambiar Contraseña
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                            </div>
+                        </div>
+                    </div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+    // Activar tab según parámetro de URL o active_tab
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tab = urlParams.get('tab');
+        
+        if (tab) {
+            const tabElement = document.getElementById(tab + '-tab');
+            if (tabElement) {
+                const tabTrigger = new bootstrap.Tab(tabElement);
+                tabTrigger.show();
+            }
+        }
+        
+        // Preview de foto de perfil
+        const profileImgInput = document.getElementById('profile-img-file-input');
+        if (profileImgInput) {
+            profileImgInput.addEventListener('change', function() {
+                const preview = document.getElementById('profile-img');
+                const file = this.files[0];
+                const reader = new FileReader();
+                
+                reader.addEventListener('load', function() {
+                    preview.src = reader.result;
+                    // Actualizar también las imágenes del topbar si existen
+                    const topbarAvatar = document.getElementById('topbar-user-avatar');
+                    const topbarDropdownAvatar = document.getElementById('topbar-dropdown-avatar');
+                    if (topbarAvatar) {
+                        topbarAvatar.src = reader.result;
+                    }
+                    if (topbarDropdownAvatar) {
+                        topbarDropdownAvatar.src = reader.result;
+                    }
+                }, false);
+                
+                if (file) {
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+        
+        // Si hay mensajes de éxito después de guardar, recargar las imágenes del topbar
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'success' %}
+                    // Recargar la página después de un pequeño delay para asegurar que la foto se guardó
+                    setTimeout(function() {
+                        location.reload();
+                    }, 500);
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    });
+</script>
+{% endblock extra_js %}

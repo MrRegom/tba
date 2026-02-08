@@ -1,0 +1,100 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <div class="container-fluid">
+        <!-- start page title -->
+        <div class="row">
+            <div class="col-12">
+                <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                    <h4 class="mb-sm-0">{{ titulo }}</h4>
+                    <div class="page-title-right">
+                        <ol class="breadcrumb m-0">
+                            <li class="breadcrumb-item"><a href="{% url 'dashboard_analytics' %}">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'accounts:menu_usuarios' %}">Usuarios</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'accounts:lista_usuarios' %}">Listado</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'accounts:detalle_usuario' usuario_detalle.pk %}">{{ usuario_detalle.username }}</a></li>
+                            <li class="breadcrumb-item active">Desbloquear</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- end page title -->
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="row">
+                <div class="col-lg-8 offset-lg-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="ri-lock-unlock-line align-middle me-1"></i>
+                                Desbloquear Usuario: <span class="text-primary">{{ usuario_detalle.username }}</span>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-warning border-0" role="alert">
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0">
+                                        <i class="ri-alert-line fs-16 align-middle"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="alert-heading">Confirmar Desbloqueo</h6>
+                                        <p class="mb-0">
+                                            El usuario <strong>{{ usuario_detalle.username }}</strong> está bloqueado por exceder los intentos fallidos de PIN.
+                                            <br><br>
+                                            Al desbloquear, se resetearán los intentos fallidos y el usuario podrá volver a usar su PIN.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mt-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Intentos Fallidos:</label>
+                                    <div class="form-control-plaintext">
+                                        <span class="badge bg-danger">{{ user_secure.intentos_fallidos }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Estado:</label>
+                                    <div class="form-control-plaintext">
+                                        <span class="badge bg-danger">Bloqueado</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="text-end">
+                        <a href="{% url 'accounts:detalle_usuario' usuario_detalle.pk %}" class="btn btn-light">
+                            <i class="ri-close-line align-middle me-1"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="ri-lock-unlock-line align-middle me-1"></i> Desbloquear Usuario
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
+{% endblock %}
+
+

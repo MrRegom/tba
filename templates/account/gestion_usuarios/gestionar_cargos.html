@@ -1,0 +1,163 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <div class="container-fluid">
+        <!-- start page title -->
+        <div class="row">
+            <div class="col-12">
+                <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                    <h4 class="mb-sm-0">{{ titulo }}</h4>
+                    <div class="page-title-right">
+                        <ol class="breadcrumb m-0">
+                            <li class="breadcrumb-item"><a href="{% url 'dashboard_analytics' %}">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'accounts:menu_usuarios' %}">Usuarios</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'accounts:lista_usuarios' %}">Listado</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'accounts:detalle_usuario' usuario_detalle.pk %}">{{ usuario_detalle.username }}</a></li>
+                            <li class="breadcrumb-item active">Gestionar Cargos</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- end page title -->
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="row">
+            <!-- Formulario para asignar nuevo cargo -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="ri-user-star-line align-middle me-1"></i>
+                            Asignar Nuevo Cargo
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label for="{{ form.cargo.id_for_label }}" class="form-label">
+                                        {{ form.cargo.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.cargo }}
+                                    {% if form.cargo.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.cargo.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ form.fecha_inicio.id_for_label }}" class="form-label">
+                                        {{ form.fecha_inicio.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.fecha_inicio }}
+                                    {% if form.fecha_inicio.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.fecha_inicio.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ form.fecha_fin.id_for_label }}" class="form-label">
+                                        {{ form.fecha_fin.label }}
+                                    </label>
+                                    {{ form.fecha_fin }}
+                                    {% if form.fecha_fin.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.fecha_fin.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Dejar vacío si es el cargo actual</div>
+                                </div>
+                                <div class="col-md-12">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="ri-save-line align-middle me-1"></i> Asignar Cargo
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historial de cargos -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="ri-history-line align-middle me-1"></i>
+                            Historial de Cargos
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if cargos_usuario %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Cargo</th>
+                                        <th>Fecha Inicio</th>
+                                        <th>Fecha Fin</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user_cargo in cargos_usuario %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ user_cargo.cargo.nombre }}</strong>
+                                            <br><small class="text-muted">{{ user_cargo.cargo.codigo }}</small>
+                                        </td>
+                                        <td>{{ user_cargo.fecha_inicio|date:"d/m/Y" }}</td>
+                                        <td>{{ user_cargo.fecha_fin|date:"d/m/Y"|default:"Actual" }}</td>
+                                        <td>
+                                            {% if user_cargo.es_actual %}
+                                            <span class="badge bg-success">Actual</span>
+                                            {% else %}
+                                            <span class="badge bg-secondary">Histórico</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info mb-0">
+                            <i class="ri-information-line"></i> No hay cargos asignados para este usuario.
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botón de regreso -->
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="text-end">
+                    <a href="{% url 'accounts:detalle_usuario' usuario_detalle.pk %}" class="btn btn-light">
+                        <i class="ri-arrow-left-line align-middle me-1"></i> Volver al Detalle
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+

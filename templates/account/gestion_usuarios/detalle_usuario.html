@@ -1,0 +1,617 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                    <h4 class="mb-sm-0">{{ titulo }}</h4>
+                    <div class="page-title-right">
+                        <ol class="breadcrumb m-0">
+                            <li class="breadcrumb-item"><a href="{% url 'dashboard_analytics' %}">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'accounts:lista_usuarios' %}">Usuarios</a></li>
+                            <li class="breadcrumb-item active">{{ usuario_detalle.username }}</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h5 class="card-title mb-0 flex-grow-1">Información del Usuario</h5>
+                        <div class="d-flex gap-2">
+                            {% if permisos.puede_editar %}
+                            <a href="{% url 'accounts:editar_usuario' usuario_detalle.pk %}" class="btn btn-sm btn-secondary">
+                                <i class="ri-edit-line"></i> Editar
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <table class="table table-borderless mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <th class="ps-0" scope="row">Usuario:</th>
+                                            <td class="text-muted"><strong>{{ usuario_detalle.username }}</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <th class="ps-0" scope="row">Nombre:</th>
+                                            <td class="text-muted">{{ usuario_detalle.get_full_name|default:"-" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="ps-0" scope="row">Email:</th>
+                                            <td class="text-muted">{{ usuario_detalle.email|default:"-" }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <table class="table table-borderless mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <th class="ps-0" scope="row">Estado:</th>
+                                            <td>
+                                                {% if usuario_detalle.is_active %}
+                                                <span class="badge bg-success">Activo</span>
+                                                {% else %}
+                                                <span class="badge bg-secondary">Inactivo</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th class="ps-0" scope="row">Staff:</th>
+                                            <td>{{ usuario_detalle.is_staff|yesno:"Sí,No" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="ps-0" scope="row">Superusuario:</th>
+                                            <td>{{ usuario_detalle.is_superuser|yesno:"Sí,No" }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <h6>Roles Asignados:</h6>
+                        {% for grupo in usuario_detalle.groups.all %}
+                            <span class="badge bg-info">{{ grupo.name }}</span>
+                        {% empty %}
+                            <p class="text-muted">Sin roles asignados</p>
+                        {% endfor %}
+
+                        <div class="mt-3 d-flex gap-2 flex-wrap">
+                            <a href="{% url 'accounts:asignar_grupos_usuario' usuario_detalle.pk %}" class="btn btn-sm btn-primary">
+                                <i class="ri-shield-user-line"></i> Asignar Roles
+                            </a>
+                            <a href="{% url 'accounts:asignar_permisos_usuario' usuario_detalle.pk %}" class="btn btn-sm btn-warning">
+                                <i class="ri-key-line"></i> Asignar Permisos
+                            </a>
+                            {% if permisos.puede_cambiar_password %}
+                            <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#modalCambiarPassword">
+                                <i class="ri-lock-password-line"></i> Cambiar Contraseña
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección: Datos de Persona -->
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h5 class="card-title mb-0 flex-grow-1">Datos de Persona/Funcionario</h5>
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'accounts:gestionar_persona_usuario' usuario_detalle.pk %}" class="btn btn-sm btn-primary">
+                                <i class="ri-user-settings-line"></i> {% if persona %}Editar{% else %}Crear{% endif %} Datos
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if persona %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <table class="table table-borderless mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <th class="ps-0" scope="row">Documento:</th>
+                                            <td class="text-muted">{{ persona.documento_identidad }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="ps-0" scope="row">Nombres:</th>
+                                            <td class="text-muted">{{ persona.nombres }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="ps-0" scope="row">Apellidos:</th>
+                                            <td class="text-muted">{{ persona.apellido1 }} {{ persona.apellido2|default:"" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="ps-0" scope="row">Nombre Completo:</th>
+                                            <td class="text-muted"><strong>{{ persona.get_nombre_completo }}</strong></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <table class="table table-borderless mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <th class="ps-0" scope="row">Sexo:</th>
+                                            <td class="text-muted">{{ persona.get_sexo_display }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="ps-0" scope="row">Fecha de Nacimiento:</th>
+                                            <td class="text-muted">{{ persona.fecha_nacimiento|date:"d/m/Y" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="ps-0" scope="row">Talla:</th>
+                                            <td class="text-muted">{{ persona.talla|default:"-" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="ps-0" scope="row">Número de Zapato:</th>
+                                            <td class="text-muted">{{ persona.numero_zapato|default:"-" }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info mb-0">
+                            <i class="ri-information-line"></i> No hay datos de persona registrados para este usuario.
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección: Seguridad PIN -->
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h5 class="card-title mb-0 flex-grow-1">Seguridad PIN</h5>
+                        <div class="d-flex gap-2">
+                            {% if permisos.puede_cambiar_password %}
+                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalGestionarPIN">
+                                <i class="ri-lock-line"></i> {% if user_secure and user_secure.pin %}Cambiar{% else %}Configurar{% endif %} PIN
+                            </button>
+                            {% endif %}
+                            {% if request.user == usuario_detalle %}
+                            <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#modalMiPIN">
+                                <i class="ri-lock-line"></i> {% if user_secure and user_secure.pin %}Cambiar Mi PIN{% else %}Configurar Mi PIN{% endif %}
+                            </button>
+                            {% endif %}
+                            {% if user_secure and user_secure.bloqueado %}
+                            <a href="{% url 'accounts:desbloquear_usuario' usuario_detalle.pk %}" class="btn btn-sm btn-warning">
+                                <i class="ri-lock-unlock-line"></i> Desbloquear
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if user_secure %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <table class="table table-borderless mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <th class="ps-0" scope="row">Estado PIN:</th>
+                                            <td>
+                                                {% if user_secure.pin %}
+                                                <span class="badge bg-success">PIN Configurado</span>
+                                                {% else %}
+                                                <span class="badge bg-secondary">Sin PIN</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th class="ps-0" scope="row">Estado de Bloqueo:</th>
+                                            <td>
+                                                {% if user_secure.bloqueado %}
+                                                <span class="badge bg-danger">Bloqueado</span>
+                                                {% else %}
+                                                <span class="badge bg-success">Activo</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <table class="table table-borderless mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <th class="ps-0" scope="row">Intentos Fallidos:</th>
+                                            <td class="text-muted">{{ user_secure.intentos_fallidos }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="ps-0" scope="row">Última Actualización:</th>
+                                            <td class="text-muted">{{ user_secure.fecha_actualizacion|date:"d/m/Y H:i" }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {% if user_secure.bloqueado %}
+                        <div class="alert alert-danger mt-3 mb-0">
+                            <i class="ri-error-warning-line"></i> <strong>Usuario bloqueado:</strong> Este usuario ha sido bloqueado por exceder los intentos fallidos de PIN. Debe ser desbloqueado por un administrador.
+                        </div>
+                        {% endif %}
+                        {% else %}
+                        <div class="alert alert-info mb-0">
+                            <i class="ri-information-line"></i> No hay configuración de PIN para este usuario.
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección: Cargos Asignados -->
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h5 class="card-title mb-0 flex-grow-1">Cargos Asignados</h5>
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'accounts:gestionar_cargos_usuario' usuario_detalle.pk %}" class="btn btn-sm btn-primary">
+                                <i class="ri-user-star-line"></i> Asignar Cargo
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if cargos_usuario %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Cargo</th>
+                                        <th>Código</th>
+                                        <th>Fecha Inicio</th>
+                                        <th>Fecha Fin</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user_cargo in cargos_usuario %}
+                                    <tr>
+                                        <td><strong>{{ user_cargo.cargo.nombre }}</strong></td>
+                                        <td><span class="badge bg-info">{{ user_cargo.cargo.codigo }}</span></td>
+                                        <td>{{ user_cargo.fecha_inicio|date:"d/m/Y" }}</td>
+                                        <td>{{ user_cargo.fecha_fin|date:"d/m/Y"|default:"Actual" }}</td>
+                                        <td>
+                                            {% if user_cargo.es_actual %}
+                                            <span class="badge bg-success">Actual</span>
+                                            {% else %}
+                                            <span class="badge bg-secondary">Histórico</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info mb-0">
+                            <i class="ri-information-line"></i> No hay cargos asignados para este usuario.
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Cambiar Contraseña -->
+<div class="modal fade" id="modalCambiarPassword" tabindex="-1" aria-labelledby="modalCambiarPasswordLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-secondary text-white">
+                <h5 class="modal-title text-white" id="modalCambiarPasswordLabel">
+                    <i class="ri-lock-password-line me-2"></i>Cambiar Contraseña
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="formCambiarPassword" method="post" action="{% url 'accounts:cambiar_password_usuario_ajax' usuario_detalle.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p class="text-muted">Cambiar contraseña para: <strong>{{ usuario_detalle.username }}</strong></p>
+                    <div class="mb-3">
+                        <label for="password1" class="form-label">Nueva Contraseña <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="password1" name="password1" required>
+                        <small class="text-muted">Mínimo 8 caracteres</small>
+                        <div id="password1Error" class="invalid-feedback"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password2" class="form-label">Confirmar Contraseña <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="password2" name="password2" required>
+                        <div id="password2Error" class="invalid-feedback"></div>
+                    </div>
+                    <div id="passwordError" class="alert alert-danger d-none"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-secondary">
+                        <i class="ri-check-line me-1"></i> Cambiar Contraseña
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Gestionar PIN (Administrador) -->
+<div class="modal fade" id="modalGestionarPIN" tabindex="-1" aria-labelledby="modalGestionarPINLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title text-white" id="modalGestionarPINLabel">
+                    <i class="ri-lock-line me-2"></i>{% if user_secure and user_secure.pin %}Cambiar{% else %}Configurar{% endif %} PIN
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="formGestionarPIN" method="post" action="{% url 'accounts:gestionar_pin_usuario_ajax' usuario_detalle.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p class="text-muted">{% if user_secure and user_secure.pin %}Cambiar{% else %}Configurar{% endif %} PIN para: <strong>{{ usuario_detalle.username }}</strong></p>
+                    <div class="mb-3">
+                        <label for="pin" class="form-label">PIN <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="pin" name="pin" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" placeholder="••••" required>
+                        <small class="text-muted">4 dígitos numéricos</small>
+                        <div id="pinError" class="invalid-feedback"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pin_confirmacion" class="form-label">Confirmar PIN <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="pin_confirmacion" name="pin_confirmacion" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" placeholder="••••" required>
+                        <div id="pinConfirmacionError" class="invalid-feedback"></div>
+                    </div>
+                    <div id="pinFormError" class="alert alert-danger d-none"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ri-check-line me-1"></i> {% if user_secure and user_secure.pin %}Cambiar{% else %}Configurar{% endif %} PIN
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Mi PIN (Auto-gestión) -->
+{% if user == usuario_detalle %}
+<div class="modal fade" id="modalMiPIN" tabindex="-1" aria-labelledby="modalMiPINLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title text-white" id="modalMiPINLabel">
+                    <i class="ri-lock-line me-2"></i>{% if user_secure and user_secure.pin %}Cambiar Mi PIN{% else %}Configurar Mi PIN{% endif %}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="formMiPIN" method="post" action="{% url 'accounts:gestionar_mi_pin' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p class="text-muted">{% if user_secure and user_secure.pin %}Cambiar{% else %}Configurar{% endif %} tu PIN personal</p>
+                    <div class="mb-3">
+                        <label for="mi_pin" class="form-label">PIN <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="mi_pin" name="pin" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" placeholder="••••" required>
+                        <small class="text-muted">4 dígitos numéricos</small>
+                        <div id="miPinError" class="invalid-feedback"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="mi_pin_confirmacion" class="form-label">Confirmar PIN <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="mi_pin_confirmacion" name="pin_confirmacion" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" placeholder="••••" required>
+                        <div id="miPinConfirmacionError" class="invalid-feedback"></div>
+                    </div>
+                    <div id="miPinFormError" class="alert alert-danger d-none"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-info">
+                        <i class="ri-check-line me-1"></i> {% if user_secure and user_secure.pin %}Cambiar{% else %}Configurar{% endif %} PIN
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Manejo del formulario de cambiar contraseña
+document.getElementById('formCambiarPassword')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const form = this;
+    const formData = new FormData(form);
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Procesando...';
+    
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Mostrar mensaje de éxito y cerrar modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalCambiarPassword'));
+            modal.hide();
+            location.reload(); // Recargar para mostrar mensaje
+        } else {
+            // Mostrar errores
+            if (data.errors) {
+                Object.keys(data.errors).forEach(field => {
+                    const input = form.querySelector(`[name="${field}"]`);
+                    const errorDiv = form.querySelector(`#${field}Error`);
+                    if (input) {
+                        input.classList.add('is-invalid');
+                    }
+                    if (errorDiv) {
+                        errorDiv.textContent = data.errors[field];
+                    }
+                });
+            }
+            const errorDiv = document.getElementById('passwordError');
+            if (errorDiv) {
+                errorDiv.textContent = data.message;
+                errorDiv.classList.remove('d-none');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Ocurrió un error al procesar la solicitud.');
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    });
+});
+
+// Manejo del formulario de gestionar PIN (administrador)
+document.getElementById('formGestionarPIN')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const form = this;
+    const formData = new FormData(form);
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Procesando...';
+    
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalGestionarPIN'));
+            modal.hide();
+            location.reload();
+        } else {
+            if (data.errors) {
+                Object.keys(data.errors).forEach(field => {
+                    const input = form.querySelector(`[name="${field}"]`);
+                    const errorDiv = form.querySelector(`#${field}Error`) || form.querySelector(`#${field}ConfirmacionError`);
+                    if (input) {
+                        input.classList.add('is-invalid');
+                    }
+                    if (errorDiv) {
+                        errorDiv.textContent = data.errors[field];
+                    }
+                });
+            }
+            const errorDiv = document.getElementById('pinFormError');
+            if (errorDiv) {
+                errorDiv.textContent = data.message;
+                errorDiv.classList.remove('d-none');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Ocurrió un error al procesar la solicitud.');
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    });
+});
+
+// Manejo del formulario de mi PIN (auto-gestión)
+document.getElementById('formMiPIN')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const form = this;
+    const formData = new FormData(form);
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Procesando...';
+    
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalMiPIN'));
+            modal.hide();
+            location.reload();
+        } else {
+            if (data.errors) {
+                Object.keys(data.errors).forEach(field => {
+                    const input = form.querySelector(`[name="${field}"]`);
+                    const errorDiv = form.querySelector(`#mi${field.charAt(0).toUpperCase() + field.slice(1)}Error`) || form.querySelector(`#mi${field.charAt(0).toUpperCase() + field.slice(1)}ConfirmacionError`);
+                    if (input) {
+                        input.classList.add('is-invalid');
+                    }
+                    if (errorDiv) {
+                        errorDiv.textContent = data.errors[field];
+                    }
+                });
+            }
+            const errorDiv = document.getElementById('miPinFormError');
+            if (errorDiv) {
+                errorDiv.textContent = data.message;
+                errorDiv.classList.remove('d-none');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Ocurrió un error al procesar la solicitud.');
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    });
+});
+
+// Limpiar errores al cerrar modales
+['modalCambiarPassword', 'modalGestionarPIN', 'modalMiPIN'].forEach(modalId => {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.addEventListener('hidden.bs.modal', function() {
+            const form = this.querySelector('form');
+            if (form) {
+                form.reset();
+                form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+                form.querySelectorAll('.alert').forEach(el => el.classList.add('d-none'));
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

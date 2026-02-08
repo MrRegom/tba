@@ -1,0 +1,249 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/modulo-cards.css' %}" rel="stylesheet" type="text/css">
+{% endblock extra_css %}
+
+{% block content %}
+<div class="page-content">
+    <div class="container-fluid">
+        <!-- start page title -->
+        <div class="row">
+            <div class="col-12">
+                <div class="page-title-box d-sm-flex align-items-center justify-content-between mb-3">
+                    <h4 class="mb-sm-0">{{ titulo }}</h4>
+                    <div class="page-title-right">
+                        <ol class="breadcrumb m-0">
+                            <li class="breadcrumb-item"><a href="{% url 'dashboard_analytics' %}">Dashboard</a></li>
+                            <li class="breadcrumb-item active">Bajas de Inventario</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- end page title -->
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Sección: Gestión Principal -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="ri-function-line me-2"></i>Gestión Principal
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <!-- Card: Gestión de Bajas -->
+                            {% if permisos.puede_gestionar %}
+                            <div class="col-lg-3 col-sm-6">
+                                <div class="modulo-card">
+                                    <div class="modulo-card-icon modulo-card-icon-danger">
+                                        <i class="ri-delete-bin-line"></i>
+                                    </div>
+                                    <div class="modulo-card-content">
+                                        <h6 class="modulo-card-title">GESTIÓN</h6>
+                                        <p class="modulo-card-desc">Gestione todas las bajas de inventario</p>
+                                        <div class="modulo-card-actions d-grid gap-2">
+                                            <a href="{% url 'bajas_inventario:lista_bajas' %}" class="btn btn-sm btn-danger">
+                                                <i class="ri-list-check align-bottom me-1"></i> Ver Bajas
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Card: Nueva Baja -->
+                            {% if permisos.puede_crear %}
+                            <div class="col-lg-3 col-sm-6">
+                                <div class="modulo-card">
+                                    <div class="modulo-card-icon modulo-card-icon-warning">
+                                        <i class="ri-add-circle-line"></i>
+                                    </div>
+                                    <div class="modulo-card-content">
+                                        <h6 class="modulo-card-title">NUEVA BAJA</h6>
+                                        <p class="modulo-card-desc">Registre una nueva baja de inventario</p>
+                                        <div class="modulo-card-actions d-grid gap-2">
+                                            <a href="{% url 'bajas_inventario:crear_baja' %}" class="btn btn-sm btn-warning">
+                                                <i class="ri-add-line align-bottom me-1"></i> Crear Baja
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Card: Mis Bajas -->
+                            <div class="col-lg-3 col-sm-6">
+                                <div class="modulo-card">
+                                    <div class="modulo-card-icon modulo-card-icon-info">
+                                        <i class="ri-user-line"></i>
+                                    </div>
+                                    <div class="modulo-card-content">
+                                        <h6 class="modulo-card-title">MIS BAJAS</h6>
+                                        <p class="modulo-card-desc">Visualice y gestione sus bajas</p>
+                                        <div class="modulo-card-actions d-grid gap-2">
+                                            <a href="{% url 'bajas_inventario:mis_bajas' %}" class="btn btn-sm btn-info">
+                                                <i class="ri-file-user-line align-bottom me-1"></i> Ver Mis Bajas
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección: Mantenedores -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="ri-settings-3-line me-2"></i>Mantenedores
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <!-- Card: Motivos de Baja -->
+                            <div class="col-lg-3 col-sm-6">
+                                <div class="modulo-card">
+                                    <div class="modulo-card-icon modulo-card-icon-primary">
+                                        <i class="ri-file-list-3-line"></i>
+                                    </div>
+                                    <div class="modulo-card-content">
+                                        <h6 class="modulo-card-title">MOTIVOS</h6>
+                                        <p class="modulo-card-desc">Gestione los motivos de baja</p>
+                                        <div class="modulo-card-actions d-grid gap-2">
+                                            <a href="{% url 'bajas_inventario:lista_motivos' %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="ri-file-list-3-line align-bottom me-1"></i> Ver Motivos
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas del Módulo -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <h5 class="mb-3 text-muted">
+                    <i class="ri-bar-chart-line me-2"></i>Estadísticas del Módulo
+                </h5>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xl-4 col-md-6">
+                <div class="card card-animate">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1 overflow-hidden">
+                                <p class="text-uppercase fw-medium text-muted text-truncate mb-0">Total Bajas</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-end justify-content-between mt-4">
+                            <div>
+                                <h4 class="fs-22 fw-semibold ff-secondary mb-4"><span class="counter-value" data-target="{{ stats.total_bajas }}">{{ stats.total_bajas }}</span></h4>
+                            </div>
+                            <div class="avatar-sm flex-shrink-0">
+                                <span class="avatar-title bg-danger-subtle rounded fs-3">
+                                    <i class="ri-delete-bin-line text-danger"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4 col-md-6">
+                <div class="card card-animate">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1 overflow-hidden">
+                                <p class="text-uppercase fw-medium text-muted text-truncate mb-0">Mis Bajas</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-end justify-content-between mt-4">
+                            <div>
+                                <h4 class="fs-22 fw-semibold ff-secondary mb-4"><span class="counter-value" data-target="{{ stats.mis_bajas }}">{{ stats.mis_bajas }}</span></h4>
+                            </div>
+                            <div class="avatar-sm flex-shrink-0">
+                                <span class="avatar-title bg-info-subtle rounded fs-3">
+                                    <i class="ri-file-user-line text-info"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4 col-md-6">
+                <div class="card card-animate">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1 overflow-hidden">
+                                <p class="text-uppercase fw-medium text-muted text-truncate mb-0">Motivos Registrados</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-end justify-content-between mt-4">
+                            <div>
+                                <h4 class="fs-22 fw-semibold ff-secondary mb-4"><span class="counter-value" data-target="{{ stats.total_motivos }}">{{ stats.total_motivos }}</span></h4>
+                            </div>
+                            <div class="avatar-sm flex-shrink-0">
+                                <span class="avatar-title bg-primary-subtle rounded fs-3">
+                                    <i class="ri-file-list-3-line text-primary"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información adicional -->
+        <div class="row mt-2">
+            <div class="col-12">
+                <div class="card border-0 shadow-none">
+                    <div class="card-body">
+                        <div class="alert alert-danger border-0 mb-0" role="alert">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="ri-information-line fs-16 align-middle"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="alert-heading">Información del Módulo</h6>
+                                    <p class="mb-0">
+                                        Gestione las bajas de inventario por pérdida, obsolescencia, daño u otros motivos.
+                                        Actualmente hay <strong>{{ stats.total_bajas }} bajas registradas</strong> en el sistema.
+                                        Se han definido <strong>{{ stats.total_motivos }} motivos de baja</strong> para clasificar las bajas.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

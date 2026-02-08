@@ -1,0 +1,371 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/modulo-cards.css' %}" rel="stylesheet" type="text/css">
+{% endblock extra_css %}
+
+{% block content %}
+<div class="page-content">
+    <div class="container-fluid">
+        <!-- start page title -->
+        <div class="row">
+            <div class="col-12">
+                <div class="page-title-box d-sm-flex align-items-center justify-content-between mb-3">
+                    <h4 class="mb-sm-0">{{ titulo }}</h4>
+                    <div class="page-title-right">
+                        <ol class="breadcrumb m-0">
+                            <li class="breadcrumb-item"><a href="{% url 'dashboard_analytics' %}">Dashboard</a></li>
+                            <li class="breadcrumb-item active">Inventario</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- end page title -->
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Sección: Gestión Principal -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="ri-function-line me-2"></i>Gestión Principal
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <!-- Card: Activos -->
+                            <div class="col-lg-3 col-sm-6">
+                                <div class="modulo-card">
+                                    <div class="modulo-card-icon modulo-card-icon-warning">
+                                        <i class="ri-archive-line"></i>
+                                    </div>
+                                    <div class="modulo-card-content">
+                                        <h6 class="modulo-card-title">ACTIVOS</h6>
+                                        <p class="modulo-card-desc">Gestione el inventario de activos fijos</p>
+                                        <div class="modulo-card-actions d-grid gap-2">
+                                            {% if permisos.puede_crear %}
+                                            <a href="{% url 'activos:crear_activo' %}" class="btn btn-sm btn-warning">
+                                                <i class="ri-add-line align-bottom me-1"></i> Nuevo Activo
+                                            </a>
+                                            {% endif %}
+                                            <a href="{% url 'activos:lista_activos' %}" class="btn btn-sm btn-outline-warning">
+                                                <i class="ri-list-check align-bottom me-1"></i> Ver Activos
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card: Movimientos -->
+                            {% if permisos.puede_movimientos %}
+                            <div class="col-lg-3 col-sm-6">
+                                <div class="modulo-card">
+                                    <div class="modulo-card-icon modulo-card-icon-secondary">
+                                        <i class="ri-exchange-line"></i>
+                                    </div>
+                                    <div class="modulo-card-content">
+                                        <h6 class="modulo-card-title">MOVIMIENTOS</h6>
+                                        <p class="modulo-card-desc">Gestione los movimientos de activos</p>
+                                        <div class="modulo-card-actions d-grid gap-2">
+                                            <a href="{% url 'activos:registrar_movimiento' %}" class="btn btn-sm btn-secondary">
+                                                <i class="ri-add-circle-line align-bottom me-1"></i> Registrar
+                                            </a>
+                                            <a href="{% url 'activos:lista_movimientos' %}" class="btn btn-sm btn-outline-secondary">
+                                                <i class="ri-list-check align-bottom me-1"></i> Ver Historial
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección: Mantenedores/Catálogos -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="ri-settings-3-line me-2"></i>Mantenedores y Catálogos
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <!-- Card: Categorías -->
+                            {% if permisos.puede_categorias %}
+                            <div class="col-lg-3 col-sm-6">
+                                <div class="modulo-card">
+                                    <div class="modulo-card-icon modulo-card-icon-success">
+                                        <i class="ri-folder-line"></i>
+                                    </div>
+                                    <div class="modulo-card-content">
+                                        <h6 class="modulo-card-title">CATEGORÍAS</h6>
+                                        <p class="modulo-card-desc">Gestione las categorías de activos</p>
+                                        <div class="modulo-card-actions d-grid gap-2">
+                                            <a href="{% url 'activos:lista_categorias' %}" class="btn btn-sm btn-outline-success">
+                                                <i class="ri-folder-line align-bottom me-1"></i> Ver Categorías
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Card: Estados -->
+                            <div class="col-lg-3 col-sm-6">
+                                <div class="modulo-card">
+                                    <div class="modulo-card-icon modulo-card-icon-primary">
+                                        <i class="ri-flag-line"></i>
+                                    </div>
+                                    <div class="modulo-card-content">
+                                        <h6 class="modulo-card-title">ESTADOS</h6>
+                                        <p class="modulo-card-desc">Gestione los estados de activos</p>
+                                        <div class="modulo-card-actions d-grid gap-2">
+                                            <a href="{% url 'activos:lista_estados' %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="ri-flag-line align-bottom me-1"></i> Ver Estados
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card: Ubicaciones -->
+                            <div class="col-lg-3 col-sm-6">
+                                <div class="modulo-card">
+                                    <div class="modulo-card-icon modulo-card-icon-info">
+                                        <i class="ri-map-pin-line"></i>
+                                    </div>
+                                    <div class="modulo-card-content">
+                                        <h6 class="modulo-card-title">UBICACIONES</h6>
+                                        <p class="modulo-card-desc">Gestione las ubicaciones físicas</p>
+                                        <div class="modulo-card-actions d-grid gap-2">
+                                            <a href="{% url 'activos:lista_ubicaciones' %}" class="btn btn-sm btn-outline-info">
+                                                <i class="ri-map-pin-line align-bottom me-1"></i> Ver Ubicaciones
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card: Talleres -->
+                            <div class="col-lg-3 col-sm-6">
+                                <div class="modulo-card">
+                                    <div class="modulo-card-icon modulo-card-icon-warning">
+                                        <i class="ri-tools-line"></i>
+                                    </div>
+                                    <div class="modulo-card-content">
+                                        <h6 class="modulo-card-title">TALLERES</h6>
+                                        <p class="modulo-card-desc">Gestione los talleres de servicio</p>
+                                        <div class="modulo-card-actions d-grid gap-2">
+                                            <a href="{% url 'activos:lista_talleres' %}" class="btn btn-sm btn-outline-warning">
+                                                <i class="ri-tools-line align-bottom me-1"></i> Ver Talleres
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card: Proveniencias -->
+                            <div class="col-lg-3 col-sm-6">
+                                <div class="modulo-card">
+                                    <div class="modulo-card-icon modulo-card-icon-secondary">
+                                        <i class="ri-inbox-line"></i>
+                                    </div>
+                                    <div class="modulo-card-content">
+                                        <h6 class="modulo-card-title">PROVENIENCIAS</h6>
+                                        <p class="modulo-card-desc">Gestione las proveniencias de activos</p>
+                                        <div class="modulo-card-actions d-grid gap-2">
+                                            <a href="{% url 'activos:lista_proveniencias' %}" class="btn btn-sm btn-outline-secondary">
+                                                <i class="ri-inbox-line align-bottom me-1"></i> Ver Proveniencias
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card: Marcas -->
+                            <div class="col-lg-3 col-sm-6">
+                                <div class="modulo-card">
+                                    <div class="modulo-card-icon modulo-card-icon-dark">
+                                        <i class="ri-price-tag-3-line"></i>
+                                    </div>
+                                    <div class="modulo-card-content">
+                                        <h6 class="modulo-card-title">MARCAS</h6>
+                                        <p class="modulo-card-desc">Gestione las marcas de activos</p>
+                                        <div class="modulo-card-actions d-grid gap-2">
+                                            <a href="{% url 'activos:lista_marcas' %}" class="btn btn-sm btn-outline-dark">
+                                                <i class="ri-price-tag-3-line align-bottom me-1"></i> Ver Marcas
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card: Tipos de Movimiento -->
+                            <div class="col-lg-3 col-sm-6">
+                                <div class="modulo-card">
+                                    <div class="modulo-card-icon modulo-card-icon-danger">
+                                        <i class="ri-exchange-line"></i>
+                                    </div>
+                                    <div class="modulo-card-content">
+                                        <h6 class="modulo-card-title">TIPOS MOVIMIENTO</h6>
+                                        <p class="modulo-card-desc">Gestione los tipos de movimiento</p>
+                                        <div class="modulo-card-actions d-grid gap-2">
+                                            <a href="{% url 'activos:lista_tipos_movimiento' %}" class="btn btn-sm btn-outline-danger">
+                                                <i class="ri-exchange-line align-bottom me-1"></i> Ver Tipos
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas del Módulo -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <h5 class="mb-3 text-muted">
+                    <i class="ri-bar-chart-line me-2"></i>Estadísticas del Módulo
+                </h5>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xl-3 col-md-6">
+                <div class="card card-animate">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1 overflow-hidden">
+                                <p class="text-uppercase fw-medium text-muted text-truncate mb-0">Total Activos</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-end justify-content-between mt-4">
+                            <div>
+                                <h4 class="fs-22 fw-semibold ff-secondary mb-4"><span class="counter-value" data-target="{{ stats.total_activos }}">{{ stats.total_activos }}</span></h4>
+                            </div>
+                            <div class="avatar-sm flex-shrink-0">
+                                <span class="avatar-title bg-warning-subtle rounded fs-3">
+                                    <i class="ri-box-3-line text-warning"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="card card-animate">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1 overflow-hidden">
+                                <p class="text-uppercase fw-medium text-muted text-truncate mb-0">Categorías</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-end justify-content-between mt-4">
+                            <div>
+                                <h4 class="fs-22 fw-semibold ff-secondary mb-4"><span class="counter-value" data-target="{{ stats.total_categorias }}">{{ stats.total_categorias }}</span></h4>
+                            </div>
+                            <div class="avatar-sm flex-shrink-0">
+                                <span class="avatar-title bg-success-subtle rounded fs-3">
+                                    <i class="ri-folder-line text-success"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="card card-animate">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1 overflow-hidden">
+                                <p class="text-uppercase fw-medium text-muted text-truncate mb-0">Ubicaciones</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-end justify-content-between mt-4">
+                            <div>
+                                <h4 class="fs-22 fw-semibold ff-secondary mb-4"><span class="counter-value" data-target="{{ stats.total_ubicaciones }}">{{ stats.total_ubicaciones }}</span></h4>
+                            </div>
+                            <div class="avatar-sm flex-shrink-0">
+                                <span class="avatar-title bg-info-subtle rounded fs-3">
+                                    <i class="ri-map-pin-line text-info"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="card card-animate">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1 overflow-hidden">
+                                <p class="text-uppercase fw-medium text-muted text-truncate mb-0">Movimientos</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-end justify-content-between mt-4">
+                            <div>
+                                <h4 class="fs-22 fw-semibold ff-secondary mb-4"><span class="counter-value" data-target="{{ stats.total_movimientos }}">{{ stats.total_movimientos }}</span></h4>
+                            </div>
+                            <div class="avatar-sm flex-shrink-0">
+                                <span class="avatar-title bg-secondary-subtle rounded fs-3">
+                                    <i class="ri-exchange-line text-secondary"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información adicional -->
+        <div class="row mt-2">
+            <div class="col-12">
+                <div class="card border-0 shadow-none">
+                    <div class="card-body">
+                        <div class="alert alert-primary border-0 mb-0" role="alert">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="ri-information-line fs-16 align-middle"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="alert-heading">Información del Módulo</h6>
+                                    <p class="mb-0">
+                                        Gestione el inventario completo de activos fijos y bienes de la organización.
+                                        Actualmente hay <strong>{{ stats.total_activos }} activos registrados</strong>
+                                        en <strong>{{ stats.total_categorias }} categorías</strong>,
+                                        distribuidos en <strong>{{ stats.total_ubicaciones }} ubicaciones</strong>.
+                                        Se han registrado <strong>{{ stats.total_movimientos }} movimientos</strong> en total.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

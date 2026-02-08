@@ -1,0 +1,428 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                    <h4 class="mb-sm-0">{{ titulo }}</h4>
+                    <div>
+                        <a href="{% url 'compras:orden_compra_lista' %}" class="btn btn-secondary">
+                            <i class="ri-arrow-left-line"></i> Volver
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Información de la Orden</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if form.errors %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <strong>Error:</strong> Por favor corrija los siguientes errores:
+                            <ul class="mb-0">
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                        <li>{{ field.label }}: {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                                {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endif %}
+
+                        <form method="post" id="form-orden-compra">
+                            {% csrf_token %}
+
+                            <!-- Campos ocultos -->
+                            {{ form.fecha_orden }}
+                            {{ form.estado }}
+
+                            <div class="row g-3">
+                                <!-- Fila con 3 columnas: Fecha Entrega, Proveedor, Bodega -->
+                                <div class="col-md-4">
+                                    <label class="form-label">Fecha Entrega Esperada</label>
+                                    {{ form.fecha_entrega_esperada }}
+                                    {% if form.fecha_entrega_esperada.errors %}
+                                        <div class="text-danger small">{{ form.fecha_entrega_esperada.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Proveedor <span class="text-danger">*</span></label>
+                                    {{ form.proveedor }}
+                                    {% if form.proveedor.errors %}
+                                        <div class="text-danger small">{{ form.proveedor.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Bodega Destino <span class="text-danger">*</span></label>
+                                    {{ form.bodega_destino }}
+                                    {% if form.bodega_destino.errors %}
+                                        <div class="text-danger small">{{ form.bodega_destino.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Campo observaciones debajo -->
+                                <div class="col-md-12">
+                                    <label class="form-label">Observaciones</label>
+                                    {{ form.observaciones }}
+                                    {% if form.observaciones.errors %}
+                                        <div class="text-danger small">{{ form.observaciones.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Campos solicitudes ocultos (se llenarán dinámicamente) -->
+                                <div id="solicitudes-hidden-inputs">
+                                    {{ form.solicitudes }}
+                                </div>
+
+                                <!-- Campos ocultos para artículos y bienes agregados manualmente -->
+                                <input type="hidden" id="articulosJson" name="articulos_json" value="">
+                                <input type="hidden" id="bienesJson" name="bienes_json" value="">
+
+                                <!-- Toggle para asociar solicitud -->
+                                <div class="col-md-12 mb-3">
+                                    <div class="card border-primary">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center">
+                                                <label class="form-label mb-0 me-3"><strong>¿Requiere asociar una solicitud?</strong></label>
+                                                <div class="btn-group" role="group" aria-label="Requiere solicitud">
+                                                    <input type="radio" class="btn-check" name="requiere_solicitud" id="requiere_solicitud_si" value="si">
+                                                    <label class="btn btn-outline-success" for="requiere_solicitud_si">
+                                                        <i class="ri-check-line"></i> SÍ
+                                                    </label>
+
+                                                    <input type="radio" class="btn-check" name="requiere_solicitud" id="requiere_solicitud_no" value="no" checked>
+                                                    <label class="btn btn-outline-danger" for="requiere_solicitud_no">
+                                                        <i class="ri-close-line"></i> NO
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tabla de solicitudes disponibles -->
+                                <div class="col-md-12" id="seccion-solicitudes" style="display: none;">
+                                    <label class="form-label">Solicitudes Disponibles</label>
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-hover table-sm mb-0" id="tabla-solicitudes-disponibles">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th>Número</th>
+                                                            <th>Fecha</th>
+                                                            <th>Tipo</th>
+                                                            <th>Solicitante</th>
+                                                            <th>Estado</th>
+                                                            <th class="text-center">Acción</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for solicitud in form.solicitudes.field.queryset %}
+                                                        <tr data-solicitud-id="{{ solicitud.id }}" data-solicitud-numero="{{ solicitud.numero }}" data-solicitud-tipo="{{ solicitud.tipo }}" data-solicitante="{{ solicitud.solicitante.get_full_name|default:solicitud.solicitante.username }}">
+                                                            <td><strong>{{ solicitud.numero }}</strong></td>
+                                                            <td>{{ solicitud.fecha_solicitud|date:"d/m/Y" }}</td>
+                                                            <td>
+                                                                {% if solicitud.tipo == 'ARTICULO' %}
+                                                                    <span class="badge bg-primary">Artículos</span>
+                                                                {% else %}
+                                                                    <span class="badge bg-info">Activos</span>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td>{{ solicitud.solicitante.get_full_name|default:solicitud.solicitante.username }}</td>
+                                                            <td>
+                                                                <span class="badge" style="background-color: {{ solicitud.estado.color }}">
+                                                                    {{ solicitud.estado.nombre }}
+                                                                </span>
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <button type="button" class="btn btn-sm btn-success btn-toggle-solicitud" data-solicitud-id="{{ solicitud.id }}" data-action="agregar">
+                                                                    <i class="ri-add-line"></i> Agregar
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                        {% empty %}
+                                                        <tr>
+                                                            <td colspan="6" class="text-center text-muted">
+                                                                No hay solicitudes disponibles
+                                                            </td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-text">
+                                        <i class="ri-information-line"></i> Haga clic en "Agregar" para asociar solicitudes. Las filas agregadas se marcarán en verde.
+                                    </div>
+                                    {% if form.solicitudes.errors %}
+                                        <div class="text-danger small mt-2">{{ form.solicitudes.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Tabla de Artículos -->
+                                <div class="col-md-12" id="seccion-articulos">
+                                    <div class="card">
+                                        <div class="card-header bg-primary bg-opacity-10">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h5 class="card-title mb-0 text-primary">
+                                                    <i class="ri-shopping-cart-line"></i> Artículos de Bodega
+                                                </h5>
+                                                <button type="button" class="btn btn-primary btn-sm" id="btn-agregar-articulo-manual">
+                                                    <i class="ri-add-line"></i> Agregar Artículo
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-nowrap table-sm" id="tabla-articulos-orden">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th width="35%">Artículo</th>
+                                                            <th width="12%">Cantidad</th>
+                                                            <th width="15%">Precio Unit.</th>
+                                                            <th width="12%">Descuento</th>
+                                                            <th width="15%">Subtotal</th>
+                                                            <th width="11%">Acciones</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="tbody-articulos-orden">
+                                                        <!-- Las filas se agregarán dinámicamente -->
+                                                    </tbody>
+                                                    <tfoot class="table-light">
+                                                        <tr>
+                                                            <td colspan="4" class="text-end"><strong>Total Artículos:</strong></td>
+                                                            <td><strong id="total-articulos">$0</strong></td>
+                                                            <td></td>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+
+                                            <div id="sin-articulos" class="text-center text-muted py-4">
+                                                <i class="ri-inbox-line" style="font-size: 3rem;"></i>
+                                                <p class="mb-0">No hay artículos agregados. Haga clic en "Agregar Artículo" para comenzar.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tabla de Bienes/Activos -->
+                                <div class="col-md-12" id="seccion-bienes">
+                                    <div class="card">
+                                        <div class="card-header bg-info bg-opacity-10">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h5 class="card-title mb-0 text-info">
+                                                    <i class="ri-inbox-line"></i> Bienes / Activos
+                                                </h5>
+                                                <button type="button" class="btn btn-info btn-sm" id="btn-agregar-bien-manual">
+                                                    <i class="ri-add-line"></i> Agregar Bien/Activo
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-nowrap table-sm" id="tabla-bienes-orden">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th width="35%">Bien/Activo</th>
+                                                            <th width="12%">Cantidad</th>
+                                                            <th width="15%">Precio Unit.</th>
+                                                            <th width="12%">Descuento</th>
+                                                            <th width="15%">Subtotal</th>
+                                                            <th width="11%">Acciones</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="tbody-bienes-orden">
+                                                        <!-- Las filas se agregarán dinámicamente -->
+                                                    </tbody>
+                                                    <tfoot class="table-light">
+                                                        <tr>
+                                                            <td colspan="4" class="text-end"><strong>Total Bienes:</strong></td>
+                                                            <td><strong id="total-bienes">$0</strong></td>
+                                                            <td></td>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+
+                                            <div id="sin-bienes" class="text-center text-muted py-4">
+                                                <i class="ri-inbox-line" style="font-size: 3rem;"></i>
+                                                <p class="mb-0">No hay bienes/activos agregados. Haga clic en "Agregar Bien/Activo" para comenzar.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="ri-save-line"></i> {{ action }}
+                                </button>
+                                <a href="{% url 'compras:orden_compra_lista' %}" class="btn btn-secondary">
+                                    Cancelar
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                {% if not form.instance.pk %}
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <div class="alert alert-light mb-0">
+                            <h6><i class="ri-lightbulb-line"></i> Siguiente paso:</h6>
+                            <p class="mb-0">Una vez creada la orden, podrás agregar <strong>artículos de bodega</strong> y <strong>activos/bienes</strong> desde la vista de detalle.</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para seleccionar artículo -->
+<div class="modal fade" id="modalArticulo" tabindex="-1" aria-labelledby="modalArticuloLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalArticuloLabel">Seleccionar Artículo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Buscar Artículo</label>
+                    <input type="text" class="form-control" id="buscar-articulo" placeholder="Buscar por código o nombre...">
+                </div>
+                <div class="table-responsive" style="max-height: 400px;">
+                    <table class="table table-hover">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>Código</th>
+                                <th>Nombre</th>
+                                <th>Categoría</th>
+                                <th>Stock</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-lista-articulos">
+                            {% for articulo in articulos_disponibles %}
+                            <tr data-articulo-id="{{ articulo.id }}"
+                                data-articulo-codigo="{{ articulo.codigo }}"
+                                data-articulo-nombre="{{ articulo.nombre }}"
+                                data-articulo-categoria="{{ articulo.categoria.nombre }}"
+                                data-articulo-unidad="{{ articulo.unidad_medida.simbolo|default:'unidad' }}">
+                                <td><code>{{ articulo.codigo }}</code></td>
+                                <td>{{ articulo.nombre }}</td>
+                                <td>{{ articulo.categoria.nombre }}</td>
+                                <td>{{ articulo.stock|default:"-" }} {{ articulo.unidad_medida.simbolo|default:"unidad" }}</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-success btn-seleccionar-articulo">
+                                        <i class="ri-check-line"></i> Seleccionar
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para seleccionar bien/activo -->
+<div class="modal fade" id="modalBien" tabindex="-1" aria-labelledby="modalBienLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalBienLabel">Seleccionar Bien/Activo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Buscar Bien/Activo</label>
+                    <input type="text" class="form-control" id="buscar-bien" placeholder="Buscar por código o nombre...">
+                </div>
+                <div class="table-responsive" style="max-height: 400px;">
+                    <table class="table table-hover">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>Código</th>
+                                <th>Nombre</th>
+                                <th>Categoría</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-lista-bienes">
+                            {% for activo in activos_disponibles %}
+                            <tr data-bien-id="{{ activo.id }}"
+                                data-bien-codigo="{{ activo.codigo }}"
+                                data-bien-nombre="{{ activo.nombre }}"
+                                data-bien-categoria="{{ activo.categoria.nombre }}">
+                                <td><code>{{ activo.codigo }}</code></td>
+                                <td>{{ activo.nombre }}</td>
+                                <td>{{ activo.categoria.nombre }}</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-success btn-seleccionar-bien">
+                                        <i class="ri-check-line"></i> Seleccionar
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- Datos para JavaScript -->
+<script>
+const ARTICULOS_DISPONIBLES = [
+    {% for articulo in articulos_disponibles %}
+    {
+        id: {{ articulo.id }},
+        codigo: "{{ articulo.codigo|escapejs }}",
+        nombre: "{{ articulo.nombre|escapejs }}",
+        categoria: "{{ articulo.categoria.nombre|escapejs }}",
+        unidad: "{{ articulo.unidad_medida.simbolo|escapejs }}"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+
+const ACTIVOS_DISPONIBLES = [
+    {% for activo in activos_disponibles %}
+    {
+        id: {{ activo.id }},
+        codigo: "{{ activo.codigo|escapejs }}",
+        nombre: "{{ activo.nombre|escapejs }}",
+        categoria: "{{ activo.categoria.nombre|escapejs }}"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+</script>
+<!-- Carga automática de artículos de solicitudes - Versión refactorizada con SRP -->
+<script src="{% static 'js/compras/crear-orden-refactored.js' %}?v=1"></script>
+{% endblock %}

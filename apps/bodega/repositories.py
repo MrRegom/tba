@@ -1,0 +1,1197 @@
+"""
+Repository Pattern para el módulo de bodega.
+
+Separa la lógica de acceso a datos de la lógica de negocio,
+siguiendo el principio de Inversión de Dependencias (SOLID).
+"""
+from typing import Optional, List
+from decimal import Decimal
+from django.db.models import QuerySet, Q
+from django.contrib.auth.models import User
+from .models import (
+    Bodega, Categoria, Marca, Articulo, Operacion, TipoMovimiento, Movimiento,
+    EstadoEntrega, TipoEntrega, EntregaArticulo, DetalleEntregaArticulo,
+    EntregaBien, DetalleEntregaBien,
+    EstadoRecepcion, TipoRecepcion, RecepcionArticulo, DetalleRecepcionArticulo,
+    RecepcionActivo, DetalleRecepcionActivo
+)
+
+
+# ==================== BODEGA REPOSITORY ====================
+
+class BodegaRepository:
+    """Repository para gestionar acceso a datos de Bodega."""
+
+    @staticmethod
+    def get_all() -> QuerySet[Bodega]:
+        """Retorna todas las bodegas no eliminadas."""
+        return Bodega.objects.filter(eliminado=False)
+
+    @staticmethod
+    def get_active() -> QuerySet[Bodega]:
+        """Retorna solo bodegas activas y no eliminadas."""
+        return Bodega.objects.filter(activo=True, eliminado=False)
+
+    @staticmethod
+    def get_by_id(bodega_id: int) -> Optional[Bodega]:
+        """
+        Obtiene una bodega por su ID.
+
+        Args:
+            bodega_id: ID de la bodega
+
+        Returns:
+            Bodega si existe, None en caso contrario
+        """
+        try:
+            return Bodega.objects.get(id=bodega_id, eliminado=False)
+        except Bodega.DoesNotExist:
+            return None
+
+    @staticmethod
+    def get_by_codigo(codigo: str) -> Optional[Bodega]:
+        """
+        Obtiene una bodega por su código.
+
+        Args:
+            codigo: Código único de la bodega
+
+        Returns:
+            Bodega si existe, None en caso contrario
+        """
+        try:
+            return Bodega.objects.get(codigo=codigo, eliminado=False)
+        except Bodega.DoesNotExist:
+            return None
+
+    @staticmethod
+    def filter_by_responsable(responsable: User) -> QuerySet[Bodega]:
+        """Retorna bodegas gestionadas por un responsable específico."""
+        return Bodega.objects.filter(
+            responsable=responsable,
+            eliminado=False
+        )
+
+    @staticmethod
+    def search(query: str) -> QuerySet[Bodega]:
+        """
+        Búsqueda de bodegas por código o nombre.
+
+        Args:
+            query: Término de búsqueda
+
+        Returns:
+            QuerySet con resultados
+        """
+        return Bodega.objects.filter(
+            Q(codigo__icontains=query) | Q(nombre__icontains=query),
+            eliminado=False
+        )
+
+
+# ==================== CATEGORÍA REPOSITORY ====================
+
+class CategoriaRepository:
+    """Repository para gestionar acceso a datos de Categoría."""
+
+    @staticmethod
+    def get_all() -> QuerySet[Categoria]:
+        """Retorna todas las categorías no eliminadas."""
+        return Categoria.objects.filter(eliminado=False).order_by('codigo')
+
+    @staticmethod
+    def get_active() -> QuerySet[Categoria]:
+        """Retorna solo categorías activas y no eliminadas."""
+        return Categoria.objects.filter(activo=True, eliminado=False).order_by('codigo')
+
+    @staticmethod
+    def get_by_id(categoria_id: int) -> Optional[Categoria]:
+        """
+        Obtiene una categoría por su ID.
+
+        Args:
+            categoria_id: ID de la categoría
+
+        Returns:
+            Categoría si existe, None en caso contrario
+        """
+        try:
+            return Categoria.objects.get(id=categoria_id, eliminado=False)
+        except Categoria.DoesNotExist:
+            return None
+
+    @staticmethod
+    def get_by_codigo(codigo: str) -> Optional[Categoria]:
+        """
+        Obtiene una categoría por su código.
+
+        Args:
+            codigo: Código único de la categoría
+
+        Returns:
+            Categoría si existe, None en caso contrario
+        """
+        try:
+            return Categoria.objects.get(codigo=codigo, eliminado=False)
+        except Categoria.DoesNotExist:
+            return None
+
+    @staticmethod
+    def search(query: str) -> QuerySet[Categoria]:
+        """
+        Búsqueda de categorías por código o nombre.
+
+        Args:
+            query: Término de búsqueda
+
+        Returns:
+            QuerySet con resultados
+        """
+        return Categoria.objects.filter(
+            Q(codigo__icontains=query) | Q(nombre__icontains=query),
+            eliminado=False
+        ).order_by('codigo')
+
+    @staticmethod
+    def exists_by_codigo(codigo: str, exclude_id: Optional[int] = None) -> bool:
+        """
+        Verifica si existe una categoría con el código dado.
+
+        Args:
+            codigo: Código a verificar
+            exclude_id: ID a excluir de la búsqueda (para ediciones)
+
+        Returns:
+            True si existe, False en caso contrario
+        """
+        queryset = Categoria.objects.filter(codigo=codigo)
+        if exclude_id:
+            queryset = queryset.exclude(id=exclude_id)
+        return queryset.exists()
+
+
+# ==================== MARCA REPOSITORY ====================
+
+class MarcaRepository:
+    """Repository para gestionar acceso a datos de Marca."""
+
+    @staticmethod
+    def get_all() -> QuerySet[Marca]:
+        """Retorna todas las marcas no eliminadas."""
+        return Marca.objects.filter(eliminado=False).order_by('codigo')
+
+    @staticmethod
+    def get_active() -> QuerySet[Marca]:
+        """Retorna solo marcas activas y no eliminadas."""
+        return Marca.objects.filter(activo=True, eliminado=False).order_by('codigo')
+
+    @staticmethod
+    def get_by_id(marca_id: int) -> Optional[Marca]:
+        """
+        Obtiene una marca por su ID.
+
+        Args:
+            marca_id: ID de la marca
+
+        Returns:
+            Marca si existe, None en caso contrario
+        """
+        try:
+            return Marca.objects.get(id=marca_id, eliminado=False)
+        except Marca.DoesNotExist:
+            return None
+
+    @staticmethod
+    def get_by_codigo(codigo: str) -> Optional[Marca]:
+        """
+        Obtiene una marca por su código.
+
+        Args:
+            codigo: Código único de la marca
+
+        Returns:
+            Marca si existe, None en caso contrario
+        """
+        try:
+            return Marca.objects.get(codigo=codigo, eliminado=False)
+        except Marca.DoesNotExist:
+            return None
+
+    @staticmethod
+    def search(query: str) -> QuerySet[Marca]:
+        """
+        Búsqueda de marcas por código o nombre.
+
+        Args:
+            query: Término de búsqueda
+
+        Returns:
+            QuerySet con resultados
+        """
+        return Marca.objects.filter(
+            Q(codigo__icontains=query) | Q(nombre__icontains=query),
+            eliminado=False
+        ).order_by('codigo')
+
+    @staticmethod
+    def exists_by_codigo(codigo: str, exclude_id: Optional[int] = None) -> bool:
+        """
+        Verifica si existe una marca con el código dado.
+
+        Args:
+            codigo: Código a verificar
+            exclude_id: ID a excluir de la búsqueda (para ediciones)
+
+        Returns:
+            True si existe, False en caso contrario
+        """
+        queryset = Marca.objects.filter(codigo=codigo)
+        if exclude_id:
+            queryset = queryset.exclude(id=exclude_id)
+        return queryset.exists()
+
+
+# ==================== ARTÍCULO REPOSITORY ====================
+
+class ArticuloRepository:
+    """Repository para gestionar acceso a datos de Artículo."""
+
+    @staticmethod
+    def get_all() -> QuerySet[Articulo]:
+        """Retorna todos los artículos no eliminados con relaciones optimizadas."""
+        return Articulo.objects.filter(
+            eliminado=False
+        ).select_related(
+            'categoria', 'ubicacion_fisica'
+        ).order_by('codigo')
+
+    @staticmethod
+    def get_active() -> QuerySet[Articulo]:
+        """Retorna solo artículos activos y no eliminados."""
+        return Articulo.objects.filter(
+            activo=True, eliminado=False
+        ).select_related(
+            'categoria', 'ubicacion_fisica'
+        ).order_by('codigo')
+
+    @staticmethod
+    def get_by_id(articulo_id: int) -> Optional[Articulo]:
+        """
+        Obtiene un artículo por su ID.
+
+        Args:
+            articulo_id: ID del artículo
+
+        Returns:
+            Artículo si existe, None en caso contrario
+        """
+        try:
+            return Articulo.objects.select_related(
+                'categoria', 'ubicacion_fisica'
+            ).get(id=articulo_id, eliminado=False)
+        except Articulo.DoesNotExist:
+            return None
+
+    @staticmethod
+    def get_by_codigo(codigo: str) -> Optional[Articulo]:
+        """
+        Obtiene un artículo por su código.
+
+        Args:
+            codigo: Código único del artículo
+
+        Returns:
+            Artículo si existe, None en caso contrario
+        """
+        try:
+            return Articulo.objects.select_related(
+                'categoria', 'ubicacion_fisica'
+            ).get(codigo=codigo, eliminado=False)
+        except Articulo.DoesNotExist:
+            return None
+
+    @staticmethod
+    def filter_by_categoria(categoria: Categoria) -> QuerySet[Articulo]:
+        """Retorna artículos de una categoría específica."""
+        return Articulo.objects.filter(
+            categoria=categoria,
+            eliminado=False
+        ).select_related(
+            'categoria', 'ubicacion_fisica'
+        ).order_by('codigo')
+
+    @staticmethod
+    def filter_by_bodega(bodega: Bodega) -> QuerySet[Articulo]:
+        """Retorna artículos de una bodega específica."""
+        return Articulo.objects.filter(
+            ubicacion_fisica=bodega,
+            eliminado=False
+        ).select_related(
+            'categoria', 'ubicacion_fisica'
+        ).order_by('codigo')
+
+    @staticmethod
+    def get_low_stock() -> QuerySet[Articulo]:
+        """Retorna artículos con stock bajo (menor al mínimo)."""
+        from django.db.models import F
+        return Articulo.objects.filter(
+            eliminado=False,
+            activo=True
+        ).filter(
+            stock_actual__lt=F('stock_minimo')
+        ).select_related(
+            'categoria', 'ubicacion_fisica'
+        ).order_by('codigo')
+
+    @staticmethod
+    def get_reorder_point() -> QuerySet[Articulo]:
+        """Retorna artículos que alcanzaron el punto de reorden."""
+        from django.db.models import F
+        return Articulo.objects.filter(
+            eliminado=False,
+            activo=True,
+            punto_reorden__isnull=False
+        ).filter(
+            stock_actual__lte=F('punto_reorden')
+        ).select_related(
+            'categoria', 'ubicacion_fisica'
+        ).order_by('codigo')
+
+    @staticmethod
+    def search(query: str) -> QuerySet[Articulo]:
+        """
+        Búsqueda de artículos por código, nombre o descripción.
+
+        Args:
+            query: Término de búsqueda
+
+        Returns:
+            QuerySet con resultados
+        """
+        return Articulo.objects.filter(
+            Q(codigo__icontains=query) |
+            Q(nombre__icontains=query) |
+            Q(descripcion__icontains=query),
+            eliminado=False
+        ).select_related(
+            'categoria', 'ubicacion_fisica'
+        ).order_by('codigo')
+
+    @staticmethod
+    def exists_by_codigo(codigo: str, exclude_id: Optional[int] = None) -> bool:
+        """
+        Verifica si existe un artículo con el código dado.
+
+        Args:
+            codigo: Código a verificar
+            exclude_id: ID a excluir de la búsqueda (para ediciones)
+
+        Returns:
+            True si existe, False en caso contrario
+        """
+        queryset = Articulo.objects.filter(codigo=codigo)
+        if exclude_id:
+            queryset = queryset.exclude(id=exclude_id)
+        return queryset.exists()
+
+    @staticmethod
+    def update_stock(articulo: Articulo, nuevo_stock: Decimal) -> Articulo:
+        """
+        Actualiza el stock de un artículo.
+
+        Args:
+            articulo: Artículo a actualizar
+            nuevo_stock: Nuevo valor de stock
+
+        Returns:
+            Artículo actualizado
+        """
+        articulo.stock_actual = nuevo_stock
+        articulo.save(update_fields=['stock_actual', 'fecha_actualizacion'])
+        return articulo
+
+
+# ==================== OPERACION REPOSITORY ====================
+
+class OperacionRepository:
+    """Repository para gestionar acceso a datos de Operacion."""
+
+    @staticmethod
+    def get_all() -> QuerySet[Operacion]:
+        """Retorna todas las operaciones no eliminadas."""
+        return Operacion.objects.filter(eliminado=False).order_by('codigo')
+
+    @staticmethod
+    def get_active() -> QuerySet[Operacion]:
+        """Retorna solo operaciones activas y no eliminadas."""
+        return Operacion.objects.filter(activo=True, eliminado=False).order_by('codigo')
+
+    @staticmethod
+    def get_by_id(operacion_id: int) -> Optional[Operacion]:
+        """
+        Obtiene una operación por su ID.
+
+        Args:
+            operacion_id: ID de la operación
+
+        Returns:
+            Operacion si existe, None en caso contrario
+        """
+        try:
+            return Operacion.objects.get(id=operacion_id, eliminado=False)
+        except Operacion.DoesNotExist:
+            return None
+
+    @staticmethod
+    def get_by_codigo(codigo: str) -> Optional[Operacion]:
+        """
+        Obtiene una operación por su código.
+
+        Args:
+            codigo: Código único de la operación
+
+        Returns:
+            Operacion si existe, None en caso contrario
+        """
+        try:
+            return Operacion.objects.get(codigo=codigo, eliminado=False)
+        except Operacion.DoesNotExist:
+            return None
+
+    @staticmethod
+    def get_by_tipo(tipo: str) -> QuerySet[Operacion]:
+        """
+        Obtiene operaciones por tipo (ENTRADA/SALIDA).
+
+        Args:
+            tipo: Tipo de operación ('ENTRADA' o 'SALIDA')
+
+        Returns:
+            QuerySet con operaciones del tipo especificado
+        """
+        return Operacion.objects.filter(
+            tipo=tipo,
+            eliminado=False,
+            activo=True
+        ).order_by('codigo')
+
+    @staticmethod
+    def get_entrada() -> Optional[Operacion]:
+        """
+        Obtiene una operación de tipo ENTRADA activa.
+
+        Returns:
+            Primera operación de entrada activa o None
+        """
+        try:
+            return Operacion.objects.filter(
+                tipo='ENTRADA',
+                eliminado=False,
+                activo=True
+            ).first()
+        except Operacion.DoesNotExist:
+            return None
+
+    @staticmethod
+    def get_salida() -> Optional[Operacion]:
+        """
+        Obtiene una operación de tipo SALIDA activa.
+
+        Returns:
+            Primera operación de salida activa o None
+        """
+        try:
+            return Operacion.objects.filter(
+                tipo='SALIDA',
+                eliminado=False,
+                activo=True
+            ).first()
+        except Operacion.DoesNotExist:
+            return None
+
+    @staticmethod
+    def search(query: str) -> QuerySet[Operacion]:
+        """
+        Búsqueda de operaciones por código o nombre.
+
+        Args:
+            query: Término de búsqueda
+
+        Returns:
+            QuerySet con resultados
+        """
+        return Operacion.objects.filter(
+            Q(codigo__icontains=query) | Q(nombre__icontains=query),
+            eliminado=False
+        ).order_by('codigo')
+
+    @staticmethod
+    def exists_by_codigo(codigo: str, exclude_id: Optional[int] = None) -> bool:
+        """
+        Verifica si existe una operación con el código dado.
+
+        Args:
+            codigo: Código a verificar
+            exclude_id: ID a excluir de la búsqueda (para ediciones)
+
+        Returns:
+            True si existe, False en caso contrario
+        """
+        queryset = Operacion.objects.filter(codigo=codigo)
+        if exclude_id:
+            queryset = queryset.exclude(id=exclude_id)
+        return queryset.exists()
+
+
+# ==================== TIPO MOVIMIENTO REPOSITORY ====================
+
+class TipoMovimientoRepository:
+    """Repository para gestionar acceso a datos de TipoMovimiento."""
+
+    @staticmethod
+    def get_all() -> QuerySet[TipoMovimiento]:
+        """Retorna todos los tipos de movimiento no eliminados."""
+        return TipoMovimiento.objects.filter(eliminado=False).order_by('codigo')
+
+    @staticmethod
+    def get_active() -> QuerySet[TipoMovimiento]:
+        """Retorna solo tipos de movimiento activos y no eliminados."""
+        return TipoMovimiento.objects.filter(
+            activo=True, eliminado=False
+        ).order_by('codigo')
+
+    @staticmethod
+    def get_by_id(tipo_id: int) -> Optional[TipoMovimiento]:
+        """
+        Obtiene un tipo de movimiento por su ID.
+
+        Args:
+            tipo_id: ID del tipo de movimiento
+
+        Returns:
+            TipoMovimiento si existe, None en caso contrario
+        """
+        try:
+            return TipoMovimiento.objects.get(id=tipo_id, eliminado=False)
+        except TipoMovimiento.DoesNotExist:
+            return None
+
+    @staticmethod
+    def get_by_codigo(codigo: str) -> Optional[TipoMovimiento]:
+        """
+        Obtiene un tipo de movimiento por su código.
+
+        Args:
+            codigo: Código único del tipo de movimiento
+
+        Returns:
+            TipoMovimiento si existe, None en caso contrario
+        """
+        try:
+            return TipoMovimiento.objects.get(codigo=codigo, eliminado=False)
+        except TipoMovimiento.DoesNotExist:
+            return None
+
+
+# ==================== MOVIMIENTO REPOSITORY ====================
+
+class MovimientoRepository:
+    """Repository para gestionar acceso a datos de Movimiento."""
+
+    @staticmethod
+    def get_all() -> QuerySet[Movimiento]:
+        """Retorna todos los movimientos no eliminados con relaciones optimizadas."""
+        return Movimiento.objects.filter(
+            eliminado=False
+        ).select_related(
+            'articulo', 'tipo', 'usuario'
+        ).order_by('-fecha_creacion')
+
+    @staticmethod
+    def get_by_id(movimiento_id: int) -> Optional[Movimiento]:
+        """
+        Obtiene un movimiento por su ID.
+
+        Args:
+            movimiento_id: ID del movimiento
+
+        Returns:
+            Movimiento si existe, None en caso contrario
+        """
+        try:
+            return Movimiento.objects.select_related(
+                'articulo', 'tipo', 'usuario'
+            ).get(id=movimiento_id, eliminado=False)
+        except Movimiento.DoesNotExist:
+            return None
+
+    @staticmethod
+    def filter_by_articulo(articulo: Articulo, limit: int = 20) -> QuerySet[Movimiento]:
+        """
+        Retorna movimientos de un artículo específico.
+
+        Args:
+            articulo: Artículo a filtrar
+            limit: Número máximo de resultados
+
+        Returns:
+            QuerySet con movimientos limitados
+        """
+        return Movimiento.objects.filter(
+            articulo=articulo,
+            eliminado=False
+        ).select_related(
+            'tipo', 'usuario'
+        ).order_by('-fecha_creacion')[:limit]
+
+    @staticmethod
+    def filter_by_tipo(tipo: TipoMovimiento) -> QuerySet[Movimiento]:
+        """Retorna movimientos de un tipo específico."""
+        return Movimiento.objects.filter(
+            tipo=tipo,
+            eliminado=False
+        ).select_related(
+            'articulo', 'usuario'
+        ).order_by('-fecha_creacion')
+
+    @staticmethod
+    def filter_by_operacion(operacion: str) -> QuerySet[Movimiento]:
+        """
+        Retorna movimientos de una operación específica.
+
+        Args:
+            operacion: 'ENTRADA' o 'SALIDA'
+
+        Returns:
+            QuerySet con movimientos filtrados
+        """
+        return Movimiento.objects.filter(
+            operacion=operacion,
+            eliminado=False
+        ).select_related(
+            'articulo', 'tipo', 'usuario'
+        ).order_by('-fecha_creacion')
+
+    @staticmethod
+    def filter_by_usuario(usuario: User) -> QuerySet[Movimiento]:
+        """Retorna movimientos realizados por un usuario específico."""
+        return Movimiento.objects.filter(
+            usuario=usuario,
+            eliminado=False
+        ).select_related(
+            'articulo', 'tipo'
+        ).order_by('-fecha_creacion')
+
+    @staticmethod
+    def create(
+        articulo: Articulo,
+        tipo: TipoMovimiento,
+        cantidad: Decimal,
+        operacion: str,
+        usuario: User,
+        motivo: str,
+        stock_antes: Decimal,
+        stock_despues: Decimal
+    ) -> Movimiento:
+        """
+        Crea un nuevo movimiento.
+
+        Args:
+            articulo: Artículo del movimiento
+            tipo: Tipo de movimiento
+            cantidad: Cantidad movida
+            operacion: 'ENTRADA' o 'SALIDA'
+            usuario: Usuario que realiza el movimiento
+            motivo: Motivo del movimiento
+            stock_antes: Stock anterior
+            stock_despues: Stock posterior
+
+        Returns:
+            Movimiento creado
+        """
+        return Movimiento.objects.create(
+            articulo=articulo,
+            tipo=tipo,
+            cantidad=cantidad,
+            operacion=operacion,
+            usuario=usuario,
+            motivo=motivo,
+            stock_antes=stock_antes,
+            stock_despues=stock_despues
+        )
+
+
+# ==================== ENTREGA REPOSITORIES ====================
+
+class EstadoEntregaRepository:
+    """Repository para gestionar acceso a datos de EstadoEntrega."""
+
+    @staticmethod
+    def get_all() -> QuerySet[EstadoEntrega]:
+        """Retorna todos los estados de entrega no eliminados."""
+        return EstadoEntrega.objects.filter(eliminado=False).order_by('codigo')
+
+    @staticmethod
+    def get_active() -> QuerySet[EstadoEntrega]:
+        """Retorna solo estados de entrega activos."""
+        return EstadoEntrega.objects.filter(activo=True, eliminado=False).order_by('codigo')
+
+    @staticmethod
+    def get_by_id(estado_id: int) -> Optional[EstadoEntrega]:
+        """Obtiene un estado de entrega por su ID."""
+        try:
+            return EstadoEntrega.objects.get(id=estado_id, eliminado=False)
+        except EstadoEntrega.DoesNotExist:
+            return None
+
+    @staticmethod
+    def get_by_codigo(codigo: str) -> Optional[EstadoEntrega]:
+        """Obtiene un estado de entrega por su código."""
+        try:
+            return EstadoEntrega.objects.get(codigo=codigo, eliminado=False)
+        except EstadoEntrega.DoesNotExist:
+            return None
+
+    @staticmethod
+    def get_inicial() -> Optional[EstadoEntrega]:
+        """Obtiene el estado inicial de entrega."""
+        try:
+            return EstadoEntrega.objects.filter(es_inicial=True, eliminado=False, activo=True).first()
+        except EstadoEntrega.DoesNotExist:
+            return None
+
+    @staticmethod
+    def get_despachado() -> Optional[EstadoEntrega]:
+        """Obtiene el estado 'Despachado'."""
+        try:
+            return EstadoEntrega.objects.filter(codigo='DESPACHADO', eliminado=False, activo=True).first()
+        except EstadoEntrega.DoesNotExist:
+            return None
+
+    @staticmethod
+    def get_despacho_parcial() -> Optional[EstadoEntrega]:
+        """Obtiene el estado 'Despacho Parcial'."""
+        try:
+            return EstadoEntrega.objects.filter(codigo='DESPACHO_PARCIAL', eliminado=False, activo=True).first()
+        except EstadoEntrega.DoesNotExist:
+            return None
+
+
+class TipoEntregaRepository:
+    """Repository para gestionar acceso a datos de TipoEntrega."""
+
+    @staticmethod
+    def get_all() -> QuerySet[TipoEntrega]:
+        """Retorna todos los tipos de entrega no eliminados."""
+        return TipoEntrega.objects.filter(eliminado=False).order_by('codigo')
+
+    @staticmethod
+    def get_active() -> QuerySet[TipoEntrega]:
+        """Retorna solo tipos de entrega activos."""
+        return TipoEntrega.objects.filter(activo=True, eliminado=False).order_by('codigo')
+
+    @staticmethod
+    def get_by_id(tipo_id: int) -> Optional[TipoEntrega]:
+        """Obtiene un tipo de entrega por su ID."""
+        try:
+            return TipoEntrega.objects.get(id=tipo_id, eliminado=False)
+        except TipoEntrega.DoesNotExist:
+            return None
+
+    @staticmethod
+    def get_by_codigo(codigo: str) -> Optional[TipoEntrega]:
+        """Obtiene un tipo de entrega por su código."""
+        try:
+            return TipoEntrega.objects.get(codigo=codigo, eliminado=False)
+        except TipoEntrega.DoesNotExist:
+            return None
+
+
+class EntregaArticuloRepository:
+    """Repository para gestionar acceso a datos de EntregaArticulo."""
+
+    @staticmethod
+    def get_all() -> QuerySet[EntregaArticulo]:
+        """Retorna todas las entregas de artículos con relaciones optimizadas."""
+        return EntregaArticulo.objects.filter(
+            eliminado=False
+        ).select_related(
+            'tipo', 'estado', 'entregado_por', 'bodega_origen'
+        ).prefetch_related('detalles__articulo').order_by('-fecha_entrega')
+
+    @staticmethod
+    def get_by_id(entrega_id: int) -> Optional[EntregaArticulo]:
+        """Obtiene una entrega de artículo por su ID."""
+        try:
+            return EntregaArticulo.objects.select_related(
+                'tipo', 'estado', 'entregado_por', 'bodega_origen'
+            ).prefetch_related('detalles__articulo').get(id=entrega_id, eliminado=False)
+        except EntregaArticulo.DoesNotExist:
+            return None
+
+    @staticmethod
+    def get_by_numero(numero: str) -> Optional[EntregaArticulo]:
+        """Obtiene una entrega de artículo por su número."""
+        try:
+            return EntregaArticulo.objects.select_related(
+                'tipo', 'estado', 'entregado_por', 'bodega_origen'
+            ).get(numero=numero, eliminado=False)
+        except EntregaArticulo.DoesNotExist:
+            return None
+
+    @staticmethod
+    def filter_by_bodega(bodega: Bodega) -> QuerySet[EntregaArticulo]:
+        """Retorna entregas de una bodega específica."""
+        return EntregaArticulo.objects.filter(
+            bodega_origen=bodega,
+            eliminado=False
+        ).select_related(
+            'tipo', 'estado', 'entregado_por'
+        ).order_by('-fecha_entrega')
+
+    @staticmethod
+    def filter_by_estado(estado: EstadoEntrega) -> QuerySet[EntregaArticulo]:
+        """Retorna entregas con un estado específico."""
+        return EntregaArticulo.objects.filter(
+            estado=estado,
+            eliminado=False
+        ).select_related(
+            'tipo', 'bodega_origen', 'entregado_por'
+        ).order_by('-fecha_entrega')
+
+    @staticmethod
+    def search(query: str) -> QuerySet[EntregaArticulo]:
+        """Búsqueda de entregas por número o receptor."""
+        return EntregaArticulo.objects.filter(
+            Q(numero__icontains=query) |
+            Q(recibido_por__first_name__icontains=query) |
+            Q(recibido_por__last_name__icontains=query) |
+            Q(recibido_por__username__icontains=query),
+            eliminado=False
+        ).select_related(
+            'tipo', 'estado', 'entregado_por', 'bodega_origen', 'recibido_por'
+        ).order_by('-fecha_entrega')
+
+
+class DetalleEntregaArticuloRepository:
+    """Repository para gestionar acceso a datos de DetalleEntregaArticulo."""
+
+    @staticmethod
+    def get_by_entrega(entrega: EntregaArticulo) -> QuerySet[DetalleEntregaArticulo]:
+        """Retorna detalles de una entrega específica."""
+        return DetalleEntregaArticulo.objects.filter(
+            entrega=entrega,
+            eliminado=False
+        ).select_related('articulo').order_by('id')
+
+    @staticmethod
+    def filter_by_articulo(articulo: Articulo) -> QuerySet[DetalleEntregaArticulo]:
+        """Retorna detalles de entregas de un artículo específico."""
+        return DetalleEntregaArticulo.objects.filter(
+            articulo=articulo,
+            eliminado=False
+        ).select_related('entrega').order_by('-entrega__fecha_entrega')
+
+
+class EntregaBienRepository:
+    """Repository para gestionar acceso a datos de EntregaBien."""
+
+    @staticmethod
+    def get_all() -> QuerySet[EntregaBien]:
+        """Retorna todas las entregas de bienes con relaciones optimizadas."""
+        return EntregaBien.objects.filter(
+            eliminado=False
+        ).select_related(
+            'tipo', 'estado', 'entregado_por'
+        ).prefetch_related('detalles__equipo').order_by('-fecha_entrega')
+
+    @staticmethod
+    def get_by_id(entrega_id: int) -> Optional[EntregaBien]:
+        """Obtiene una entrega de bien por su ID."""
+        try:
+            return EntregaBien.objects.select_related(
+                'tipo', 'estado', 'entregado_por'
+            ).prefetch_related('detalles__equipo').get(id=entrega_id, eliminado=False)
+        except EntregaBien.DoesNotExist:
+            return None
+
+    @staticmethod
+    def get_by_numero(numero: str) -> Optional[EntregaBien]:
+        """Obtiene una entrega de bien por su número."""
+        try:
+            return EntregaBien.objects.select_related(
+                'tipo', 'estado', 'entregado_por'
+            ).get(numero=numero, eliminado=False)
+        except EntregaBien.DoesNotExist:
+            return None
+
+    @staticmethod
+    def filter_by_estado(estado: EstadoEntrega) -> QuerySet[EntregaBien]:
+        """Retorna entregas con un estado específico."""
+        return EntregaBien.objects.filter(
+            estado=estado,
+            eliminado=False
+        ).select_related(
+            'tipo', 'entregado_por'
+        ).order_by('-fecha_entrega')
+
+    @staticmethod
+    def search(query: str) -> QuerySet[EntregaBien]:
+        """Búsqueda de entregas por número o receptor."""
+        return EntregaBien.objects.filter(
+            Q(numero__icontains=query) |
+            Q(recibido_por__first_name__icontains=query) |
+            Q(recibido_por__last_name__icontains=query) |
+            Q(recibido_por__username__icontains=query),
+            eliminado=False
+        ).select_related(
+            'tipo', 'estado', 'entregado_por', 'recibido_por'
+        ).order_by('-fecha_entrega')
+
+
+class DetalleEntregaBienRepository:
+    """Repository para gestionar acceso a datos de DetalleEntregaBien."""
+
+    @staticmethod
+    def get_by_entrega(entrega: EntregaBien) -> QuerySet[DetalleEntregaBien]:
+        """Retorna detalles de una entrega específica."""
+        return DetalleEntregaBien.objects.filter(
+            entrega=entrega,
+            eliminado=False
+        ).select_related('equipo').order_by('id')
+
+    @staticmethod
+    def filter_by_equipo(equipo) -> QuerySet[DetalleEntregaBien]:
+        """Retorna detalles de entregas de un equipo específico."""
+        return DetalleEntregaBien.objects.filter(
+            equipo=equipo,
+            eliminado=False
+        ).select_related('entrega').order_by('-entrega__fecha_entrega')
+
+
+# ==================== ESTADO RECEPCIÓN REPOSITORY ====================
+
+class EstadoRecepcionRepository:
+    """Repository para estados de recepción."""
+
+    @staticmethod
+    def get_all() -> QuerySet[EstadoRecepcion]:
+        """Retorna todos los estados no eliminados."""
+        return EstadoRecepcion.objects.filter(
+            eliminado=False, activo=True
+        ).order_by('codigo')
+
+    @staticmethod
+    def get_by_codigo(codigo: str) -> Optional[EstadoRecepcion]:
+        """Obtiene un estado por su código."""
+        try:
+            return EstadoRecepcion.objects.get(
+                codigo=codigo, eliminado=False, activo=True
+            )
+        except EstadoRecepcion.DoesNotExist:
+            return None
+
+    @staticmethod
+    def get_inicial() -> Optional[EstadoRecepcion]:
+        """Obtiene el estado inicial para nuevas recepciones (PENDIENTE)."""
+        try:
+            return EstadoRecepcion.objects.get(
+                codigo='PENDIENTE',
+                eliminado=False,
+                activo=True
+            )
+        except EstadoRecepcion.DoesNotExist:
+            # Fallback: retornar el primer estado activo si no existe PENDIENTE
+            return EstadoRecepcion.objects.filter(
+                eliminado=False, activo=True
+            ).order_by('codigo').first()
+
+
+class TipoRecepcionRepository:
+    """Repository para tipos de recepción."""
+
+    @staticmethod
+    def get_all() -> QuerySet[TipoRecepcion]:
+        """Retorna todos los tipos no eliminados."""
+        return TipoRecepcion.objects.filter(
+            eliminado=False, activo=True
+        ).order_by('codigo')
+
+    @staticmethod
+    def get_by_codigo(codigo: str) -> Optional[TipoRecepcion]:
+        """Obtiene un tipo por su código."""
+        try:
+            return TipoRecepcion.objects.get(
+                codigo=codigo, eliminado=False, activo=True
+            )
+        except TipoRecepcion.DoesNotExist:
+            return None
+
+    @staticmethod
+    def get_que_requiere_orden() -> QuerySet[TipoRecepcion]:
+        """Obtiene tipos que requieren orden de compra."""
+        return TipoRecepcion.objects.filter(
+            eliminado=False, activo=True, requiere_orden=True
+        ).order_by('codigo')
+
+
+# ==================== RECEPCIÓN REPOSITORY BASE (DRY) ====================
+
+class RecepcionRepositoryBase:
+    """
+    Repository base genérico para recepciones (artículos y activos).
+
+    Principio DRY: Contiene todos los métodos comunes a ambos tipos de recepción.
+    Las subclases solo necesitan definir el atributo 'model' y los métodos específicos.
+    """
+    model = None  # Debe ser sobrescrito por subclases
+
+    @classmethod
+    def get_all(cls) -> QuerySet:
+        """Retorna todas las recepciones con relaciones optimizadas."""
+        if not cls.model:
+            raise NotImplementedError("Subclases deben definir el atributo 'model'")
+
+        # RecepcionArticulo necesita bodega, RecepcionActivo no
+        related_fields = ['orden_compra', 'estado', 'recibido_por']
+        if hasattr(cls.model, '_meta') and any(f.name == 'bodega' for f in cls.model._meta.fields):
+            related_fields.insert(1, 'bodega')
+
+        return cls.model.objects.filter(
+            eliminado=False
+        ).select_related(*related_fields).order_by('-fecha_recepcion')
+
+    @classmethod
+    def get_by_id(cls, recepcion_id: int) -> Optional:
+        """Obtiene una recepción por su ID."""
+        if not cls.model:
+            raise NotImplementedError("Subclases deben definir el atributo 'model'")
+
+        try:
+            related_fields = ['orden_compra', 'estado', 'recibido_por']
+            if hasattr(cls.model, '_meta') and any(f.name == 'bodega' for f in cls.model._meta.fields):
+                related_fields.insert(1, 'bodega')
+
+            return cls.model.objects.select_related(*related_fields).get(
+                id=recepcion_id, eliminado=False
+            )
+        except cls.model.DoesNotExist:
+            return None
+
+    @classmethod
+    def get_by_numero(cls, numero: str) -> Optional:
+        """Obtiene una recepción por su número."""
+        if not cls.model:
+            raise NotImplementedError("Subclases deben definir el atributo 'model'")
+
+        try:
+            related_fields = ['orden_compra', 'estado', 'recibido_por']
+            if hasattr(cls.model, '_meta') and any(f.name == 'bodega' for f in cls.model._meta.fields):
+                related_fields.insert(1, 'bodega')
+
+            return cls.model.objects.select_related(*related_fields).get(
+                numero=numero, eliminado=False
+            )
+        except cls.model.DoesNotExist:
+            return None
+
+    @classmethod
+    def filter_by_orden(cls, orden) -> QuerySet:
+        """Retorna recepciones de una orden específica."""
+        if not cls.model:
+            raise NotImplementedError("Subclases deben definir el atributo 'model'")
+
+        related_fields = ['estado', 'recibido_por']
+        if hasattr(cls.model, '_meta') and any(f.name == 'bodega' for f in cls.model._meta.fields):
+            related_fields.insert(0, 'bodega')
+
+        return cls.model.objects.filter(
+            orden_compra=orden,
+            eliminado=False
+        ).select_related(*related_fields).order_by('-fecha_recepcion')
+
+    @classmethod
+    def filter_by_estado(cls, estado) -> QuerySet:
+        """Retorna recepciones en un estado específico."""
+        if not cls.model:
+            raise NotImplementedError("Subclases deben definir el atributo 'model'")
+
+        related_fields = ['orden_compra', 'recibido_por']
+        if hasattr(cls.model, '_meta') and any(f.name == 'bodega' for f in cls.model._meta.fields):
+            related_fields.insert(1, 'bodega')
+
+        return cls.model.objects.filter(
+            estado=estado,
+            eliminado=False
+        ).select_related(*related_fields).order_by('-fecha_recepcion')
+
+    @classmethod
+    def exists_by_numero(cls, numero: str, exclude_id: Optional[int] = None) -> bool:
+        """Verifica si existe una recepción con el número dado."""
+        if not cls.model:
+            raise NotImplementedError("Subclases deben definir el atributo 'model'")
+
+        queryset = cls.model.objects.filter(numero=numero)
+        if exclude_id:
+            queryset = queryset.exclude(id=exclude_id)
+        return queryset.exists()
+
+
+# ==================== RECEPCIÓN ARTÍCULO REPOSITORY ====================
+
+class RecepcionArticuloRepository(RecepcionRepositoryBase):
+    """
+    Repository para recepciones de artículos.
+    Hereda métodos comunes de RecepcionRepositoryBase (DRY).
+    """
+    model = RecepcionArticulo  # Define el modelo específico
+
+    @classmethod
+    def filter_by_bodega(cls, bodega: Bodega) -> QuerySet[RecepcionArticulo]:
+        """
+        Retorna recepciones de una bodega específica.
+        Método específico de artículos (los activos no tienen bodega).
+        """
+        return RecepcionArticulo.objects.filter(
+            bodega=bodega,
+            eliminado=False
+        ).select_related('orden_compra', 'estado', 'recibido_por').order_by('-fecha_recepcion')
+
+
+# ==================== DETALLE RECEPCIÓN ARTÍCULO REPOSITORY ====================
+
+class DetalleRecepcionArticuloRepository:
+    """Repository para detalles de recepciones de artículos."""
+
+    @staticmethod
+    def filter_by_recepcion(recepcion: RecepcionArticulo) -> QuerySet[DetalleRecepcionArticulo]:
+        """Retorna detalles de una recepción específica."""
+        return DetalleRecepcionArticulo.objects.filter(
+            recepcion=recepcion,
+            eliminado=False
+        ).select_related('articulo').order_by('id')
+
+
+# ==================== RECEPCIÓN ACTIVO REPOSITORY ====================
+
+class RecepcionActivoRepository(RecepcionRepositoryBase):
+    """
+    Repository para recepciones de activos.
+    Hereda todos los métodos de RecepcionRepositoryBase (DRY).
+    No requiere métodos adicionales.
+    """
+    model = RecepcionActivo  # Define el modelo específico
+
+
+# ==================== DETALLE RECEPCIÓN ACTIVO REPOSITORY ====================
+
+class DetalleRecepcionActivoRepository:
+    """Repository para detalles de recepciones de activos."""
+
+    @staticmethod
+    def filter_by_recepcion(recepcion: RecepcionActivo) -> QuerySet[DetalleRecepcionActivo]:
+        """Retorna detalles de una recepción específica."""
+        return DetalleRecepcionActivo.objects.filter(
+            recepcion=recepcion,
+            eliminado=False
+        ).select_related('activo').order_by('id')
