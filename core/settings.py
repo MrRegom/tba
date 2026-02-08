@@ -110,7 +110,7 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASES = {
     "default": {
         'ENGINE': env('POSTGRES_ENGINE'),
-        'NAME': env('POSTGRES_NAME'),
+        'NAME': 'capacitacion', # Forzando base de datos con 88 usuarios (CONFIRMADO)
         'USER': env('POSTGRES_USER'),
         'PASSWORD': env('POSTGRES_PASSWORD'),
         'HOST': env('POSTGRES_HOST'),
