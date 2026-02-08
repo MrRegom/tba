@@ -82,18 +82,26 @@
         }
 
         /* =========================================
-           3. ICONOS (Alineación perfecta)
-           ========================================= */
-        /* =========================================
-           3. ICONOS (Alineación perfecta)
+           3. ICONOS (Alineación perfecta y Estilo)
            ========================================= */
         /* Centrar los iconos en la barra pequeña */
+        html[data-sidebar-size="sm"] .navbar-nav .nav-link i,
         html[data-sidebar-size="sm-hover"] .navbar-nav .nav-link i {
             margin-right: 0 !important;
             text-align: center;
-            font-size: 24px;
+            font-size: 22px;
+            /* Tamaño ajustado y limpio */
             width: 100%;
             display: block;
+        }
+
+        /* Ajuste fino del contenedor del link en colapsado */
+        html[data-sidebar-size="sm"] .navbar-nav .nav-link,
+        html[data-sidebar-size="sm-hover"] .navbar-nav .nav-link {
+            padding: 10px 0 !important;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         /* =========================================
@@ -107,6 +115,8 @@
             .app-menu.navbar-menu {
                 width: 250px !important;
                 z-index: 1004;
+                transition: none !important;
+                /* Evitar animaciones raras */
             }
 
             /* Contenido Normal */
@@ -114,11 +124,13 @@
             .footer {
                 left: 250px !important;
                 width: calc(100% - 250px) !important;
+                transition: none !important;
                 z-index: 1005;
             }
 
             .main-content {
                 margin-left: 250px !important;
+                transition: none !important;
             }
 
             /* Navbar brand box width correction */
@@ -127,7 +139,7 @@
             }
 
             /* --- ESTADO COLAPSADO (Clase que agrega el JS al body) --- */
-            /* Cuando el body tiene data-sidebar-size="sm" */
+            /* IMPORTANTE: Tratamos 'sm' y 'sm-hover' IGUAL para evitar expansión al pasar el mouse */
             html[data-sidebar-size="sm"] .app-menu.navbar-menu,
             html[data-sidebar-size="sm-hover"] .app-menu.navbar-menu {
                 width: 70px !important;
@@ -147,6 +159,12 @@
             html[data-sidebar-size="sm"] .nav-link span,
             html[data-sidebar-size="sm"] .logo-lg,
             html[data-sidebar-size="sm-hover"] .logo-lg {
+                display: none !important;
+            }
+
+            /* Ocultar flechas de dropdown en colapsado */
+            html[data-sidebar-size="sm"] .menu-dropdown .dropdown-icon,
+            html[data-sidebar-size="sm-hover"] .menu-dropdown .dropdown-icon {
                 display: none !important;
             }
 
@@ -189,6 +207,7 @@
 
             /*.navbar-menu { z-index: 1006 !important; }*/
         }
+
 
         /* El menú se comporta como overlay */
         .navbar-menu {
