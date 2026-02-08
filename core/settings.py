@@ -109,10 +109,6 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 DATABASES = {
     "default": {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    },
-    'postgres': {
         'ENGINE': env('POSTGRES_ENGINE'),
         'NAME': env('POSTGRES_NAME'),
         'USER': env('POSTGRES_USER'),
@@ -122,6 +118,10 @@ DATABASES = {
         'OPTIONS': {
             'client_encoding': 'UTF8',
         },
+    },
+    'sqlite': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     },
 }
 
