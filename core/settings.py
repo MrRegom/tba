@@ -108,9 +108,11 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 WSGI_APPLICATION = 'core.wsgi.application'
 
 DATABASES = {
-    # Base de datos principal del sistema (SQLite temporal)
-        # Base de datos PostgreSQL con datos de funcionarios
-    "default":{
+    "default": {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    },
+    'postgres': {
         'ENGINE': env('POSTGRES_ENGINE'),
         'NAME': env('POSTGRES_NAME'),
         'USER': env('POSTGRES_USER'),
@@ -120,10 +122,6 @@ DATABASES = {
         'OPTIONS': {
             'client_encoding': 'UTF8',
         },
-    },
-    'sqlite': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
     },
 }
 
