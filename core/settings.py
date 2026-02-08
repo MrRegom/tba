@@ -110,7 +110,7 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASES = {
     "default": {
         'ENGINE': env('POSTGRES_ENGINE'),
-        'NAME': env('POSTGRES_NAME'),
+        'NAME': 'tbadatabase', # Forzando base de datos con datos confirmados (55 registros)
         'USER': env('POSTGRES_USER'),
         'PASSWORD': env('POSTGRES_PASSWORD'),
         'HOST': env('POSTGRES_HOST'),
