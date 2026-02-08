@@ -1,7 +1,10 @@
 {% load static %}
 <!doctype html>
 
-<html lang="es" data-layout="horizontal" data-layout-width="fluid" data-sidebar="light" data-topbar="brand" data-preloader="enabled" data-card-layout="border" data-bs-theme="light" data-topbar-image="pattern-2" data-sidebar-size="lg">
+<html lang="es" data-layout="vertical" data-layout-width="fluid" data-sidebar="light" data-topbar="brand"
+    data-preloader="disable" data-card-layout="border" data-bs-theme="light" data-topbar-image="pattern-2"
+    data-sidebar-size="lg" data-layout-position="fixed">
+
 <head>
 
     <meta charset="utf-8">
@@ -20,6 +23,7 @@
 
     <!-- Layout config Js -->
     <script src="{% static 'js/layout.js' %}"></script>
+
     <!-- Bootstrap Css -->
     <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" type="text/css">
     <!-- Icons Css -->
@@ -33,49 +37,96 @@
     <!-- Cards Institucionales -->
     <link href="{% static 'css/cards-institucionales.css' %}" rel="stylesheet" type="text/css">
     <!-- SweetAlert2 (para alertas de timeout) -->
-    <link href="{% static 'libs/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet" type="text/css">    
+    <link href="{% static 'libs/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet" type="text/css">
 
+    <!-- CSS: Corrección Definitiva V3 (Logo centrado y Sin Hover) -->
+    <style>
+        /* =========================================
+           1. HOVER KILLER (Muerte al Hover)
+           ========================================= */
+        /* Forzar que el modo 'sm-hover' se comporte EXACTAMENTE como 'sm' (fijo pequeño) */
+        html[data-sidebar-size="sm-hover"] .navbar-menu:hover,
+        html[data-sidebar-size="sm-hover"] .navbar-menu {
+            width: var(--vz-vertical-menu-width-sm) !important;
+        }
+
+        /* Ocultar textos en modo sm-hover incluso al pasar el mouse */
+        html[data-sidebar-size="sm-hover"] .navbar-menu:hover .nav-link span,
+        html[data-sidebar-size="sm-hover"] .navbar-menu:hover .menu-title,
+        html[data-sidebar-size="sm-hover"] .navbar-menu:hover .badge {
+            display: none !important;
+        }
+
+        /* =========================================
+           2. LOGO CORRECTION (Todo centrado)
+           ========================================= */
+        /* Asegurar que el contenedor del logo tenga el ancho correcto y esté centrado */
+        html[data-sidebar-size="sm-hover"] .navbar-brand-box {
+            width: var(--vz-vertical-menu-width-sm) !important;
+            padding: 0 !important;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: transparent;
+        }
+
+        /* Ocultar logo grande en modo pequeño */
+        html[data-sidebar-size="sm-hover"] .navbar-brand-box .logo-lg {
+            display: none !important;
+        }
+
+        /* Mostrar logo pequeño y centrarlo */
+        html[data-sidebar-size="sm-hover"] .navbar-brand-box .logo-sm {
+            display: block !important;
+            margin: 0 auto;
+        }
+
+        /* =========================================
+           3. ICONOS (Alineación perfecta)
+           ========================================= */
+        /* Centrar los iconos en la barra pequeña */
+        html[data-sidebar-size="sm-hover"] .navbar-nav .nav-link i {
+            margin-right: 0 !important;
+            text-align: center;
+            font-size: 24px;
+            /* Un poco más grandes para que se vean bien */
+            width: 100%;
+            /* Ocupar todo el ancho del link para centrarse */
+            display: block;
+        }
+    </style>
     {% endblock css %}
 
 </head>
 
-<!--preloader-->
-<div id="preloader">
-    <div id="status">
-        <div class="spinner-border text-primary avatar-sm" role="status">
-            <span class="visually-hidden">Cargando...</span>
-        </div>
-    </div>
-</div>
 {% block body %}
-    <body>
-{% endblock body %}
+
+<body>
+    {% endblock body %}
 
 
     <!-- Begin page -->
     <div id="layout-wrapper">
 
+        {% include "partials/sidebar.html" %}
+
         {% block topbar %}
-            {% include "partials/topbar.html" %}
+        {% include "partials/topbar.html" %}
         {% endblock topbar %}
 
-        {% block pattern %}
-            {% include "partials/pattern.html" %}
-        {% endblock pattern %}
-    
         <div class="main-content">
 
             <div class="page-content">
                 <div class="container-fluid">
 
-                {% block main_title %}
+                    {% block main_title %}
 
-                {% endblock main_title %}
+                    {% endblock main_title %}
 
 
-                {% block content %}
+                    {% block content %}
 
-                {% endblock content %}
+                    {% endblock content %}
 
                 </div>
                 <!-- container-fluid -->
@@ -83,7 +134,7 @@
             <!-- End Page-content -->
 
             {% block footer %}
-                {% include "partials/footer.html" %}
+            {% include "partials/footer.html" %}
             {% endblock footer %}
 
         </div>
@@ -94,26 +145,29 @@
 
     <!-- Modal para Mensajes de Django -->
     {% if messages %}
-    <div class="modal fade" id="mensajesModal" tabindex="-1" aria-labelledby="mensajesModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal fade" id="mensajesModal" tabindex="-1" aria-labelledby="mensajesModalLabel" aria-hidden="true"
+        data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header {% for message in messages %}{% if message.tags == 'success' %}bg-success{% elif message.tags == 'error' or message.tags == 'danger' %}bg-danger{% elif message.tags == 'warning' %}bg-warning{% elif message.tags == 'info' %}bg-info{% else %}bg-primary{% endif %}{% endfor %} text-white">
+                <div
+                    class="modal-header {% for message in messages %}{% if message.tags == 'success' %}bg-success{% elif message.tags == 'error' or message.tags == 'danger' %}bg-danger{% elif message.tags == 'warning' %}bg-warning{% elif message.tags == 'info' %}bg-info{% else %}bg-primary{% endif %}{% endfor %} text-white">
                     <h5 class="modal-title" id="mensajesModalLabel">
                         {% for message in messages %}
-                            {% if message.tags == 'success' %}
-                                <i class="ri-checkbox-circle-line me-2"></i>Éxito
-                            {% elif message.tags == 'error' or message.tags == 'danger' %}
-                                <i class="ri-error-warning-line me-2"></i>Error
-                            {% elif message.tags == 'warning' %}
-                                <i class="ri-alert-line me-2"></i>Advertencia
-                            {% elif message.tags == 'info' %}
-                                <i class="ri-information-line me-2"></i>Información
-                            {% else %}
-                                <i class="ri-notification-line me-2"></i>Mensaje
-                            {% endif %}
+                        {% if message.tags == 'success' %}
+                        <i class="ri-checkbox-circle-line me-2"></i>Éxito
+                        {% elif message.tags == 'error' or message.tags == 'danger' %}
+                        <i class="ri-error-warning-line me-2"></i>Error
+                        {% elif message.tags == 'warning' %}
+                        <i class="ri-alert-line me-2"></i>Advertencia
+                        {% elif message.tags == 'info' %}
+                        <i class="ri-information-line me-2"></i>Información
+                        {% else %}
+                        <i class="ri-notification-line me-2"></i>Mensaje
+                        {% endif %}
                         {% endfor %}
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     {% for message in messages %}
@@ -133,44 +187,44 @@
     {% block extra_content %}
     {% endblock extra_content %}
 
-        {% block javascript %}
+    {% block javascript %}
 
-            <!-- JAVASCRIPT -->
-            <script src="{% static 'libs/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-            <script src="{% static 'libs/simplebar/simplebar.min.js' %}"></script>
-            <script src="{% static 'js/plugins.js' %}"></script>
+    <!-- JAVASCRIPT -->
+    <script src="{% static 'libs/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'libs/simplebar/simplebar.min.js' %}"></script>
+    <script src="{% static 'js/plugins.js' %}"></script>
 
-            {% block extra_js %}
-            {% endblock extra_js %}
+    {% block extra_js %}
+    {% endblock extra_js %}
 
-            <!-- Filtrado dinámico de modelos por marca -->
-            <script src="{% static 'js/filtrar-modelos.js' %}"></script>
+    <!-- Filtrado dinámico de modelos por marca -->
+    <script src="{% static 'js/filtrar-modelos.js' %}"></script>
 
-            <!-- App js -->
-            <script src="{% static 'js/app.js' %}"></script>
-            <!-- SweetAlert2 (para alertas de timeout) -->
-            <script src="{% static 'libs/sweetalert2/sweetalert2.min.js' %}"></script>
-            <!-- Session Timeout js -->
-            <script src="{% static 'js/session-timeout.js' %}"></script>
+    <!-- App js -->
+    <script src="{% static 'js/app.js' %}"></script>
+    <!-- SweetAlert2 (para alertas de timeout) -->
+    <script src="{% static 'libs/sweetalert2/sweetalert2.min.js' %}"></script>
+    <!-- Session Timeout js -->
+    <script src="{% static 'js/session-timeout.js' %}"></script>
 
-        {% endblock javascript %}
+    {% endblock javascript %}
 
 
-        <script>
+    <script>
         // Forzar recalculo de layout al cargar
         window.dispatchEvent(new Event('resize'));
 
         // Mostrar modal de mensajes automáticamente si existen mensajes
         // EXCEPTO mensajes de login/logout
         {% if messages %}
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             var modalElement = document.getElementById('mensajesModal');
             if (!modalElement) return;
-            
+
             // Obtener todos los mensajes del modal
             var mensajes = modalElement.querySelectorAll('.modal-body p');
             var tieneMensajesValidos = false;
-            
+
             // Textos a filtrar (mensajes de login/logout)
             var textosFiltrados = [
                 'inició sesión',
@@ -180,14 +234,14 @@
                 'inicio sesion',
                 'cerro sesion'
             ];
-            
+
             // Verificar si hay mensajes que NO sean de login/logout
-            mensajes.forEach(function(mensaje) {
+            mensajes.forEach(function (mensaje) {
                 var textoMensaje = mensaje.textContent.toLowerCase();
-                var esMensajeLoginLogout = textosFiltrados.some(function(texto) {
+                var esMensajeLoginLogout = textosFiltrados.some(function (texto) {
                     return textoMensaje.includes(texto.toLowerCase());
                 });
-                
+
                 if (!esMensajeLoginLogout) {
                     tieneMensajesValidos = true;
                 } else {
@@ -195,7 +249,7 @@
                     mensaje.closest('.mb-2').style.display = 'none';
                 }
             });
-            
+
             // Solo mostrar el modal si hay mensajes válidos
             if (tieneMensajesValidos) {
                 var mensajesModal = new bootstrap.Modal(modalElement);
@@ -206,8 +260,7 @@
             }
         });
         {% endif %}
-        </script>
+    </script>
 </body>
 
 </html>
-

@@ -1,0 +1,94 @@
+{% load static %}
+
+<!-- ========== App Menu ========== -->
+<div class="app-menu navbar-menu">
+    <!-- LOGO -->
+    <div class="navbar-brand-box" style="height: 70px; display: flex; align-items: center; justify-content: center;">
+        <a href="/" class="logo logo-dark">
+            <span class="logo-sm">
+                <img src="{% static 'images/imagenes_colegio/logoColegio.png' %}" alt="" height="35">
+            </span>
+            <span class="logo-lg">
+                <img src="{% static 'images/imagenes_colegio/logoColegio.png' %}" alt="" height="50">
+            </span>
+        </a>
+
+        <a href="/" class="logo logo-light">
+            <span class="logo-sm">
+                <img src="{% static 'images/imagenes_colegio/logoColegio.png' %}" alt="" height="35">
+            </span>
+            <span class="logo-lg">
+                <img src="{% static 'images/imagenes_colegio/logoColegio.png' %}" alt="" height="50">
+            </span>
+        </a>
+    </div>
+
+    <div id="scrollbar">
+        <div class="container-fluid">
+            <div id="two-column-menu">
+            </div>
+            <ul class="navbar-nav" id="navbar-nav">
+                <li class="menu-title"><span data-key="t-menu">MENÚ</span></li>
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="{% url 'dashboard' %}">
+                        <i class="ri-dashboard-2-line"></i> <span data-key="t-home">Home</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="{% url 'reportes:seleccionar_reporte' %}">
+                        <i class="ri-file-chart-line"></i> <span data-key="t-reportes">Reportes</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="{% url 'bodega:menu_bodega' %}">
+                        <i class="ri-archive-line"></i> <span data-key="t-bodega">Bodega</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="{% url 'compras:menu_compras' %}">
+                        <i class="ri-shopping-cart-line"></i> <span data-key="t-compras">Compras</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="{% url 'solicitudes:menu_solicitudes' %}">
+                        <i class="ri-file-text-line"></i> <span data-key="t-solicitudes">Solicitudes</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="{% url 'activos:menu_inventario' %}">
+                        <i class="ri-clipboard-line"></i> <span data-key="t-inventario">Inventario</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="{% url 'bajas_inventario:menu_bajas' %}">
+                        <i class="ri-delete-bin-line"></i> <span data-key="t-bajas">Bajas de Inventario</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="{% url 'accounts:menu_administracion' %}">
+                        <i class="ri-settings-3-line"></i> <span data-key="t-administracion">Administración</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="{% url 'inventario:menu_gestores' %}">
+                        <i class="ri-equalizer-line"></i> <span data-key="t-gestores">Gestores</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <!-- Sidebar -->
+    </div>
+
+    <div class="sidebar-background"></div>
+</div>
+<!-- Left Sidebar End -->
+<!-- Vertical Overlay-->
+<div class="vertical-overlay"></div>
