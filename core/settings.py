@@ -110,7 +110,7 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASES = {
     "default": {
         'ENGINE': env('POSTGRES_ENGINE'),
-        'NAME': 'tbadatabase', # Forzamos la base de datos correcta que contiene la data
+        'NAME': env('POSTGRES_NAME'),
         'USER': env('POSTGRES_USER'),
         'PASSWORD': env('POSTGRES_PASSWORD'),
         'HOST': env('POSTGRES_HOST'),
