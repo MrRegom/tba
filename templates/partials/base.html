@@ -97,35 +97,81 @@
         }
 
         /* =========================================
-           4. LAYOUT FIX (Barra Azul vs Menu Blanco)
+           4. LAYOUT FIX (Barra Azul vs Menu Blanco & Colapso)
            ========================================= */
-        /* En escritorio (lg), el topbar (azul) debe empezar DESPUÉS del sidebar (blanco) */
+
+        /* ESTADO EXPANDIDO (Default) */
         @media (min-width: 992px) {
-            #page-topbar {
+
+            /* Sidebar Normal */
+            .app-menu.navbar-menu {
+                width: 250px !important;
+                z-index: 1004;
+            }
+
+            /* Contenido Normal */
+            #page-topbar,
+            .footer {
                 left: 250px !important;
-                /* Mismo ancho que el sidebar */
                 width: calc(100% - 250px) !important;
                 z-index: 1005;
-                /* Asegurar que se vea */
             }
 
             .main-content {
                 margin-left: 250px !important;
-                /* Contenido empujado */
             }
 
-            .navbar-menu {
+            /* Navbar brand box width correction */
+            .navbar-brand-box {
                 width: 250px !important;
-                /* Ancho fijo del sidebar */
             }
 
-            .footer {
-                left: 250px !important;
-                width: calc(100% - 250px) !important;
+            /* --- ESTADO COLAPSADO (Clase que agrega el JS al body) --- */
+            /* Cuando el body tiene data-sidebar-size="sm" */
+            html[data-sidebar-size="sm"] .app-menu.navbar-menu,
+            html[data-sidebar-size="sm-hover"] .app-menu.navbar-menu {
+                width: 70px !important;
+                /* Solo iconos */
+                position: fixed;
+            }
+
+            html[data-sidebar-size="sm"] .navbar-brand-box,
+            html[data-sidebar-size="sm-hover"] .navbar-brand-box {
+                width: 70px !important;
+                padding: 0 !important;
+                justify-content: center !important;
+            }
+
+            /* Ocultar textos en colapsado */
+            html[data-sidebar-size="sm"] .menu-title,
+            html[data-sidebar-size="sm"] .nav-link span,
+            html[data-sidebar-size="sm"] .logo-lg,
+            html[data-sidebar-size="sm-hover"] .logo-lg {
+                display: none !important;
+            }
+
+            /* Mostrar logo pequeño en colapsado */
+            html[data-sidebar-size="sm"] .logo-sm,
+            html[data-sidebar-size="sm-hover"] .logo-sm {
+                display: block !important;
+            }
+
+            /* Contenido Ajustado al Colapso (AQUÍ ESTÁ LA MAGIA) */
+            html[data-sidebar-size="sm"] #page-topbar,
+            html[data-sidebar-size="sm"] .footer,
+            html[data-sidebar-size="sm-hover"] #page-topbar,
+            html[data-sidebar-size="sm-hover"] .footer {
+                left: 70px !important;
+                width: calc(100% - 70px) !important;
+            }
+
+            html[data-sidebar-size="sm"] .main-content,
+            html[data-sidebar-size="sm-hover"] .main-content {
+                margin-left: 70px !important;
             }
         }
 
-        /* En móvil/tablet (< 992px), el topbar ocupa todo el ancho y el menú es overlay */
+        /* MÓVIL / TABLET */
         @media (max-width: 991.98px) {
             #page-topbar {
                 left: 0 !important;
@@ -141,11 +187,14 @@
                 width: 100% !important;
             }
 
-            /* El menú se comporta como overlay */
-            .navbar-menu {
-                z-index: 1006 !important;
-                /* Por encima del topbar en móvil */
-            }
+            /*.navbar-menu { z-index: 1006 !important; }*/
+        }
+
+        /* El menú se comporta como overlay */
+        .navbar-menu {
+            z-index: 1006 !important;
+            /* Por encima del topbar en móvil */
+        }
         }
     </style>
     {% endblock css %}
