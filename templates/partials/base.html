@@ -63,15 +63,15 @@
         }
 
         /* =========================================
-           2. LAYOUT FIX (Menu Estático 200px)
+           2. LAYOUT FIX (Menu Estático 160px - ULTRA COMPACTO)
            ========================================= */
 
         /* ESCRITORIO (>= 992px): SIEMPRE EXPANDIDO */
         @media (min-width: 992px) {
 
-            /* Sidebar Fijo a 200px */
+            /* Sidebar Fijo a 160px */
             .app-menu.navbar-menu {
-                width: 200px !important;
+                width: 160px !important;
                 z-index: 1004;
                 position: fixed;
                 left: 0;
@@ -82,26 +82,26 @@
 
             /* Container del Logo */
             .navbar-brand-box {
-                width: 200px !important;
+                width: 160px !important;
             }
 
-            /* Contenido y Footer empujados 200px a la derecha */
+            /* Contenido y Footer empujados 160px a la derecha */
             /* Usamos left + right: 0 para evitar calculos que generen scroll */
             #page-topbar {
-                left: 200px !important;
+                left: 160px !important;
                 right: 0 !important;
                 width: auto !important;
                 z-index: 1005;
             }
 
             .footer {
-                left: 200px !important;
-                width: calc(100% - 200px) !important;
+                left: 160px !important;
+                width: calc(100% - 160px) !important;
             }
 
             /* El contenido principal DEBE llenar el espacio restante AUTOMÁTICAMENTE */
             .main-content {
-                margin-left: 200px !important;
+                margin-left: 160px !important;
                 width: auto !important;
                 /* IMPORTANTE: Dejar que fluya natural */
                 min-height: 100vh;
