@@ -48,29 +48,30 @@
         /* Iconos alineados y compactos */
         .navbar-nav .nav-link i {
             display: inline-block;
-            font-size: 20px;
-            margin-right: 10px;
+            font-size: 18px;
+            /* Un poco más pequeño para elegancia */
+            margin-right: 8px;
+            /* Menor espacio */
             text-align: center;
-            width: 24px;
+            width: 20px;
         }
 
         /* Enlaces del menú compactos */
         .navbar-nav .nav-link {
-            padding: 10px 15px !important;
-            /* Más compacto verticalmente */
-            font-size: 0.95rem;
+            padding: 8px 12px !important;
+            font-size: 0.9rem;
         }
 
         /* =========================================
-           2. LAYOUT FIX (Menu Estático 220px)
+           2. LAYOUT FIX (Menu Estático 200px)
            ========================================= */
 
         /* ESCRITORIO (>= 992px): SIEMPRE EXPANDIDO */
         @media (min-width: 992px) {
 
-            /* Sidebar Fijo a 220px */
+            /* Sidebar Fijo a 200px */
             .app-menu.navbar-menu {
-                width: 220px !important;
+                width: 200px !important;
                 z-index: 1004;
                 position: fixed;
                 left: 0;
@@ -81,28 +82,32 @@
 
             /* Container del Logo */
             .navbar-brand-box {
-                width: 220px !important;
+                width: 200px !important;
             }
 
-            /* Contenido y Footer empujados 220px a la derecha */
+            /* Contenido y Footer empujados 200px a la derecha */
+            /* Usamos left + right: 0 para evitar calculos que generen scroll */
             #page-topbar {
-                left: 220px !important;
-                width: calc(100% - 220px) !important;
+                left: 200px !important;
+                right: 0 !important;
+                width: auto !important;
                 z-index: 1005;
             }
 
             .footer {
-                left: 220px !important;
-                width: calc(100% - 220px) !important;
+                left: 200px !important;
+                width: calc(100% - 200px) !important;
             }
 
-            /* El contenido principal DEBE llenar el espacio restante */
+            /* El contenido principal DEBE llenar el espacio restante AUTOMÁTICAMENTE */
             .main-content {
-                margin-left: 220px !important;
-                width: calc(100% - 220px) !important;
+                margin-left: 200px !important;
+                width: auto !important;
+                /* IMPORTANTE: Dejar que fluya natural */
                 min-height: 100vh;
                 padding: 0 !important;
-                /* Evitar paddings externos */
+                overflow-x: hidden;
+                /* Prevenir scroll horizontal accidental */
             }
 
             /* Asegurar que el container interno use el 100% */
