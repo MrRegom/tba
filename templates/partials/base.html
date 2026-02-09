@@ -206,9 +206,13 @@
             z-index: 9991;
         }
 
-        /* Fuerza visibilidad del logo en Topbar incluso en modo vertical */
-        #page-topbar .navbar-brand-box.horizontal-logo {
+        /* Fuerza visibilidad del logo en Topbar */
+        #page-topbar .navbar-brand-box.topbar-logo-force,
+        #page-topbar .topbar-logo-force,
+        #page-topbar .topbar-logo-force * {
             display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
         }
     </style>
     {% endblock css %}

@@ -5,15 +5,17 @@
     <div class="layout-width">
         <div class="navbar-header">
             <div class="d-flex align-items-center">
-                <!-- LOGO EN HEADER -->
-                <div class="navbar-brand-box horizontal-logo"
-                    style="display: block !important; width: auto; margin-right: 20px; padding-left: 0 !important; margin-left: 0 !important;">
+                <!-- LOGO EN HEADER (FORZADO) -->
+                <div class="navbar-brand-box topbar-logo-force"
+                    style="display: flex !important; align-items: center; width: auto; margin-right: 20px; padding-left: 10px !important;">
                     <a href="/" class="logo logo-light"
-                        style="display: flex; align-items: center; text-decoration: none;">
-                        <span class="logo-lg" style="display: flex; align-items: center;">
-                            <img src="{% static 'images/imagenes_colegio/logoColegio.png' %}" alt="" height="40">
-                            <span class="fw-bold fs-3 text-white ms-2" style="font-family: 'Inter', sans-serif;">Colegio
-                                TBA</span>
+                        style="display: flex !important; align-items: center; text-decoration: none !important;">
+                        <span class="logo-lg" style="display: flex !important; align-items: center !important;">
+                            <img src="{% static 'images/imagenes_colegio/logoColegio.png' %}" alt="Logo" height="45">
+                            <span class="fw-bold fs-3 text-white ms-2"
+                                style="font-family: 'Inter', sans-serif; display: inline-block !important; visibility: visible !important; opacity: 1 !important;">
+                                Colegio TBA
+                            </span>
                         </span>
                     </a>
                 </div>
