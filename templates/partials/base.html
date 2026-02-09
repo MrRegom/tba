@@ -69,67 +69,61 @@
             }
 
             /* Logotipo oculto en sidebar (está en el header) */
+            /* Logotipo oculto en sidebar (está en el header) */
             .navbar-brand-box {
                 display: none !important;
             }
 
-            /* Ajuste de items del menú - Ultra Compactos (130px) */
+            /* Ajuste de items del menú */
             .app-menu .navbar-nav {
                 margin-top: 0 !important;
                 padding-top: 10px !important;
             }
 
             .navbar-nav .nav-link {
-                padding: 10px 5px !important;
-                /* Mínimo padding */
+                padding: 10px 10px !important;
                 white-space: nowrap;
-                font-size: 13px;
-                /* Fuente ajustada */
+                font-size: 13.5px;
                 display: flex;
                 align-items: center;
             }
 
             .navbar-nav .nav-link i {
-                margin-right: 5px;
-                /* Icono pegado al texto */
+                margin-right: 8px;
                 font-size: 18px;
                 width: 20px;
                 text-align: center;
             }
 
-            /* 2. CONTENIDO PRINCIPAL - PEGAR A LA IZQUIERDA */
-            html body .main-content {
-                margin-left: 130px !important;
-                /* Empieza en 130px */
+            /* 2. CONTENIDO PRINCIPAL - ALINEACIÓN 160px */
+            .main-content {
+                margin-left: 160px !important;
                 margin-top: 70px !important;
-                width: calc(100% - 130px) !important;
+                width: calc(100% - 160px) !important;
                 min-height: calc(100vh - 70px);
                 padding: 0 !important;
                 overflow-x: hidden !important;
             }
 
             .footer {
-                left: 130px !important;
-                width: calc(100% - 130px) !important;
+                left: 160px !important;
+                width: calc(100% - 160px) !important;
             }
 
-            /* 3. CERO GAP ABSOLUTO */
-            html body .page-content {
-                /* Arriba | Derecha | Abajo | Izquierda */
+            /* 3. PADDING CONTENIDO (PEGADO) */
+            .page-content {
                 padding: 1rem 1rem 1rem 0px !important;
-                /* Izquierda 0px absoluto */
+                /* 0px a la izquierda */
                 width: 100% !important;
-                overflow-x: hidden !important;
             }
 
-            /* Contenedor fluido sin padding extra */
-            html body .container-fluid {
-                padding-left: 0px !important;
-                /* CERO padding */
+            .container-fluid {
+                padding-left: 5px !important;
+                /* Mínimo respiro */
                 padding-right: 0 !important;
                 margin: 0 !important;
-                max-width: none !important;
                 width: 100% !important;
+                max-width: none !important;
             }
 
             /* Ocultar móvil/colapso */
