@@ -73,7 +73,9 @@
         #page-topbar .navbar-brand-box {
             display: flex !important;
             align-items: center;
-            padding-left: 10px !important;
+            padding-left: 0px !important;
+            /* Totalmente a la izquierda */
+            margin-left: 0px !important;
             width: auto !important;
         }
 
@@ -130,10 +132,10 @@
             /* 3. CONTENIDO PRINCIPAL - SOLUCIÓN PARA CORTE DERECHO */
             .main-content {
                 margin-left: 70px !important;
-                margin-top: 70px !important;
+                margin-top: 90px !important;
                 width: auto !important;
                 min-width: 0;
-                min-height: calc(100vh - 70px);
+                min-height: calc(100vh - 90px);
                 padding: 0 !important;
                 overflow-x: hidden !important;
                 display: flex;
@@ -194,7 +196,7 @@
 
         /* MARKER */
         .page-content::after {
-            content: "V.9.3.1-PRO";
+            content: "V.10-PRO-FINAL";
             position: fixed;
             bottom: 5px;
             right: 5px;
@@ -202,6 +204,11 @@
             color: rgba(0, 0, 0, 0.05);
             pointer-events: none;
             z-index: 9991;
+        }
+
+        /* Fuerza visibilidad del logo en Topbar incluso en modo vertical */
+        #page-topbar .navbar-brand-box.horizontal-logo {
+            display: flex !important;
         }
     </style>
     {% endblock css %}
