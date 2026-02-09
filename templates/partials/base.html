@@ -73,16 +73,20 @@
                 display: none !important;
             }
 
-            /* Ajuste de items del menú */
+            /* Ajuste de items del menú - Compactos para 150px */
             .app-menu .navbar-nav {
                 margin-top: 0 !important;
-                padding-top: 10px !important;
+                padding-top: 15px !important;
             }
 
             .navbar-nav .nav-link {
-                padding: 10px 15px !important;
+                padding: 10px 10px !important;
+                /* Menos padding lateral */
                 white-space: nowrap;
-                /* Evitar que el texto salte */
+                font-size: 14px;
+                /* Un poco más pequeño para caber */
+                display: flex;
+                align-items: center;
             }
 
             .navbar-nav .nav-link i {
@@ -92,35 +96,35 @@
                 text-align: center;
             }
 
-            /* 2. CONTENIDO PRINCIPAL - ALINEACIÓN MATEMÁTICA EXACTA */
+            /* 2. CONTENIDO PRINCIPAL - PEGAR A LA IZQUIERDA */
             html body .main-content {
-                margin-left: 240px !important;
-                /* 240px EXACTOS */
+                margin-left: 150px !important;
+                /* Empieza exactamente en el pixel 150 */
                 margin-top: 70px !important;
-                width: calc(100% - 240px) !important;
+                width: calc(100% - 150px) !important;
                 min-height: calc(100vh - 70px);
                 padding: 0 !important;
                 overflow-x: hidden !important;
             }
 
             .footer {
-                left: 240px !important;
-                width: calc(100% - 240px) !important;
+                left: 150px !important;
+                width: calc(100% - 150px) !important;
             }
 
-            /* 3. CERO GAP - PEGADO AL MENU */
+            /* 3. CERO GAP */
             html body .page-content {
                 /* Arriba | Derecha | Abajo | Izquierda */
                 padding: 1.5rem 1.5rem 1.5rem 0px !important;
-                /* Izquierda 0px: ELIMINA CUALQUIER HUECO VISUAL */
+                /* Izquierda 0px: Sin aire */
                 width: 100% !important;
                 overflow-x: hidden !important;
             }
 
             /* Contenedor fluido sin padding extra */
             html body .container-fluid {
-                padding-left: 10px !important;
-                /* Pequeño respiro de 10px para que no toque la línea */
+                padding-left: 5px !important;
+                /* Mínimo */
                 padding-right: 0 !important;
                 margin: 0 !important;
                 max-width: none !important;
@@ -141,6 +145,9 @@
                 opacity: 1 !important;
                 visibility: visible !important;
             }
+
+            visibility: visible !important;
+        }
         }
 
         /* MÓVIL (< 992px) */
