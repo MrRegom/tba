@@ -40,10 +40,10 @@
     <!-- SweetAlert2 (para alertas de timeout) -->
     <link href="{% static 'libs/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet" type="text/css">
 
-    <!-- CSS: RE-ESTRUCTURACIÓN INTEGRAL V-7 (Header & Sidebar) -->
+    <!-- CSS: RE-ESTRUCTURACIÓN ULTRA-COMPACTA V-9.2 (sm-hover optimized) -->
     <style>
         :root {
-            --vz-vertical-menu-width: 140px !important;
+            --vz-vertical-menu-width: 70px !important;
             --vz-header-height: 70px !important;
         }
 
@@ -57,8 +57,7 @@
         html,
         body {
             overflow-x: hidden !important;
-            width: 100vw !important;
-            /* Usar vw para asegurar el viewport total */
+            width: 100% !important;
             margin: 0 !important;
             padding: 0 !important;
         }
@@ -72,6 +71,11 @@
             padding: 0 !important;
         }
 
+        /* Asegurar visibilidad del nombre del colegio en el header */
+        #page-topbar .navbar-brand-box {
+            display: block !important;
+        }
+
         #page-topbar .layout-width,
         #page-topbar .navbar-header {
             max-width: none !important;
@@ -83,11 +87,11 @@
         /* 2. ESCRITORIO (>= 992px) */
         @media (min-width: 992px) {
 
-            /* Menú Vertical Ultra-Compacto */
+            /* Sidebar Ultra-Estrecha (70px) */
             .app-menu.navbar-menu {
-                width: 140px !important;
-                min-width: 140px !important;
-                max-width: 140px !important;
+                width: 70px !important;
+                min-width: 70px !important;
+                max-width: 70px !important;
                 position: fixed;
                 left: 0;
                 top: 70px !important;
@@ -95,32 +99,21 @@
                 z-index: 1000;
                 border-right: 1px solid #e9ebec;
                 padding-top: 0 !important;
+                background: white !important;
             }
 
             /* Logotipo solo en topbar */
-            .navbar-brand-box {
+            .navbar-menu .navbar-brand-box {
                 display: none !important;
             }
 
-            .app-menu .navbar-nav {
-                padding-top: 5px !important;
-                margin-top: 0 !important;
-            }
-
-            .navbar-nav .nav-link {
-                padding: 10px 8px !important;
-                white-space: nowrap;
-                font-size: 12.5px;
-                display: flex;
-                align-items: center;
-            }
-
-            /* 3. CONTENIDO PRINCIPAL - SOLUCIÓN PARA CORTE DERECHO */
+            /* 3. CONTENIDO PRINCIPAL - ELIMINACIÓN DE HUECOS */
             .main-content {
-                margin-left: 140px !important;
+                margin-left: 70px !important;
+                /* Pegado a los iconos */
                 margin-top: 70px !important;
-                /* calc(100% - 140px) es la fórmula matemática para evitar el desborde */
-                width: calc(100% - 140px) !important;
+                /* calc(100% - 70px) garantiza que no se pase del borde derecho */
+                width: calc(100% - 70px) !important;
                 min-height: calc(100vh - 70px);
                 padding: 0 !important;
                 overflow-x: hidden !important;
@@ -129,25 +122,24 @@
             }
 
             .footer {
-                left: 140px !important;
-                width: calc(100% - 140px) !important;
+                left: 70px !important;
+                width: calc(100% - 70px) !important;
                 right: 0 !important;
             }
 
-            /* 4. PAGE CONTENT & GRID (CERO GAP) */
+            /* 4. PAGE CONTENT & GRID (100% Compacto) */
             .page-content {
-                padding: 1.5rem 1.5rem 1.5rem 0px !important;
-                /* Pegado al menú */
+                padding: 1rem 1.5rem 1rem 5px !important;
+                /* Casi pegado al icono */
                 width: 100% !important;
                 max-width: 100% !important;
                 flex: 1;
             }
 
             .container-fluid {
-                padding-left: 5px !important;
-                /* Mínimo aire con el menú */
-                padding-right: 15px !important;
-                /* Buffer contra corte derecho */
+                padding-left: 0px !important;
+                padding-right: 25px !important;
+                /* Margen derecho seguro */
                 margin: 0 !important;
                 width: 100% !important;
                 max-width: none !important;
@@ -157,14 +149,6 @@
             .topnav-hamburger,
             .logo-sm {
                 display: none !important;
-            }
-
-            .menu-title,
-            .nav-link span,
-            .logo-lg {
-                display: block !important;
-                opacity: 1 !important;
-                visibility: visible !important;
             }
         }
 
@@ -197,15 +181,16 @@
 
         /* DEBUG MARKER */
         .page-content::after {
-            content: "V.8.1-FIXED";
+            content: "V.9.2-ULTRA-COMPACT";
             position: fixed;
             bottom: 5px;
             right: 5px;
             font-size: 8px;
-            color: rgba(0, 0, 0, 0.2);
+            color: rgba(0, 0, 0, 0.1);
             pointer-events: none;
             z-index: 9999;
         }
+    </style>
     </style>
     {% endblock css %}
 
