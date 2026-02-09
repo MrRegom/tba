@@ -40,14 +40,14 @@
     <!-- SweetAlert2 (para alertas de timeout) -->
     <link href="{% static 'libs/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet" type="text/css">
 
-    <!-- CSS: Corrección Definitiva V-FINAL (Responsive + 140px + No Cutoff) -->
+    <!-- CSS: Corrección Definitiva V-ULTRA (Layout & Responsive) -->
     <style>
         :root {
             --vz-vertical-menu-width: 140px !important;
             --vz-header-height: 70px !important;
         }
 
-        /* 0. BOX MODEL & SCROLL */
+        /* 0. RESET & SCROLL */
         *,
         *::before,
         *::after {
@@ -58,22 +58,33 @@
         body {
             overflow-x: hidden !important;
             width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
 
-        /* 1. HEADER (AZUL COMPLETO) */
+        /* 1. HEADER FULL WIDTH & LEFT ALIGN */
         #page-topbar {
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
-            padding-left: 0 !important;
-            /* Asegurar que el logo toque el borde */
             z-index: 2000 !important;
         }
 
-        /* ESCRITORIO (>= 992px) */
+        /* Eliminar márgenes y max-width de los contenedores internos del header */
+        #page-topbar .layout-width,
+        #page-topbar .navbar-header {
+            max-width: none !important;
+            width: 100% !important;
+            padding-left: 0px !important;
+            /* Pegar logo a la izquierda */
+            padding-right: 20px !important;
+            /* Espacio para avatar a la derecha */
+        }
+
+        /* 2. ESCRITORIO (>= 992px) */
         @media (min-width: 992px) {
 
-            /* 2. SIDEBAR (140px Compromiso) */
+            /* SIDEBAR (140px) */
             .app-menu.navbar-menu {
                 width: 140px !important;
                 min-width: 140px !important;
@@ -93,34 +104,36 @@
 
             .app-menu .navbar-nav {
                 margin-top: 0 !important;
-                padding-top: 10px !important;
+                padding-top: 5px !important;
             }
 
             .navbar-nav .nav-link {
                 padding: 10px 8px !important;
                 white-space: nowrap;
-                font-size: 13px;
+                font-size: 12.5px;
                 display: flex;
                 align-items: center;
             }
 
             .navbar-nav .nav-link i {
-                margin-right: 6px;
+                margin-right: 5px;
                 font-size: 18px;
                 width: 20px;
                 text-align: center;
             }
 
-            /* 3. CONTENT (Responsive Fix) */
+            /* 3. CONTENT (No Cutoff Fix) */
             .main-content {
                 margin-left: 140px !important;
                 margin-top: 70px !important;
-                /* width: auto PREVIENE el corte derecho */
+                /* El secreto para el desborde derecho: width auto y overflow hidden */
                 width: auto !important;
                 margin-right: 0 !important;
                 min-height: calc(100vh - 70px);
                 padding: 0 !important;
                 overflow-x: hidden !important;
+                display: flex;
+                flex-direction: column;
             }
 
             .footer {
@@ -129,33 +142,31 @@
                 right: 0 !important;
             }
 
-            /* 4. PAGE CONTENT (Cero Gap + Safe Width) */
+            /* 4. PAGE CONTENT & GRID */
             .page-content {
-                /* 0px Izquierda para pegar al menú */
                 padding: 1.5rem 1.5rem 1.5rem 0px !important;
-                /* width: auto PREVIENE el desborde por padding */
-                width: auto !important;
-                overflow-x: hidden !important;
+                /* Pegado al menú */
+                width: 100% !important;
+                max-width: 100% !important;
+                flex: 1;
             }
 
-            /* 5. CONTAINER (Responsive Grid) */
             .container-fluid {
                 padding-left: 5px !important;
+                /* Mínimo aire con el menú */
                 padding-right: 15px !important;
-                /* Bootstrap standard gutter */
+                /* Protege contra el corte derecho */
                 margin: 0 !important;
-                width: auto !important;
-                /* No usar 100% aquí para evitar overflow */
+                width: 100% !important;
                 max-width: none !important;
             }
 
-            /* Cleanup */
+            /* UI Elements */
             .topnav-hamburger,
             .logo-sm {
                 display: none !important;
             }
 
-            /* Visibilidad forzada */
             .menu-title,
             .nav-link span,
             .logo-lg {
@@ -163,19 +174,9 @@
                 opacity: 1 !important;
                 visibility: visible !important;
             }
-
-            .nav-link span,
-            .logo-lg {
-                display: block !important;
-                opacity: 1 !important;
-                visibility: visible !important;
-            }
-
-            visibility: visible !important;
-        }
         }
 
-        /* MÓVIL (< 992px) */
+        /* 3. MÓVIL (< 992px) */
         @media (max-width: 991.98px) {
             #page-topbar {
                 left: 0 !important;
@@ -200,12 +201,8 @@
             .navbar-brand-box {
                 display: block !important;
             }
-
-            /* Mostrar logo en movil si es necesario */
         }
     </style>
-    }
-    }
 
     /* MÓVIL / TABLET (< 992px): Overlay Clásico */ @media (max-width: 991.98px) { #page-topbar { left: 0 !important;
         width: 100% !important; } .main-content { margin-left: 0 !important; width: 100% !important; } .footer { left: 0
