@@ -100,6 +100,8 @@
                 width: calc(100% - 180px) !important;
                 min-height: calc(100vh - 70px);
                 padding: 0 !important;
+                overflow-x: hidden !important;
+                /* CRÍTICO */
             }
 
             .footer {
@@ -107,11 +109,13 @@
                 width: calc(100% - 180px) !important;
             }
 
-            /* 3. PADDING INTERNO MINIMO (Cards pegados al menú) */
+            /* 3. PADDING INTERNO ESTRATÉGICO */
             .page-content {
-                padding: 1rem 0.5rem !important;
-                /* Mínimo padding izquierdo */
+                /* Arriba | Derecha | Abajo | Izquierda */
+                padding: 1rem 1.5rem 1rem 10px !important;
+                /* 1.5rem derecha absorbe margenes negativos */
                 width: 100% !important;
+                overflow-x: hidden !important;
             }
 
             .container-fluid {
