@@ -97,10 +97,12 @@
             }
 
             /* 2. CONTENIDO PRINCIPAL - ALINEACIÓN 160px */
+            /* 2. CONTENIDO PRINCIPAL - ALINEACIÓN 160px (AUTO WIDTH) */
             .main-content {
                 margin-left: 160px !important;
                 margin-top: 70px !important;
-                width: calc(100% - 160px) !important;
+                /* width: auto: Llena el espacio restante de forma natural sin desbordar */
+                width: auto !important;
                 min-height: calc(100vh - 70px);
                 padding: 0 !important;
                 overflow-x: hidden !important;
@@ -108,20 +110,23 @@
 
             .footer {
                 left: 160px !important;
-                width: calc(100% - 160px) !important;
+                width: auto !important;
+                right: 0 !important;
             }
 
             /* 3. PADDING CONTENIDO (PEGADO) */
             .page-content {
-                padding: 1rem 1rem 1rem 0px !important;
-                /* 0px a la izquierda */
+                /* 0px Izquierda, 1.5rem Derecha (Buffer contra Row Margins) */
+                padding: 1rem 1.5rem 1rem 0px !important;
                 width: 100% !important;
+                overflow-x: hidden !important;
             }
 
             .container-fluid {
                 padding-left: 5px !important;
                 /* Mínimo respiro */
-                padding-right: 0 !important;
+                padding-right: 1.5rem !important;
+                /* NECESARIO para contener filas negativas */
                 margin: 0 !important;
                 width: 100% !important;
                 max-width: none !important;
