@@ -40,14 +40,14 @@
     <!-- SweetAlert2 (para alertas de timeout) -->
     <link href="{% static 'libs/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet" type="text/css">
 
-    <!-- CSS: RE-ESTRUCTURACIÓN ULTRA-COMPACTA V-9.2 (sm-hover optimized) -->
+    <!-- CSS: RE-ESTRUCTURACIÓN DE PRECISIÓN V-9.3.1 (Hover labels + Zero Cutoff) -->
     <style>
         :root {
             --vz-vertical-menu-width: 70px !important;
             --vz-header-height: 70px !important;
         }
 
-        /* 0. RESET & GLOBAL */
+        /* 0. GLOBAL RESET */
         *,
         *::before,
         *::after {
@@ -62,18 +62,19 @@
             padding: 0 !important;
         }
 
-        /* 1. HEADER (BANNER AZUL) - Pegado a la izquierda */
+        /* 1. HEADER (BANNER AZUL) */
         #page-topbar {
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
             z-index: 2000 !important;
-            padding: 0 !important;
         }
 
-        /* Asegurar visibilidad del nombre del colegio en el header */
         #page-topbar .navbar-brand-box {
-            display: block !important;
+            display: flex !important;
+            align-items: center;
+            padding-left: 10px !important;
+            width: auto !important;
         }
 
         #page-topbar .layout-width,
@@ -87,33 +88,51 @@
         /* 2. ESCRITORIO (>= 992px) */
         @media (min-width: 992px) {
 
-            /* Sidebar Ultra-Estrecha (70px) */
+            /* Sidebar Dinámica */
             .app-menu.navbar-menu {
                 width: 70px !important;
                 min-width: 70px !important;
-                max-width: 70px !important;
                 position: fixed;
                 left: 0;
                 top: 70px !important;
                 bottom: 0;
                 z-index: 1000;
                 border-right: 1px solid #e9ebec;
-                padding-top: 0 !important;
-                background: white !important;
+                background: #fff !important;
+                transition: width 0.2s ease-in-out !important;
+                overflow: hidden !important;
             }
 
-            /* Logotipo solo en topbar */
+            .app-menu.navbar-menu:hover {
+                width: 240px !important;
+                min-width: 240px !important;
+                box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+            }
+
+            /* Logotipo solo en Topbar */
             .navbar-menu .navbar-brand-box {
                 display: none !important;
             }
 
-            /* 3. CONTENIDO PRINCIPAL - ELIMINACIÓN DE HUECOS */
+            /* Control de visibilidad de textos */
+            .app-menu .nav-link span,
+            .app-menu .menu-title {
+                display: none !important;
+            }
+
+            .app-menu.navbar-menu:hover .nav-link span,
+            .app-menu.navbar-menu:hover .menu-title {
+                display: inline-block !important;
+                margin-left: 10px;
+                white-space: nowrap;
+            }
+
+            /* 3. CONTENIDO PRINCIPAL - SOLUCIÓN PARA CORTE DERECHO */
             .main-content {
                 margin-left: 70px !important;
-                /* Pegado a los iconos */
                 margin-top: 70px !important;
-                /* calc(100% - 70px) garantiza que no se pase del borde derecho */
-                width: calc(100% - 70px) !important;
+                width: auto !important;
+                min-width: 0;
                 min-height: calc(100vh - 70px);
                 padding: 0 !important;
                 overflow-x: hidden !important;
@@ -123,29 +142,23 @@
 
             .footer {
                 left: 70px !important;
-                width: calc(100% - 70px) !important;
+                width: auto !important;
                 right: 0 !important;
             }
 
-            /* 4. PAGE CONTENT & GRID (100% Compacto) */
+            /* 4. PAGE CONTENT */
             .page-content {
-                padding: 1rem 1.5rem 1rem 5px !important;
-                /* Casi pegado al icono */
+                padding: 1.5rem !important;
                 width: 100% !important;
-                max-width: 100% !important;
                 flex: 1;
             }
 
             .container-fluid {
-                padding-left: 0px !important;
-                padding-right: 25px !important;
-                /* Margen derecho seguro */
+                padding: 0 !important;
                 margin: 0 !important;
                 width: 100% !important;
-                max-width: none !important;
             }
 
-            /* UI Elements */
             .topnav-hamburger,
             .logo-sm {
                 display: none !important;
@@ -175,22 +188,21 @@
             }
 
             .navbar-brand-box {
-                display: block !important;
+                display: flex !important;
             }
         }
 
-        /* DEBUG MARKER */
+        /* MARKER */
         .page-content::after {
-            content: "V.9.2-ULTRA-COMPACT";
+            content: "V.9.3.1-PRO";
             position: fixed;
             bottom: 5px;
             right: 5px;
             font-size: 8px;
-            color: rgba(0, 0, 0, 0.1);
+            color: rgba(0, 0, 0, 0.05);
             pointer-events: none;
-            z-index: 9999;
+            z-index: 9991;
         }
-    </style>
     </style>
     {% endblock css %}
 
