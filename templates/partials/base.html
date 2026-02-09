@@ -63,57 +63,65 @@
         }
 
         /* =========================================
-           2. LAYOUT FIX (Menu Estático 160px - ULTRA COMPACTO)
+        /* =========================================
+           2. LAYOUT FIX: HEADER FULL WITDH & SIDEBAR BELOW
            ========================================= */
 
-        /* ESCRITORIO (>= 992px): SIEMPRE EXPANDIDO */
+        /* HEADER AZUL (TOPBAR) - ANCHO COMPLETO */
+        #page-topbar {
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            z-index: 2000 !important;
+            /* Por encima de todo */
+        }
+
+        /* ESCRITORIO (>= 992px) */
         @media (min-width: 992px) {
 
-            /* Sidebar Fijo a 160px */
+            /* SIDEBAR (MENÚ BLANCO) - DEBAJO DEL HEADER */
             .app-menu.navbar-menu {
-                width: 160px !important;
-                z-index: 1004;
+                width: 220px !important;
                 position: fixed;
                 left: 0;
+                top: 70px !important;
+                /* Empieza DEBAJO del header */
                 bottom: 0;
-                top: 0;
-                padding-bottom: 0;
+                padding-top: 0 !important;
+                z-index: 1000;
+                border-right: 1px solid #e9ebec;
             }
 
-            /* Container del Logo */
+            /* Ocultar el logo del sidebar (porque debe ir en el header según la foto) */
             .navbar-brand-box {
-                width: 160px !important;
+                display: none !important;
             }
 
-            /* Contenido y Footer empujados 160px a la derecha */
-            /* Usamos left + right: 0 para evitar calculos que generen scroll */
-            #page-topbar {
-                left: 160px !important;
-                right: 0 !important;
-                width: auto !important;
-                z-index: 1005;
+            .app-menu .navbar-nav {
+                margin-top: 0 !important;
+                padding-top: 10px !important;
+            }
+
+            /* CONTENIDO PRINCIPAL - A la derecha del sidebar */
+            .main-content {
+                margin-left: 220px !important;
+                /* Espacio para el sidebar */
+                margin-top: 70px !important;
+                /* Espacio para el header */
+                width: calc(100% - 220px) !important;
+                min-height: calc(100vh - 70px);
+                padding: 0 !important;
+                overflow-x: hidden;
             }
 
             .footer {
-                left: 160px !important;
-                width: calc(100% - 160px) !important;
+                left: 220px !important;
+                width: calc(100% - 220px) !important;
             }
 
-            /* El contenido principal DEBE llenar el espacio restante AUTOMÁTICAMENTE */
-            .main-content {
-                margin-left: 160px !important;
-                width: auto !important;
-                /* IMPORTANTE: Dejar que fluya natural */
-                min-height: 100vh;
-                padding: 0 !important;
-                overflow-x: hidden;
-                /* Prevenir scroll horizontal accidental */
-            }
-
-            /* Asegurar que el container interno use el 100% y ACERCAR CONTENIDO A LA IZQUIERDA */
+            /* Ajuste de padding interno */
             .page-content {
-                padding: 1rem 5px !important;
-                /* Mínimo espacio a la izquierda (5px) */
+                padding: 1.5rem !important;
                 width: 100% !important;
             }
 
@@ -124,16 +132,13 @@
                 width: 100% !important;
             }
 
-            /* Ocultar elementos de colapso */
-            .topnav-hamburger {
-                display: none !important;
-            }
-
+            /* Ocultar elementos innecesarios */
+            .topnav-hamburger,
             .logo-sm {
                 display: none !important;
             }
 
-            /* Asegurar visibilidad */
+            /* Visibilidad del menú */
             .menu-title,
             .nav-link span,
             .logo-lg {
@@ -141,6 +146,9 @@
                 opacity: 1 !important;
                 visibility: visible !important;
             }
+
+            visibility: visible !important;
+        }
         }
 
         /* MÓVIL / TABLET (< 992px): Overlay Clásico */
