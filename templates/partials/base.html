@@ -40,14 +40,14 @@
     <!-- SweetAlert2 (para alertas de timeout) -->
     <link href="{% static 'libs/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet" type="text/css">
 
-    <!-- CSS: Corrección Definitiva V-ULTRA (Layout & Responsive) -->
+    <!-- CSS: RE-ESTRUCTURACIÓN INTEGRAL V-7 (Header & Sidebar) -->
     <style>
         :root {
             --vz-vertical-menu-width: 140px !important;
             --vz-header-height: 70px !important;
         }
 
-        /* 0. RESET & SCROLL */
+        /* 0. RESET & GLOBAL */
         *,
         *::before,
         *::after {
@@ -57,34 +57,33 @@
         html,
         body {
             overflow-x: hidden !important;
-            width: 100% !important;
+            width: 100vw !important;
+            /* Usar vw para asegurar el viewport total */
             margin: 0 !important;
             padding: 0 !important;
         }
 
-        /* 1. HEADER FULL WIDTH & LEFT ALIGN */
+        /* 1. HEADER (BANNER AZUL) - Pegado a la izquierda */
         #page-topbar {
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
             z-index: 2000 !important;
+            padding: 0 !important;
         }
 
-        /* Eliminar márgenes y max-width de los contenedores internos del header */
         #page-topbar .layout-width,
         #page-topbar .navbar-header {
             max-width: none !important;
             width: 100% !important;
             padding-left: 0px !important;
-            /* Pegar logo a la izquierda */
             padding-right: 20px !important;
-            /* Espacio para avatar a la derecha */
         }
 
         /* 2. ESCRITORIO (>= 992px) */
         @media (min-width: 992px) {
 
-            /* SIDEBAR (140px) */
+            /* Menú Vertical Ultra-Compacto */
             .app-menu.navbar-menu {
                 width: 140px !important;
                 min-width: 140px !important;
@@ -93,18 +92,19 @@
                 left: 0;
                 top: 70px !important;
                 bottom: 0;
-                padding-top: 0 !important;
                 z-index: 1000;
                 border-right: 1px solid #e9ebec;
+                padding-top: 0 !important;
             }
 
+            /* Logotipo solo en topbar */
             .navbar-brand-box {
                 display: none !important;
             }
 
             .app-menu .navbar-nav {
-                margin-top: 0 !important;
                 padding-top: 5px !important;
+                margin-top: 0 !important;
             }
 
             .navbar-nav .nav-link {
@@ -115,20 +115,12 @@
                 align-items: center;
             }
 
-            .navbar-nav .nav-link i {
-                margin-right: 5px;
-                font-size: 18px;
-                width: 20px;
-                text-align: center;
-            }
-
-            /* 3. CONTENT (No Cutoff Fix) */
+            /* 3. CONTENIDO PRINCIPAL - SOLUCIÓN PARA CORTE DERECHO */
             .main-content {
                 margin-left: 140px !important;
                 margin-top: 70px !important;
-                /* El secreto para el desborde derecho: width auto y overflow hidden */
-                width: auto !important;
-                margin-right: 0 !important;
+                /* calc(100% - 140px) es la fórmula matemática para evitar el desborde */
+                width: calc(100% - 140px) !important;
                 min-height: calc(100vh - 70px);
                 padding: 0 !important;
                 overflow-x: hidden !important;
@@ -138,11 +130,11 @@
 
             .footer {
                 left: 140px !important;
-                width: auto !important;
+                width: calc(100% - 140px) !important;
                 right: 0 !important;
             }
 
-            /* 4. PAGE CONTENT & GRID */
+            /* 4. PAGE CONTENT & GRID (CERO GAP) */
             .page-content {
                 padding: 1.5rem 1.5rem 1.5rem 0px !important;
                 /* Pegado al menú */
@@ -155,7 +147,7 @@
                 padding-left: 5px !important;
                 /* Mínimo aire con el menú */
                 padding-right: 15px !important;
-                /* Protege contra el corte derecho */
+                /* Buffer contra corte derecho */
                 margin: 0 !important;
                 width: 100% !important;
                 max-width: none !important;
@@ -202,13 +194,20 @@
                 display: block !important;
             }
         }
-    </style>
 
-    /* MÓVIL / TABLET (< 992px): Overlay Clásico */ @media (max-width: 991.98px) { #page-topbar { left: 0 !important;
-        width: 100% !important; } .main-content { margin-left: 0 !important; width: 100% !important; } .footer { left: 0
-        !important; width: 100% !important; } .topnav-hamburger { display: block !important; } /* El menú flota sobre el
-        contenido */ .navbar-menu { z-index: 9999 !important; } } </style>
-        {% endblock css %}
+        /* DEBUG MARKER */
+        .page-content::after {
+            content: "V.8.1-FIXED";
+            position: fixed;
+            bottom: 5px;
+            right: 5px;
+            font-size: 8px;
+            color: rgba(0, 0, 0, 0.2);
+            pointer-events: none;
+            z-index: 9999;
+        }
+    </style>
+    {% endblock css %}
 
 </head>
 
