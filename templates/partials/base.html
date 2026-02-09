@@ -39,89 +39,78 @@
     <!-- SweetAlert2 (para alertas de timeout) -->
     <link href="{% static 'libs/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet" type="text/css">
 
-    <!-- CSS: Corrección Definitiva V3 (Logo centrado y Sin Hover) -->
+    <!-- CSS: Corrección Definitiva V4 (Layout Ajustado) -->
     <style>
         /* =========================================
-           1. ESTILOS DE BARRA LATERAL (ESTÁTICO & COMPACTO)
+           ESTILOS GLOBALES - HEADER ANCHO COMPLETO
            ========================================= */
-
-        /* Iconos alineados y compactos */
-        .navbar-nav .nav-link i {
-            display: inline-block;
-            font-size: 18px;
-            /* Un poco más pequeño para elegancia */
-            margin-right: 8px;
-            /* Menor espacio */
-            text-align: center;
-            width: 20px;
-        }
-
-        /* Enlaces del menú compactos */
-        .navbar-nav .nav-link {
-            padding: 8px 12px !important;
-            font-size: 0.9rem;
-        }
-
-        /* =========================================
-        /* =========================================
-           2. LAYOUT FIX: HEADER FULL WITDH & SIDEBAR BELOW
-           ========================================= */
-
-        /* HEADER AZUL (TOPBAR) - ANCHO COMPLETO */
         #page-topbar {
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
             z-index: 2000 !important;
-            /* Por encima de todo */
         }
 
         /* ESCRITORIO (>= 992px) */
         @media (min-width: 992px) {
 
-            /* SIDEBAR (MENÚ BLANCO) - DEBAJO DEL HEADER */
+            /* 1. SIDEBAR (MENÚ) - Ancho 180px */
             .app-menu.navbar-menu {
-                width: 220px !important;
+                width: 180px !important;
+                /* Más estrecho para evitar huecos */
                 position: fixed;
                 left: 0;
                 top: 70px !important;
-                /* Empieza DEBAJO del header */
+                /* Debajo del header */
                 bottom: 0;
                 padding-top: 0 !important;
                 z-index: 1000;
                 border-right: 1px solid #e9ebec;
             }
 
-            /* Ocultar el logo del sidebar (porque debe ir en el header según la foto) */
+            /* Logotipo oculto en sidebar (está en el header) */
             .navbar-brand-box {
                 display: none !important;
             }
 
+            /* Ajuste de items del menú */
             .app-menu .navbar-nav {
                 margin-top: 0 !important;
                 padding-top: 10px !important;
             }
 
-            /* CONTENIDO PRINCIPAL - A la derecha del sidebar */
+            .navbar-nav .nav-link {
+                padding: 10px 15px !important;
+                white-space: nowrap;
+                /* Evitar que el texto salte */
+            }
+
+            .navbar-nav .nav-link i {
+                margin-right: 8px;
+                font-size: 18px;
+                width: 20px;
+                text-align: center;
+            }
+
+            /* 2. CONTENIDO PRINCIPAL - Pegado al sidebar */
             .main-content {
-                margin-left: 220px !important;
-                /* Espacio para el sidebar */
+                margin-left: 180px !important;
+                /* Coincide con ancho sidebar */
                 margin-top: 70px !important;
-                /* Espacio para el header */
-                width: calc(100% - 220px) !important;
+                width: calc(100% - 180px) !important;
                 min-height: calc(100vh - 70px);
                 padding: 0 !important;
-                overflow-x: hidden;
             }
 
             .footer {
-                left: 220px !important;
-                width: calc(100% - 220px) !important;
+                left: 180px !important;
+                width: calc(100% - 180px) !important;
             }
 
-            /* Ajuste de padding interno */
+            /* 3. PADDING INTERNO MINIMO (Cards pegados al menú) */
             .page-content {
-                padding: 1.5rem !important;
+                padding: 1rem 0.5rem !important;
+                /* Mínimo padding izquierdo */
                 width: 100% !important;
             }
 
@@ -132,13 +121,13 @@
                 width: 100% !important;
             }
 
-            /* Ocultar elementos innecesarios */
+            /* Ocultar móvil/colapso */
             .topnav-hamburger,
             .logo-sm {
                 display: none !important;
             }
 
-            /* Visibilidad del menú */
+            /* Visibilidad forzada */
             .menu-title,
             .nav-link span,
             .logo-lg {
@@ -146,12 +135,9 @@
                 opacity: 1 !important;
                 visibility: visible !important;
             }
-
-            visibility: visible !important;
-        }
         }
 
-        /* MÓVIL / TABLET (< 992px): Overlay Clásico */
+        /* MÓVIL (< 992px) */
         @media (max-width: 991.98px) {
             #page-topbar {
                 left: 0 !important;
@@ -161,6 +147,7 @@
             .main-content {
                 margin-left: 0 !important;
                 width: 100% !important;
+                margin-top: 70px !important;
             }
 
             .footer {
@@ -172,13 +159,21 @@
                 display: block !important;
             }
 
-            /* El menú flota sobre el contenido */
-            .navbar-menu {
-                z-index: 9999 !important;
+            .navbar-brand-box {
+                display: block !important;
             }
+
+            /* Mostrar logo en movil si es necesario */
         }
     </style>
-    {% endblock css %}
+    }
+    }
+
+    /* MÓVIL / TABLET (< 992px): Overlay Clásico */ @media (max-width: 991.98px) { #page-topbar { left: 0 !important;
+        width: 100% !important; } .main-content { margin-left: 0 !important; width: 100% !important; } .footer { left: 0
+        !important; width: 100% !important; } .topnav-hamburger { display: block !important; } /* El menú flota sobre el
+        contenido */ .navbar-menu { z-index: 9999 !important; } } </style>
+        {% endblock css %}
 
 </head>
 
