@@ -92,34 +92,36 @@
                 text-align: center;
             }
 
-            /* 2. CONTENIDO PRINCIPAL - Pegado al sidebar */
-            .main-content {
-                margin-left: 180px !important;
-                /* Coincide con ancho sidebar */
+            /* 2. CONTENIDO PRINCIPAL - ALINEACIÓN MATEMÁTICA EXACTA */
+            html body .main-content {
+                margin-left: 240px !important;
+                /* 240px EXACTOS */
                 margin-top: 70px !important;
-                width: calc(100% - 180px) !important;
+                width: calc(100% - 240px) !important;
                 min-height: calc(100vh - 70px);
                 padding: 0 !important;
                 overflow-x: hidden !important;
-                /* CRÍTICO */
             }
 
             .footer {
-                left: 180px !important;
-                width: calc(100% - 180px) !important;
+                left: 240px !important;
+                width: calc(100% - 240px) !important;
             }
 
-            /* 3. PADDING INTERNO ESTRATÉGICO */
-            .page-content {
+            /* 3. CERO GAP - PEGADO AL MENU */
+            html body .page-content {
                 /* Arriba | Derecha | Abajo | Izquierda */
-                padding: 1rem 1.5rem 1rem 10px !important;
-                /* 1.5rem derecha absorbe margenes negativos */
+                padding: 1.5rem 1.5rem 1.5rem 0px !important;
+                /* Izquierda 0px: ELIMINA CUALQUIER HUECO VISUAL */
                 width: 100% !important;
                 overflow-x: hidden !important;
             }
 
-            .container-fluid {
-                padding: 0 !important;
+            /* Contenedor fluido sin padding extra */
+            html body .container-fluid {
+                padding-left: 10px !important;
+                /* Pequeño respiro de 10px para que no toque la línea */
+                padding-right: 0 !important;
                 margin: 0 !important;
                 max-width: none !important;
                 width: 100% !important;
