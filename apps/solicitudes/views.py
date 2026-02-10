@@ -197,7 +197,7 @@ class SolicitudDetailView(BaseAuditedViewMixin, DetailView):
         """Optimiza consultas con select_related."""
         return super().get_queryset().select_related(
             'tipo_solicitud', 'estado', 'solicitante', 'aprobador',
-            'despachador', 'bodega_origen'
+            'despachador', 'bodega_origen', 'departamento', 'area'
         )
 
     def get_context_data(self, **kwargs) -> dict:
