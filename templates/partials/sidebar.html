@@ -2,16 +2,10 @@
 
 <!-- ========== App Menu ========== -->
 <div class="app-menu navbar-menu">
-    <div class="navbar-brand-box"
-        style="height: 70px; display: flex; align-items: center; justify-content: flex-start; padding-left: 1rem;">
-        <!-- Logo (Dark text for light sidebar) -->
-        <a href="/" class="logo logo-dark" style="display: flex; align-items: center;">
-            <span class="logo-lg" style="display: flex; align-items: center;">
-                <img src="{% static 'images/imagenes_colegio/logoColegio.png' %}" alt="" height="45">
-                <span class="fw-bold fs-3 text-dark ms-2" style="font-family: 'Inter', sans-serif;">TBA</span>
-            </span>
-        </a>
+    <div class="navbar-brand-box" style="display: none;">
+        <!-- Logo oculto - el topbar cubre esta área -->
     </div>
+
 
     <div id="scrollbar">
         <div class="container-fluid">
@@ -68,9 +62,44 @@
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="{% url 'inventario:menu_gestores' %}">
+                    <a class="nav-link menu-link" href="#sidebarGestores" data-bs-toggle="collapse" role="button"
+                        aria-expanded="false" aria-controls="sidebarGestores">
                         <i class="ri-equalizer-line"></i> <span data-key="t-gestores">Gestores</span>
                     </a>
+                    <div class="collapse menu-dropdown" id="sidebarGestores">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{% url 'solicitudes:menu_solicitudes' %}" class="nav-link" data-key="t-gest ores-solicitudes">
+                                    Solicitudes
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'compras:menu_compras' %}" class="nav-link" data-key="t-gestores-compras">
+                                    Compras
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'bodega:menu_bodega' %}" class="nav-link" data-key="t-gestores-bodega">
+                                    Bodega
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'activos:lista_activos' %}" class="nav-link" data-key="t-gestores-inventario">
+                                    Inventario
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'accounts:ubicacion_lista' %}" class="nav-link" data-key="t-gestores-organizacion">
+                                    Organización
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'accounts:cargo_lista' %}" class="nav-link" data-key="t-gestores-usuarios">
+                                    Usuarios
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </li>
             </ul>
         </div>

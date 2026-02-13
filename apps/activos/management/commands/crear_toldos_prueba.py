@@ -36,8 +36,6 @@ class Command(BaseCommand):
                 descripcion='Toldos para eventos y actividades',
                 activo=True,
                 eliminado=False,
-                usuario_creacion=admin_user,
-                usuario_actualizacion=admin_user
             )
             categoria.save()
             created = True
@@ -103,8 +101,6 @@ class Command(BaseCommand):
                 precio_unitario=Decimal('150000.00'),
                 activo=True,
                 eliminado=False,
-                usuario_creacion=admin_user,
-                usuario_actualizacion=admin_user
             )
             
             toldos_creados += 1

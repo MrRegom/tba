@@ -147,16 +147,11 @@ class ArticuloForm(forms.ModelForm):
     class Meta:
         model = Articulo
         fields = [
-            'codigo', 'nombre', 'descripcion', 'marca', 'categoria', 'unidad_medida',
+            'nombre', 'descripcion', 'marca', 'categoria', 'unidad_medida',
             'stock_actual', 'stock_minimo', 'stock_maximo', 'punto_reorden',
             'ubicacion_fisica', 'observaciones', 'activo'
         ]
         widgets = {
-            'codigo': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Código único del artículo',
-                'required': True
-            }),
             'nombre': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Nombre del artículo',
@@ -250,28 +245,7 @@ class ArticuloForm(forms.ModelForm):
         self.fields['stock_actual'].disabled = True
         self.fields['stock_actual'].required = False
 
-        # Si estamos editando (instance existe), hacer el código readonly
-        if self.instance and self.instance.pk:
-            self.fields['codigo'].disabled = True
-            self.fields['codigo'].widget.attrs['readonly'] = True
-            self.fields['codigo'].help_text = 'El código no puede modificarse al editar'
 
-
-    def clean_codigo(self):
-        """Validar que el código sea único (en mayúsculas)."""
-        codigo = self.cleaned_data.get('codigo', '').strip().upper()
-
-        # Si estamos editando, excluir la instancia actual
-        queryset = Articulo.objects.filter(codigo=codigo)
-        if self.instance and self.instance.pk:
-            queryset = queryset.exclude(pk=self.instance.pk)
-
-        if queryset.exists():
-            raise ValidationError(
-                f'Ya existe un artículo con el código "{codigo}".'
-            )
-
-        return codigo
 
     def clean_stock_minimo(self):
         """Validar que el stock mínimo no sea negativo."""

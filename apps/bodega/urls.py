@@ -26,6 +26,12 @@ urlpatterns = [
     path('articulos/<int:pk>/editar/', views.ArticuloUpdateView.as_view(), name='articulo_editar'),
     path('articulos/<int:pk>/eliminar/', views.ArticuloDeleteView.as_view(), name='articulo_eliminar'),
 
+    # Artículos - Modales AJAX
+    path('articulos/<int:pk>/modal/detalle/', views.ArticuloModalDetalle.as_view(), name='articulo_modal_detalle'),
+    path('articulos/<int:pk>/modal/editar/', views.ArticuloModalEditar.as_view(), name='articulo_modal_editar'),
+    path('articulos/<int:pk>/modal/eliminar/', views.ArticuloModalEliminar.as_view(), name='articulo_modal_eliminar'),
+    path('articulos/<int:pk>/modal/movimientos/', views.ArticuloModalMovimientos.as_view(), name='articulo_modal_movimientos'),
+
     # Movimientos
     path('movimientos/', views.MovimientoListView.as_view(), name='movimiento_lista'),
     path('movimientos/crear/', views.MovimientoCreateView.as_view(), name='movimiento_crear'),

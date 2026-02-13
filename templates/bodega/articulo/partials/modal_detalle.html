@@ -1,0 +1,70 @@
+<!-- Modal Detalle Articulo -->
+<div class="modal-header">
+    <h5 class="modal-title">
+        <i class="ri-eye-line me-1"></i>Detalle del Articulo
+    </h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+</div>
+<div class="modal-body">
+    <div class="row">
+        <div class="col-12">
+            <h6 class="text-muted mb-3">Informacion General</h6>
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Codigo:</dt>
+                <dd class="col-sm-8"><code>{{ articulo.codigo }}</code></dd>
+                <dt class="col-sm-4">Nombre:</dt>
+                <dd class="col-sm-8">{{ articulo.nombre }}</dd>
+                <dt class="col-sm-4">Descripcion:</dt>
+                <dd class="col-sm-8">{{ articulo.descripcion|default:"-" }}</dd>
+                <dt class="col-sm-4">Marca:</dt>
+                <dd class="col-sm-8">
+                    {% if articulo.marca %}
+                        <span class="badge bg-info">{{ articulo.marca.nombre }}</span>
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </dd>
+                <dt class="col-sm-4">Categoria:</dt>
+                <dd class="col-sm-8">
+                    <span class="badge bg-primary-subtle text-primary">{{ articulo.categoria.nombre }}</span>
+                </dd>
+                <dt class="col-sm-4">Ubicacion:</dt>
+                <dd class="col-sm-8">{{ articulo.ubicacion_fisica.nombre }}</dd>
+                <dt class="col-sm-4">Unidad de Medida:</dt>
+                <dd class="col-sm-8">
+                    {% if articulo.unidad_medida %}
+                        <span class="badge bg-success">{{ articulo.unidad_medida.codigo }} ({{ articulo.unidad_medida.simbolo }})</span>
+                    {% else %}
+                        <span class="text-muted">No configurada</span>
+                    {% endif %}
+                </dd>
+            </dl>
+            <hr>
+            <h6 class="text-muted mb-3">Control de Stock</h6>
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Stock Actual:</dt>
+                <dd class="col-sm-8">
+                    {% if articulo.stock_actual > articulo.stock_minimo %}
+                        <span class="badge bg-success fs-6">{{ articulo.stock_actual }}</span>
+                    {% else %}
+                        <span class="badge bg-danger fs-6">{{ articulo.stock_actual }}</span>
+                    {% endif %}
+                </dd>
+                <dt class="col-sm-4">Stock Minimo:</dt>
+                <dd class="col-sm-8">{{ articulo.stock_minimo }}</dd>
+                <dt class="col-sm-4">Stock Maximo:</dt>
+                <dd class="col-sm-8">{{ articulo.stock_maximo|default:"-" }}</dd>
+                <dt class="col-sm-4">Punto de Reorden:</dt>
+                <dd class="col-sm-8">{{ articulo.punto_reorden|default:"-" }}</dd>
+            </dl>
+            {% if articulo.observaciones %}
+            <hr>
+            <h6 class="text-muted mb-3">Observaciones</h6>
+            <p>{{ articulo.observaciones }}</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+</div>

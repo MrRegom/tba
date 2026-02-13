@@ -445,8 +445,6 @@ class MovimientoCreateView(BaseAuditedViewMixin, AtomicTransactionMixin, CreateV
                 'proveniencia': form.cleaned_data.get('proveniencia'),
                 'observaciones': form.cleaned_data.get('observaciones', ''),
                 'usuario_registro': self.request.user,
-                'usuario_creacion': self.request.user,
-                'usuario_actualizacion': self.request.user,
             }
             
             # Datos de confirmación PIN (solo si hay responsable)
@@ -477,8 +475,7 @@ class MovimientoCreateView(BaseAuditedViewMixin, AtomicTransactionMixin, CreateV
                     if estado_nuevo:
                         # Actualizar el estado del activo
                         activo.estado = estado_nuevo
-                        activo.usuario_actualizacion = self.request.user
-                        activo.save(update_fields=['estado', 'usuario_actualizacion', 'fecha_actualizacion'])
+                        activo.save(update_fields=['estado', 'fecha_actualizacion'])
                         
                         # Recargar el activo desde la BD para verificar que se guardó correctamente
                         activo.refresh_from_db()
@@ -562,8 +559,7 @@ class MovimientoCreateView(BaseAuditedViewMixin, AtomicTransactionMixin, CreateV
                 
                 # Actualizar el estado del activo
                 movimiento.activo.estado = estado_nuevo
-                movimiento.activo.usuario_actualizacion = self.request.user
-                movimiento.activo.save(update_fields=['estado', 'usuario_actualizacion', 'fecha_actualizacion'])
+                movimiento.activo.save(update_fields=['estado', 'fecha_actualizacion'])
                 
                 # Recargar el activo desde la BD para verificar que se guardó correctamente
                 movimiento.activo.refresh_from_db()
@@ -726,8 +722,6 @@ class CategoriaCreateView(BaseAuditedViewMixin, CreateView):
         try:
             # Asignar usuario de creación antes de guardar
             categoria = form.save(commit=False)
-            categoria.usuario_creacion = self.request.user
-            categoria.usuario_actualizacion = self.request.user
             categoria.save()
             self.object = categoria
             
@@ -788,7 +782,6 @@ class CategoriaUpdateView(BaseAuditedViewMixin, UpdateView):
         try:
             # Asignar usuario de actualización antes de guardar
             categoria = form.save(commit=False)
-            categoria.usuario_actualizacion = self.request.user
             categoria.save()
             self.object = categoria
             
@@ -916,9 +909,7 @@ class EstadoActivoCreateView(BaseAuditedViewMixin, CreateView):
         try:
             # Asignar usuario de creación y actualización antes de guardar
             self.object = form.save(commit=False)
-            self.object.usuario_creacion = self.request.user
-            self.object.usuario_actualizacion = self.request.user
-            
+
             # Asegurar que los campos del BaseModel estén configurados
             self.object.activo = form.cleaned_data.get('activo', True)
             self.object.eliminado = False
@@ -992,7 +983,6 @@ class EstadoActivoUpdateView(BaseAuditedViewMixin, UpdateView):
         try:
             # Asignar usuario de actualización antes de guardar
             estado = form.save(commit=False)
-            estado.usuario_actualizacion = self.request.user
             estado.save()
             self.object = estado
             
@@ -1120,9 +1110,7 @@ class UbicacionCreateView(BaseAuditedViewMixin, CreateView):
         try:
             # Asignar usuario de creación y actualización antes de guardar
             self.object = form.save(commit=False)
-            self.object.usuario_creacion = self.request.user
-            self.object.usuario_actualizacion = self.request.user
-            
+
             # Asegurar que los campos del BaseModel estén configurados
             self.object.activo = form.cleaned_data.get('activo', True)
             self.object.eliminado = False
@@ -1180,7 +1168,6 @@ class UbicacionUpdateView(BaseAuditedViewMixin, UpdateView):
         try:
             # Asignar usuario de actualización antes de guardar
             self.object = form.save(commit=False)
-            self.object.usuario_actualizacion = self.request.user
             self.object.save()
             
             # Registrar log de auditoría
@@ -1293,9 +1280,7 @@ class TipoMovimientoCreateView(BaseAuditedViewMixin, CreateView):
         try:
             # Asignar usuario de creación y actualización antes de guardar
             self.object = form.save(commit=False)
-            self.object.usuario_creacion = self.request.user
-            self.object.usuario_actualizacion = self.request.user
-            
+
             # Asegurar que los campos del BaseModel estén configurados
             self.object.activo = form.cleaned_data.get('activo', True)
             self.object.eliminado = False
@@ -1353,7 +1338,6 @@ class TipoMovimientoUpdateView(BaseAuditedViewMixin, UpdateView):
         try:
             # Asignar usuario de actualización antes de guardar
             self.object = form.save(commit=False)
-            self.object.usuario_actualizacion = self.request.user
             self.object.save()
             
             # Registrar log de auditoría
@@ -1466,9 +1450,7 @@ class MarcaCreateView(BaseAuditedViewMixin, CreateView):
         try:
             # Asignar usuario de creación y actualización antes de guardar
             self.object = form.save(commit=False)
-            self.object.usuario_creacion = self.request.user
-            self.object.usuario_actualizacion = self.request.user
-            
+
             # Asegurar que los campos del BaseModel estén configurados
             self.object.activo = form.cleaned_data.get('activo', True)
             self.object.eliminado = False
@@ -1526,7 +1508,6 @@ class MarcaUpdateView(BaseAuditedViewMixin, UpdateView):
         try:
             # Asignar usuario de actualización antes de guardar
             self.object = form.save(commit=False)
-            self.object.usuario_actualizacion = self.request.user
             self.object.save()
             
             # Registrar log de auditoría
@@ -1639,9 +1620,7 @@ class TallerCreateView(BaseAuditedViewMixin, CreateView):
         try:
             # Asignar usuario de creación y actualización antes de guardar
             self.object = form.save(commit=False)
-            self.object.usuario_creacion = self.request.user
-            self.object.usuario_actualizacion = self.request.user
-            
+
             # Asegurar que los campos del BaseModel estén configurados
             self.object.activo = form.cleaned_data.get('activo', True)
             self.object.eliminado = False
@@ -1699,7 +1678,6 @@ class TallerUpdateView(BaseAuditedViewMixin, UpdateView):
         try:
             # Asignar usuario de actualización antes de guardar
             self.object = form.save(commit=False)
-            self.object.usuario_actualizacion = self.request.user
             self.object.save()
             
             # Registrar log de auditoría
@@ -1812,9 +1790,7 @@ class ProvenienciaCreateView(BaseAuditedViewMixin, CreateView):
         try:
             # Asignar usuario de creación y actualización antes de guardar
             self.object = form.save(commit=False)
-            self.object.usuario_creacion = self.request.user
-            self.object.usuario_actualizacion = self.request.user
-            
+
             # Asegurar que los campos del BaseModel estén configurados
             self.object.activo = form.cleaned_data.get('activo', True)
             self.object.eliminado = False
@@ -1872,7 +1848,6 @@ class ProvenienciaUpdateView(BaseAuditedViewMixin, UpdateView):
         try:
             # Asignar usuario de actualización antes de guardar
             self.object = form.save(commit=False)
-            self.object.usuario_actualizacion = self.request.user
             self.object.save()
             
             # Registrar log de auditoría
@@ -2024,8 +1999,6 @@ def validar_pin_responsable(request):
                 ip_address=request.META.get('REMOTE_ADDR'),
                 user_agent=request.META.get('HTTP_USER_AGENT', ''),
                 detalles={'mensaje': 'Intento de uso con usuario bloqueado'},
-                usuario_creacion=request.user,
-                usuario_actualizacion=request.user
             )
             
             return JsonResponse({
@@ -2049,8 +2022,6 @@ def validar_pin_responsable(request):
                 ip_address=request.META.get('REMOTE_ADDR'),
                 user_agent=request.META.get('HTTP_USER_AGENT', ''),
                 detalles={'mensaje': 'PIN validado correctamente para movimiento de activo'},
-                usuario_creacion=request.user,
-                usuario_actualizacion=request.user
             )
             
             return JsonResponse({
@@ -2074,8 +2045,6 @@ def validar_pin_responsable(request):
                     'intentos_fallidos': user_secure.intentos_fallidos,
                     'bloqueado': user_secure.bloqueado
                 },
-                usuario_creacion=request.user,
-                usuario_actualizacion=request.user
             )
             
             if user_secure.bloqueado:

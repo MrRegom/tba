@@ -398,9 +398,6 @@ class ProfileView(LoginRequiredMixin, TemplateView):
                 # Asignar nueva foto
                 persona.foto_perfil = foto_perfil
             
-            persona.usuario_actualizacion = request.user
-            if created:
-                persona.usuario_creacion = request.user
             persona.save()
             
             messages.success(request, 'Perfil actualizado exitosamente.')
@@ -434,9 +431,6 @@ class ProfileView(LoginRequiredMixin, TemplateView):
             user_secure.set_pin(pin_texto)
             user_secure.intentos_fallidos = 0
             user_secure.bloqueado = False
-            user_secure.usuario_actualizacion = request.user
-            if created:
-                user_secure.usuario_creacion = request.user
             user_secure.save()
             
             # Registrar en auditoría
@@ -447,8 +441,6 @@ class ProfileView(LoginRequiredMixin, TemplateView):
                 ip_address=request.META.get('REMOTE_ADDR'),
                 user_agent=request.META.get('HTTP_USER_AGENT', ''),
                 detalles={'accion': 'PIN configurado' if not tiene_pin_anterior else 'PIN cambiado desde perfil'},
-                usuario_creacion=request.user,
-                usuario_actualizacion=request.user
             )
             
             mensaje = 'PIN configurado exitosamente.' if not tiene_pin_anterior else 'PIN actualizado exitosamente.'

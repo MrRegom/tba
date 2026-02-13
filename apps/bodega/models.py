@@ -203,13 +203,12 @@ class Articulo(BaseModel):
 
     def save(self, *args, **kwargs) -> None:
         """
-        Guarda el artículo y auto-genera código de barras si no se proporciona.
-
-        Si el código de barras no está definido, genera uno automáticamente
-        basado en el código del artículo (limitado a 12 caracteres).
+        Guarda el artículo, auto-genera código UUID y código de barras si no se proporcionan.
         """
-        if not self.codigo_barras and self.codigo:
-            # Generar código de barras desde el código
+        import uuid
+        if not self.codigo:
+            self.codigo = str(uuid.uuid4())
+        if not self.codigo_barras:
             self.codigo_barras = f"COD{self.codigo.replace('-', '').replace('_', '').upper()[:12]}"
         super().save(*args, **kwargs)
 

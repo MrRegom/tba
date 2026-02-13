@@ -205,8 +205,6 @@ def crear_usuario(request):
                 foto_perfil=form.cleaned_data.get('foto_perfil'),
                 activo=form.cleaned_data.get('activo_persona', True),
                 eliminado=False,
-                usuario_creacion=request.user,
-                usuario_actualizacion=request.user
             )
 
             # Configurar PIN si se proporcionó
@@ -218,8 +216,6 @@ def crear_usuario(request):
                     defaults={'activo': True, 'eliminado': False}
                 )
                 user_secure.set_pin(pin_texto)
-                user_secure.usuario_creacion = request.user
-                user_secure.usuario_actualizacion = request.user
                 user_secure.save()
                 
                 # Registrar en auditoría
@@ -230,8 +226,6 @@ def crear_usuario(request):
                     ip_address=request.META.get('REMOTE_ADDR'),
                     user_agent=request.META.get('HTTP_USER_AGENT', ''),
                     detalles={'accion': 'PIN configurado al crear usuario'},
-                    usuario_creacion=request.user,
-                    usuario_actualizacion=request.user
                 )
 
             # Registrar log
@@ -290,9 +284,6 @@ def editar_usuario(request, pk):
                 user_secure.set_pin(pin_texto)
                 user_secure.intentos_fallidos = 0
                 user_secure.bloqueado = False
-                user_secure.usuario_actualizacion = request.user
-                if created:
-                    user_secure.usuario_creacion = request.user
                 user_secure.save()
                 
                 # Registrar en auditoría
@@ -303,8 +294,6 @@ def editar_usuario(request, pk):
                     ip_address=request.META.get('REMOTE_ADDR'),
                     user_agent=request.META.get('HTTP_USER_AGENT', ''),
                     detalles={'accion': 'PIN configurado' if not tiene_pin_anterior else 'PIN cambiado desde edición'},
-                    usuario_creacion=request.user,
-                    usuario_actualizacion=request.user
                 )
 
             # Registrar log
@@ -1530,9 +1519,8 @@ def gestionar_pin_usuario(request, pk):
             user_secure.set_pin(pin_texto)
             user_secure.intentos_fallidos = 0
             user_secure.bloqueado = False
-            user_secure.usuario_actualizacion = request.user
             user_secure.save()
-            
+
             # Registrar en auditoría (usamos CONFIRMACION_ENTREGA como acción genérica para cambios de PIN)
             AuditoriaPin.objects.create(
                 usuario=usuario,
@@ -1541,8 +1529,6 @@ def gestionar_pin_usuario(request, pk):
                 ip_address=request.META.get('REMOTE_ADDR'),
                 user_agent=request.META.get('HTTP_USER_AGENT', ''),
                 detalles={'accion': 'PIN configurado' if not tiene_pin else 'PIN cambiado'},
-                usuario_creacion=request.user,
-                usuario_actualizacion=request.user
             )
             
             # Registrar log
@@ -1593,9 +1579,8 @@ def desbloquear_usuario(request, pk):
     
     if request.method == 'POST':
         user_secure.desbloquear()
-        user_secure.usuario_actualizacion = request.user
         user_secure.save()
-        
+
         # Registrar en auditoría
         AuditoriaPin.objects.create(
             usuario=usuario,
@@ -1604,8 +1589,6 @@ def desbloquear_usuario(request, pk):
             ip_address=request.META.get('REMOTE_ADDR'),
             user_agent=request.META.get('HTTP_USER_AGENT', ''),
             detalles={'desbloqueado_por': request.user.username},
-            usuario_creacion=request.user,
-            usuario_actualizacion=request.user
         )
         
         # Registrar log
@@ -1647,8 +1630,6 @@ def gestionar_persona_usuario(request, pk):
         if form.is_valid():
             persona_obj = form.save(commit=False)
             persona_obj.user = usuario
-            persona_obj.usuario_creacion = request.user if not persona else persona.usuario_creacion
-            persona_obj.usuario_actualizacion = request.user
             persona_obj.save()
             
             # Registrar log
@@ -1691,8 +1672,6 @@ def gestionar_cargos_usuario(request, pk):
         if form.is_valid():
             user_cargo = form.save(commit=False)
             user_cargo.usuario = usuario
-            user_cargo.usuario_creacion = request.user
-            user_cargo.usuario_actualizacion = request.user
             user_cargo.save()
             
             # Registrar log
@@ -1815,9 +1794,8 @@ def gestionar_pin_usuario_ajax(request, pk):
         user_secure.set_pin(pin_texto)
         user_secure.intentos_fallidos = 0
         user_secure.bloqueado = False
-        user_secure.usuario_actualizacion = request.user
         user_secure.save()
-        
+
         # Registrar en auditoría
         AuditoriaPin.objects.create(
             usuario=usuario,
@@ -1826,10 +1804,8 @@ def gestionar_pin_usuario_ajax(request, pk):
             ip_address=request.META.get('REMOTE_ADDR'),
             user_agent=request.META.get('HTTP_USER_AGENT', ''),
             detalles={'accion': 'PIN configurado' if not tiene_pin else 'PIN cambiado'},
-            usuario_creacion=request.user,
-            usuario_actualizacion=request.user
         )
-        
+
         # Registrar log
         registrar_log_auditoria(
             request.user,
@@ -1837,7 +1813,7 @@ def gestionar_pin_usuario_ajax(request, pk):
             f'PIN {"cambiado" if tiene_pin else "configurado"} para usuario: {usuario.username}',
             request
         )
-        
+
         return JsonResponse({
             'success': True,
             'message': f'PIN {"actualizado" if tiene_pin else "configurado"} exitosamente para {usuario.username}.'
@@ -1846,7 +1822,7 @@ def gestionar_pin_usuario_ajax(request, pk):
         errors = {}
         for field, field_errors in form.errors.items():
             errors[field] = field_errors[0] if field_errors else ''
-        
+
         return JsonResponse({
             'success': False,
             'message': 'Error al validar el formulario.',
@@ -1887,9 +1863,8 @@ def gestionar_mi_pin(request):
         user_secure.set_pin(pin_texto)
         user_secure.intentos_fallidos = 0
         user_secure.bloqueado = False
-        user_secure.usuario_actualizacion = usuario
         user_secure.save()
-        
+
         # Registrar en auditoría
         AuditoriaPin.objects.create(
             usuario=usuario,
@@ -1898,8 +1873,6 @@ def gestionar_mi_pin(request):
             ip_address=request.META.get('REMOTE_ADDR'),
             user_agent=request.META.get('HTTP_USER_AGENT', ''),
             detalles={'accion': 'PIN auto-configurado' if not tiene_pin else 'PIN auto-cambiado'},
-            usuario_creacion=usuario,
-            usuario_actualizacion=usuario
         )
         
         # Registrar log

@@ -1,9 +1,7 @@
-{% extends 'partials/base.html' %}
+﻿{% extends 'partials/base.html' %}
 {% load static %}
 
 {% block content %}
-<div class="page-content">
-    <div class="container-fluid">
         <div class="row">
             <div class="col-12">
                 <div class="page-title-box d-sm-flex align-items-center justify-content-between">
@@ -140,27 +138,17 @@
                             <div class="col-md-6">
                                 <table class="table table-borderless table-sm">
                                     <tr>
-                                        <th width="40%">Creado Por:</th>
-                                        <td>{{ entrega.usuario_creacion.get_full_name|default:entrega.usuario_creacion.username }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Fecha de Creación:</th>
+                                        <th width="40%">Fecha de Creación:</th>
                                         <td>{{ entrega.fecha_creacion|date:"d/m/Y H:i:s" }}</td>
                                     </tr>
                                 </table>
                             </div>
                             <div class="col-md-6">
                                 <table class="table table-borderless table-sm">
-                                    {% if entrega.usuario_actualizacion %}
                                     <tr>
-                                        <th width="40%">Actualizado Por:</th>
-                                        <td>{{ entrega.usuario_actualizacion.get_full_name|default:entrega.usuario_actualizacion.username }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Fecha de Actualización:</th>
+                                        <th width="40%">Fecha de Actualización:</th>
                                         <td>{{ entrega.fecha_actualizacion|date:"d/m/Y H:i:s" }}</td>
                                     </tr>
-                                    {% endif %}
                                 </table>
                             </div>
                         </div>

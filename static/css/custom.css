@@ -827,7 +827,7 @@ svg {
 .page-content > .container-fluid > .row > .col-12 > .page-title-box {
   padding-top: 0 !important;
   margin-top: 0 !important;
-  margin-bottom: 1rem !important;
+  margin-bottom: 0.75rem !important;
 }
 
 .page-title-box,
@@ -1126,32 +1126,30 @@ svg {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
-/* ====================================================
-   REDUCCIÓN DE ESPACIO ENTRE BANNER Y TÍTULOS
-   ================================================== */
-/* Reduce el padding superior del contenido de la página */
+/* Reduce el padding superior del contenido de la página - LAYOUT FLUID VERTICAL */
 .page-content {
-  padding-top: calc(70px + var(--tb-grid-gutter-width) * 0.15) !important; /* Aumentado más para que no lo tape el banner */
+  padding-top: 1.5rem !important;
+  padding-bottom: 1.5rem !important;
 }
 
-/* Reducir padding superior solo para módulos (no home) - más agresivo */
+/* Container fluid sin márgenes negativos para layout vertical limpio */
 .page-content > .container-fluid {
   padding-top: 0 !important;
-  margin-top: -1.5rem !important;
+  margin-top: 0 !important;
 }
 
-/* Reducir también el padding del primer row en módulos */
+/* Row sin márgenes negativos */
 .page-content > .container-fluid > .row:first-child {
-  margin-top: -0.75rem !important;
+  margin-top: 0 !important;
 }
 
 /* Reduce el padding del título de página sin ocultarlo */
 /* Solo para módulos (cuando está dentro de page-content > container-fluid) */
 .page-content > .container-fluid > .row > .col-12 > .page-title-box {
   padding-top: 0 !important;
-  padding-bottom: calc(var(--tb-grid-gutter-width) * 0.02) !important;
+  padding-bottom: 0.5rem !important;
   margin-top: 0 !important;
-  margin-bottom: 1rem !important;
+  margin-bottom: 0.75rem !important;
 }
 
 /* Asegurar visibilidad de botones en page-title-box */
@@ -1494,4 +1492,101 @@ form .form-control[readonly] {
   border-color: #e5e7eb !important;
   color: #6b7280 !important;
   cursor: not-allowed !important;
+}
+
+/* ====================================================
+   BOTÓN HAMBURGUESA AMARILLO
+   ================================================== */
+
+/* Color amarillo para el botón hamburguesa */
+.hamburger-icon span,
+.hamburger-icon span::before,
+.hamburger-icon span::after {
+  background-color: #FFA11B !important;
+}
+
+/* Asegurar que las animaciones también usen amarillo */
+.vertical-menu-btn.active .hamburger-icon span,
+.vertical-menu-btn.active .hamburger-icon span::before,
+.vertical-menu-btn.active .hamburger-icon span::after {
+  background-color: #FFA11B !important;
+}
+
+/* ====================================================
+   TOPBAR AZUL EXTENDIDO Y SIDEBAR
+   ================================================== */
+
+/* Extender el topbar completamente a la izquierda */
+#page-topbar {
+  left: 0 !important;
+  width: 100% !important;
+  position: fixed;
+  z-index: 2000;
+}
+
+/* Modales sobre el topbar (z-index: 2000) */
+.modal-backdrop {
+  z-index: 2050 !important;
+}
+.modal {
+  z-index: 2060 !important;
+}
+
+#page-topbar .layout-width {
+  max-width: none !important;
+  width: 100% !important;
+  padding-left: 0 !important;
+}
+
+/* Ocultar el espacio del logo en el sidebar */
+.app-menu .navbar-brand-box {
+  display: none !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Eliminar padding superior del scrollbar del sidebar */
+.app-menu #scrollbar {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+/* Eliminar padding superior del container-fluid del sidebar */
+.app-menu #scrollbar .container-fluid {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+/* Asegurar que el navbar-nav empiece sin espacio superior */
+.app-menu #navbar-nav {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+
+/* Main content con padding para compensar topbar fijo */
+.main-content {
+  padding-top: 70px !important;
+}
+
+/* Sidebar en posición fija para superponerse al contenido */
+@media (min-width: 992px) {
+  .app-menu.navbar-menu {
+    position: fixed !important;
+    top: 70px !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    z-index: 1500 !important;
+  }
+  
+  /* Contenido principal sin transición de margen */
+  .main-content {
+    transition: none !important;
+  }
+  
+  /* Footer sin transición */
+  .footer {
+    transition: none !important;
+  }
 }

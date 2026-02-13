@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     # Apps del proyecto
     'apps.accounts',  # Gestión de usuarios y permisos
     'apps.pages',    # Páginas del sistema
+    'apps.auditoria',  # Sistema de auditoría automática
 
     # Apps de inventario
     'apps.bodega',    # Gestión de bodegas
@@ -80,6 +81,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "allauth.account.middleware.AccountMiddleware",
+    'apps.auditoria.middleware.AuditoriaMiddleware',  # Auditoría automática
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -110,7 +112,7 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASES = {
     "default": {
         'ENGINE': env('POSTGRES_ENGINE'),
-        'NAME': 'capacitacion', # Forzando base de datos con 88 usuarios (CONFIRMADO)
+        'NAME': env('POSTGRES_NAME'),
         'USER': env('POSTGRES_USER'),
         'PASSWORD': env('POSTGRES_PASSWORD'),
         'HOST': env('POSTGRES_HOST'),

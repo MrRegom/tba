@@ -1,373 +1,449 @@
-{% extends 'partials/base.html' %}
+﻿{% extends 'partials/base.html' %}
 {% load static %}
 
-{% block title %}{{ titulo }}{% endblock %}
-
-{% block extra_css %}
-<link href="{% static 'css/modulo-cards.css' %}" rel="stylesheet" type="text/css">
-{% endblock extra_css %}
+{% block title %}Gestores - Bodega{% endblock %}
 
 {% block content %}
-<div class="page-content">
-    <div class="container-fluid">
-        <!-- start page title -->
-        <div class="row">
-            <div class="col-12">
-                <div class="page-title-box d-sm-flex align-items-center justify-content-between mb-3">
-                    <h4 class="mb-sm-0">{{ titulo }}</h4>
-                    <div class="page-title-right">
-                        <ol class="breadcrumb m-0">
-                            <li class="breadcrumb-item"><a href="{% url 'dashboard_analytics' %}">Dashboard</a></li>
-                            <li class="breadcrumb-item active">Bodega</li>
-                        </ol>
-                    </div>
-                </div>
+<!-- Page Title -->
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0"><i class="ri-store-2-line me-2"></i>Gestores - Bodega</h4>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'inventario:menu_gestores' %}">Gestores</a></li>
+                    <li class="breadcrumb-item active">Bodega</li>
+                </ol>
             </div>
         </div>
-        <!-- end page title -->
+    </div>
+</div>
 
-        <!-- Menú principal con Cards -->
-        <div class="row mb-4">
-            <div class="col-12">
+<!-- Tabs Navigation -->
+<div class="row">
+    <div class="col-lg-12">
+        <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="articulos-tab" data-bs-toggle="pill"
+                    data-bs-target="#articulos" type="button" role="tab"
+                    aria-controls="articulos" aria-selected="true">
+                    <i class="ri-shopping-bag-3-line me-1"></i>Artículos
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="categorias-tab" data-bs-toggle="pill"
+                    data-bs-target="#categorias" type="button" role="tab"
+                    aria-controls="categorias" aria-selected="false">
+                    <i class="ri-folder-line me-1"></i>Categorías
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="operaciones-tab" data-bs-toggle="pill"
+                    data-bs-target="#operaciones" type="button" role="tab"
+                    aria-controls="operaciones" aria-selected="false">
+                    <i class="ri-settings-2-line me-1"></i>Operaciones
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tipos-movimiento-tab" data-bs-toggle="pill"
+                    data-bs-target="#tipos-movimiento" type="button" role="tab"
+                    aria-controls="tipos-movimiento" aria-selected="false">
+                    <i class="ri-arrow-left-right-line me-1"></i>Tipos de Movimiento
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="unidades-medida-tab" data-bs-toggle="pill"
+                    data-bs-target="#unidades-medida" type="button" role="tab"
+                    aria-controls="unidades-medida" aria-selected="false">
+                    <i class="ri-ruler-line me-1"></i>Unidades de Medida
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="estados-recepcion-tab" data-bs-toggle="pill"
+                    data-bs-target="#estados-recepcion" type="button" role="tab"
+                    aria-controls="estados-recepcion" aria-selected="false">
+                    <i class="ri-checkbox-circle-line me-1"></i>Estados de Recepción
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tipos-recepcion-tab" data-bs-toggle="pill"
+                    data-bs-target="#tipos-recepcion" type="button" role="tab"
+                    aria-controls="tipos-recepcion" aria-selected="false">
+                    <i class="ri-inbox-line me-1"></i>Tipos de Recepción
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="pills-tabContent">
+            
+            <!-- ============ ARTÍCULOS TAB ============ -->
+            <div class="tab-pane fade show active" id="articulos" role="tabpanel" aria-labelledby="articulos-tab">
                 <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i class="ri-menu-line me-2"></i>Seleccione una opción:
-                        </h5>
+                    <div class="card-header d-flex align-items-center">
+                        <h4 class="card-title flex-grow-1 mb-0">Gestión de Artículos</h4>
+                        {% if permisos.puede_crear_articulo %}
+                        <a href="{% url 'bodega:articulo_crear' %}" class="btn btn-primary">
+                            <i class="ri-add-line me-1"></i>Nuevo Artículo
+                        </a>
+                        {% endif %}
                     </div>
                     <div class="card-body">
-                        <div class="row g-3">
-            <!-- Card 1: Categorías -->
-            {% if permisos.puede_crear_categoria %}
-            <div class="col-lg-3 col-sm-6 mb-4">
-                <div class="modulo-card">
-                    <div class="modulo-card-icon modulo-card-icon-primary">
-                        <i class="ri-folder-line"></i>
-                    </div>
-                    <div class="modulo-card-content">
-                        <h6 class="modulo-card-title">CATEGORÍAS</h6>
-                        <p class="modulo-card-desc">Gestione las categorías de artículos de bodega</p>
-                        <div class="modulo-card-actions d-grid gap-2">
-                            <a href="{% url 'bodega:categoria_crear' %}" class="btn btn-sm btn-primary">
-                                <i class="ri-add-line align-bottom me-1"></i> Nueva Categoría
-                            </a>
-                            <a href="{% url 'bodega:categoria_lista' %}" class="btn btn-sm btn-outline-primary">
-                                <i class="ri-list-check align-bottom me-1"></i> Ver Categorías
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Card 2: Artículos -->
-            <div class="col-lg-3 col-sm-6 mb-4">
-                <div class="modulo-card">
-                    <div class="modulo-card-icon modulo-card-icon-info">
-                        <i class="ri-archive-line"></i>
-                    </div>
-                    <div class="modulo-card-content">
-                        <h6 class="modulo-card-title">ARTÍCULOS</h6>
-                        <p class="modulo-card-desc">Gestione el inventario de artículos de bodega</p>
-                        <div class="modulo-card-actions d-grid gap-2">
-                            {% if permisos.puede_crear_articulo %}
-                            <a href="{% url 'bodega:articulo_crear' %}" class="btn btn-sm btn-info">
-                                <i class="ri-add-line align-bottom me-1"></i> Nuevo Artículo
-                            </a>
-                            {% endif %}
-                            <a href="{% url 'bodega:articulo_lista' %}" class="btn btn-sm btn-outline-info">
-                                <i class="ri-list-check align-bottom me-1"></i> Ver Artículos
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 3: Entregas de Artículos -->
-            <div class="col-lg-3 col-sm-6 mb-4">
-                <div class="modulo-card">
-                    <div class="modulo-card-icon modulo-card-icon-success">
-                        <i class="ri-truck-line"></i>
-                    </div>
-                    <div class="modulo-card-content">
-                        <h6 class="modulo-card-title">ENTREGAS ARTÍCULOS</h6>
-                        <p class="modulo-card-desc">Gestione las entregas formales de artículos</p>
-                        <div class="modulo-card-actions d-grid gap-2">
-                            {% if permisos.puede_gestionar %}
-                            <a href="{% url 'bodega:entrega_articulo_crear' %}" class="btn btn-sm btn-success">
-                                <i class="ri-add-line align-bottom me-1"></i> Nueva Entrega
-                            </a>
-                            {% endif %}
-                            <a href="{% url 'bodega:entrega_articulo_lista' %}" class="btn btn-sm btn-outline-success">
-                                <i class="ri-list-check align-bottom me-1"></i> Ver Entregas
-                            </a>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Categoría</th>
+                                        <th>Descripción</th>
+                                        <th>Marca</th>
+                                        <th>Stock Actual</th>
+                                        <th>Stock Mínimo</th>
+                                        <th>Stock Máximo</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for articulo in articulos %}
+                                    <tr>
+                                        <td>{{ articulo.nombre }}</td>
+                                        <td><span class="badge bg-primary-subtle text-primary">{{ articulo.categoria }}</span></td>
+                                        <td>{{ articulo.descripcion|default:"-"|truncatewords:10 }}</td>
+                                        <td>{{ articulo.marca|default:"-" }}</td>
+                                        <td>
+                                            {% if articulo.stock_actual > articulo.stock_minimo %}
+                                            <span class="badge bg-success">{{ articulo.stock_actual }}</span>
+                                            {% else %}
+                                            <span class="badge bg-danger">{{ articulo.stock_actual }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ articulo.stock_minimo }}</td>
+                                        <td>{{ articulo.stock_maximo|default:"-" }}</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button type="button" class="btn btn-sm btn-soft-info btn-modal-articulo" data-url="{% url 'bodega:articulo_modal_detalle' articulo.pk %}" title="Ver">
+                                                    <i class="ri-eye-line"></i>
+                                                </button>
+                                                {% if permisos.puede_editar_articulo %}
+                                                <button type="button" class="btn btn-sm btn-soft-primary btn-modal-articulo" data-url="{% url 'bodega:articulo_modal_editar' articulo.pk %}" title="Editar">
+                                                    <i class="ri-pencil-line"></i>
+                                                </button>
+                                                {% endif %}
+                                                <button type="button" class="btn btn-sm btn-soft-warning btn-modal-articulo" data-url="{% url 'bodega:articulo_modal_movimientos' articulo.pk %}" data-size="modal-xl" title="Movimientos">
+                                                    <i class="ri-arrow-left-right-line"></i>
+                                                </button>
+                                                {% if permisos.puede_eliminar_articulo %}
+                                                <button type="button" class="btn btn-sm btn-soft-danger btn-modal-articulo" data-url="{% url 'bodega:articulo_modal_eliminar' articulo.pk %}" title="Eliminar">
+                                                    <i class="ri-delete-bin-line"></i>
+                                                </button>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="8" class="text-center text-muted py-4">No hay artículos registrados</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Card 4: Movimientos -->
-            <div class="col-lg-3 col-sm-6 mb-4">
-                <div class="modulo-card">
-                    <div class="modulo-card-icon modulo-card-icon-secondary">
-                        <i class="ri-exchange-line"></i>
-                    </div>
-                    <div class="modulo-card-content">
-                        <h6 class="modulo-card-title">MOVIMIENTOS</h6>
-                        <p class="modulo-card-desc">Gestione los movimientos de inventario</p>
-                        <div class="modulo-card-actions d-grid gap-2">
-                            {% if permisos.puede_crear_movimiento %}
-                            <a href="{% url 'bodega:movimiento_crear' %}" class="btn btn-sm btn-secondary">
-                                <i class="ri-add-line align-bottom me-1"></i> Nuevo Movimiento
-                            </a>
-                            {% endif %}
-                            <a href="{% url 'bodega:movimiento_lista' %}" class="btn btn-sm btn-outline-secondary">
-                                <i class="ri-list-check align-bottom me-1"></i> Ver Movimientos
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 5: Recepción de Artículos -->
-            <div class="col-lg-3 col-sm-6 mb-4">
-                <div class="modulo-card">
-                    <div class="modulo-card-icon modulo-card-icon-danger">
-                        <i class="ri-inbox-line"></i>
-                    </div>
-                    <div class="modulo-card-content">
-                        <h6 class="modulo-card-title">RECEPCIÓN ARTÍCULOS</h6>
-                        <p class="modulo-card-desc">Recepcione artículos de órdenes de compra</p>
-                        <div class="modulo-card-actions d-grid gap-2">
-                            {% if permisos.puede_gestionar %}
-                            <a href="{% url 'bodega:recepcion_articulo_crear' %}" class="btn btn-sm btn-danger">
-                                <i class="ri-add-line align-bottom me-1"></i> Nueva Recepción
-                            </a>
-                            {% endif %}
-                            <a href="{% url 'bodega:recepcion_articulo_lista' %}" class="btn btn-sm btn-outline-danger">
-                                <i class="ri-list-check align-bottom me-1"></i> Ver Recepciones
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 6: Recepción de Bienes -->
-            <div class="col-lg-3 col-sm-6 mb-4">
-                <div class="modulo-card">
-                    <div class="modulo-card-icon modulo-card-icon-dark">
-                        <i class="ri-archive-line"></i>
-                    </div>
-                    <div class="modulo-card-content">
-                        <h6 class="modulo-card-title">RECEPCIÓN BIENES</h6>
-                        <p class="modulo-card-desc">Recepcione bienes/activos de órdenes de compra</p>
-                        <div class="modulo-card-actions d-grid gap-2">
-                            {% if permisos.puede_gestionar %}
-                            <a href="{% url 'bodega:recepcion_activo_crear' %}" class="btn btn-sm btn-dark">
-                                <i class="ri-add-line align-bottom me-1"></i> Nueva Recepción
-                            </a>
-                            {% endif %}
-                            <a href="{% url 'bodega:recepcion_activo_lista' %}" class="btn btn-sm btn-outline-dark">
-                                <i class="ri-list-check align-bottom me-1"></i> Ver Recepciones
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 7: Entregas de Bienes -->
-            <div class="col-lg-3 col-sm-6 mb-4">
-                <div class="modulo-card">
-                    <div class="modulo-card-icon modulo-card-icon-warning">
-                        <i class="ri-handbag-line"></i>
-                    </div>
-                    <div class="modulo-card-content">
-                        <h6 class="modulo-card-title">ENTREGAS BIENES</h6>
-                        <p class="modulo-card-desc">Gestione las entregas formales de bienes</p>
-                        <div class="modulo-card-actions d-grid gap-2">
-                            {% if permisos.puede_gestionar %}
-                            <a href="{% url 'bodega:entrega_bien_crear' %}" class="btn btn-sm btn-warning">
-                                <i class="ri-add-line align-bottom me-1"></i> Nueva Entrega
-                            </a>
-                            {% endif %}
-                            <a href="{% url 'bodega:entrega_bien_lista' %}" class="btn btn-sm btn-outline-warning">
-                                <i class="ri-list-check align-bottom me-1"></i> Ver Entregas
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Sección de Mantenedores -->
-        <div class="row mb-4">
-            <div class="col-12">
+            <!-- ============ CATEGORÍAS TAB ============ -->
+            <div class="tab-pane fade" id="categorias" role="tabpanel" aria-labelledby="categorias-tab">
                 <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i class="ri-settings-3-line me-2"></i>Mantenedores:
-                        </h5>
+                    <div class="card-header d-flex align-items-center">
+                        <h4 class="card-title flex-grow-1 mb-0">Gestión de Categorías</h4>
+                        {% if permisos.puede_crear_categoria %}
+                        <a href="{% url 'bodega:categoria_crear' %}" class="btn btn-primary">
+                            <i class="ri-add-line me-1"></i>Nueva Categoría
+                        </a>
+                        {% endif %}
                     </div>
                     <div class="card-body">
-                        <div class="row g-3">
-            <!-- Card 6: Marcas -->
-            <div class="col-lg-3 col-sm-6 mb-4">
-                <div class="modulo-card">
-                    <div class="modulo-card-icon modulo-card-icon-primary">
-                        <i class="ri-price-tag-3-line"></i>
-                    </div>
-                    <div class="modulo-card-content">
-                        <h6 class="modulo-card-title">MARCAS</h6>
-                        <p class="modulo-card-desc">Gestione las marcas de los artículos</p>
-                        <div class="modulo-card-actions d-grid gap-2">
-                            <a href="{% url 'bodega:marca_crear' %}" class="btn btn-sm btn-primary">
-                                <i class="ri-add-line align-bottom me-1"></i> Nueva Marca
-                            </a>
-                            <a href="{% url 'bodega:marca_lista' %}" class="btn btn-sm btn-outline-primary">
-                                <i class="ri-list-check align-bottom me-1"></i> Ver Marcas
-                            </a>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nombre</th>
+                                        <th>Descripción</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for categoria in categorias %}
+                                    <tr>
+                                        <td><code>{{ categoria.codigo }}</code></td>
+                                        <td>{{ categoria.nombre }}</td>
+                                        <td>{{ categoria.descripcion|default:"-" }}</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{% url 'bodega:categoria_editar' categoria.pk %}" class="btn btn-sm btn-soft-primary"><i class="ri-pencil-line"></i></a>
+                                                <a href="{% url 'bodega:categoria_eliminar' categoria.pk %}" class="btn btn-sm btn-soft-danger"><i class="ri-delete-bin-line"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">No hay categorías registradas</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Card 7: Operaciones -->
-            <div class="col-lg-3 col-sm-6 mb-4">
-                <div class="modulo-card">
-                    <div class="modulo-card-icon modulo-card-icon-info">
-                        <i class="ri-settings-3-line"></i>
+            <!-- ============ OPERACIONES TAB ============ -->
+            <div class="tab-pane fade" id="operaciones" role="tabpanel" aria-labelledby="operaciones-tab">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4 class="card-title flex-grow-1 mb-0">Gestión de Operaciones</h4>
+                        {% if permisos.puede_crear_operacion %}
+                        <a href="{% url 'bodega:operacion_crear' %}" class="btn btn-primary">
+                            <i class="ri-add-line me-1"></i>Nueva Operación
+                        </a>
+                        {% endif %}
                     </div>
-                    <div class="modulo-card-content">
-                        <h6 class="modulo-card-title">OPERACIONES</h6>
-                        <p class="modulo-card-desc">Gestione las operaciones de bodega</p>
-                        <div class="modulo-card-actions d-grid gap-2">
-                            <a href="{% url 'bodega:operacion_crear' %}" class="btn btn-sm btn-info">
-                                <i class="ri-add-line align-bottom me-1"></i> Nueva Operación
-                            </a>
-                            <a href="{% url 'bodega:operacion_lista' %}" class="btn btn-sm btn-outline-info">
-                                <i class="ri-list-check align-bottom me-1"></i> Ver Operaciones
-                            </a>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nombre</th>
+                                        <th>Descripción</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for operacion in operaciones %}
+                                    <tr>
+                                        <td><code>{{ operacion.codigo }}</code></td>
+                                        <td>{{ operacion.nombre }}</td>
+                                        <td>{{ operacion.descripcion|default:"-" }}</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{% url 'bodega:operacion_editar' operacion.pk %}" class="btn btn-sm btn-soft-primary"><i class="ri-pencil-line"></i></a>
+                                                <a href="{% url 'bodega:operacion_eliminar' operacion.pk %}" class="btn btn-sm btn-soft-danger"><i class="ri-delete-bin-line"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">No hay operaciones registradas</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Card 8: Tipos de Movimiento -->
-            <div class="col-lg-3 col-sm-6 mb-4">
-                <div class="modulo-card">
-                    <div class="modulo-card-icon modulo-card-icon-success">
-                        <i class="ri-arrow-left-right-line"></i>
+            <!-- ============ TIPOS DE MOVIMIENTO TAB ============ -->
+            <div class="tab-pane fade" id="tipos-movimiento" role="tabpanel" aria-labelledby="tipos-movimiento-tab">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4 class="card-title flex-grow-1 mb-0">Gestión de Tipos de Movimiento</h4>
+                        {% if permisos.puede_crear_tipo_movimiento %}
+                        <a href="{% url 'bodega:tipo_movimiento_crear' %}" class="btn btn-primary">
+                            <i class="ri-add-line me-1"></i>Nuevo Tipo
+                        </a>
+                        {% endif %}
                     </div>
-                    <div class="modulo-card-content">
-                        <h6 class="modulo-card-title">TIPOS MOVIMIENTO</h6>
-                        <p class="modulo-card-desc">Gestione los tipos de movimiento de inventario</p>
-                        <div class="modulo-card-actions d-grid gap-2">
-                            <a href="{% url 'bodega:tipo_movimiento_crear' %}" class="btn btn-sm btn-success">
-                                <i class="ri-add-line align-bottom me-1"></i> Nuevo Tipo
-                            </a>
-                            <a href="{% url 'bodega:tipo_movimiento_lista' %}" class="btn btn-sm btn-outline-success">
-                                <i class="ri-list-check align-bottom me-1"></i> Ver Tipos
-                            </a>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nombre</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for tipo in tipos_movimiento %}
+                                    <tr>
+                                        <td><code>{{ tipo.codigo }}</code></td>
+                                        <td>{{ tipo.nombre }}</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{% url 'bodega:tipo_movimiento_editar' tipo.pk %}" class="btn btn-sm btn-soft-primary"><i class="ri-pencil-line"></i></a>
+                                                <a href="{% url 'bodega:tipo_movimiento_eliminar' tipo.pk %}" class="btn btn-sm btn-soft-danger"><i class="ri-delete-bin-line"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted py-4">No hay tipos de movimiento registrados</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Card 9: Unidades de Medida -->
-            <div class="col-lg-3 col-sm-6 mb-4">
-                <div class="modulo-card">
-                    <div class="modulo-card-icon modulo-card-icon-secondary">
-                        <i class="ri-ruler-line"></i>
+            <!-- ============ UNIDADES DE MEDIDA TAB ============ -->
+            <div class="tab-pane fade" id="unidades-medida" role="tabpanel" aria-labelledby="unidades-medida-tab">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4 class="card-title flex-grow-1 mb-0">Gestión de Unidades de Medida</h4>
+                        {% if permisos.puede_crear_unidad %}
+                        <a href="{% url 'bodega:unidad_crear' %}" class="btn btn-primary">
+                            <i class="ri-add-line me-1"></i>Nueva Unidad
+                        </a>
+                        {% endif %}
                     </div>
-                    <div class="modulo-card-content">
-                        <h6 class="modulo-card-title">UNIDADES MEDIDA</h6>
-                        <p class="modulo-card-desc">Gestione las unidades de medida de artículos</p>
-                        <div class="modulo-card-actions d-grid gap-2">
-                            <a href="{% url 'bodega:unidad_crear' %}" class="btn btn-sm btn-secondary">
-                                <i class="ri-add-line align-bottom me-1"></i> Nueva Unidad
-                            </a>
-                            <a href="{% url 'bodega:lista_unidades' %}" class="btn btn-sm btn-outline-secondary">
-                                <i class="ri-list-check align-bottom me-1"></i> Ver Unidades
-                            </a>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nombre</th>
+                                        <th>Abreviatura</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for unidad in unidades_medida %}
+                                    <tr>
+                                        <td><code>{{ unidad.codigo }}</code></td>
+                                        <td>{{ unidad.nombre }}</td>
+                                        <td><span class="badge bg-secondary">{{ unidad.abreviatura }}</span></td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{% url 'bodega:unidad_editar' unidad.pk %}" class="btn btn-sm btn-soft-primary"><i class="ri-pencil-line"></i></a>
+                                                <a href="{% url 'bodega:unidad_eliminar' unidad.pk %}" class="btn btn-sm btn-soft-danger"><i class="ri-delete-bin-line"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">No hay unidades de medida registradas</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Card 10: Estados de Recepción -->
-            <div class="col-lg-3 col-sm-6 mb-4">
-                <div class="modulo-card">
-                    <div class="modulo-card-icon modulo-card-icon-warning">
-                        <i class="ri-file-list-3-line"></i>
+            <!-- ============ ESTADOS DE RECEPCIÓN TAB ============ -->
+            <div class="tab-pane fade" id="estados-recepcion" role="tabpanel" aria-labelledby="estados-recepcion-tab">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4 class="card-title flex-grow-1 mb-0">Gestión de Estados de Recepción</h4>
+                        {% if permisos.puede_crear_estado_recepcion %}
+                        <a href="{% url 'bodega:estado_recepcion_crear' %}" class="btn btn-primary">
+                            <i class="ri-add-line me-1"></i>Nuevo Estado
+                        </a>
+                        {% endif %}
                     </div>
-                    <div class="modulo-card-content">
-                        <h6 class="modulo-card-title">ESTADOS RECEPCIÓN</h6>
-                        <p class="modulo-card-desc">Gestione los estados de las recepciones</p>
-                        <div class="modulo-card-actions d-grid gap-2">
-                            <a href="{% url 'bodega:estado_recepcion_crear' %}" class="btn btn-sm btn-warning">
-                                <i class="ri-add-line align-bottom me-1"></i> Nuevo Estado
-                            </a>
-                            <a href="{% url 'bodega:estado_recepcion_lista' %}" class="btn btn-sm btn-outline-warning">
-                                <i class="ri-list-check align-bottom me-1"></i> Ver Estados
-                            </a>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nombre</th>
+                                        <th>Descripción</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for estado in estados_recepcion %}
+                                    <tr>
+                                        <td><code>{{ estado.codigo }}</code></td>
+                                        <td>{{ estado.nombre }}</td>
+                                        <td>{{ estado.descripcion|default:"-" }}</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{% url 'bodega:estado_recepcion_editar' estado.pk %}" class="btn btn-sm btn-soft-primary"><i class="ri-pencil-line"></i></a>
+                                                <a href="{% url 'bodega:estado_recepcion_eliminar' estado.pk %}" class="btn btn-sm btn-soft-danger"><i class="ri-delete-bin-line"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">No hay estados de recepción registrados</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Card 11: Tipos de Recepción -->
-            <div class="col-lg-3 col-sm-6 mb-4">
-                <div class="modulo-card">
-                    <div class="modulo-card-icon modulo-card-icon-danger">
-                        <i class="ri-folder-settings-line"></i>
+            <!-- ============ TIPOS DE RECEPCIÓN TAB ============ -->
+            <div class="tab-pane fade" id="tipos-recepcion" role="tabpanel" aria-labelledby="tipos-recepcion-tab">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4 class="card-title flex-grow-1 mb-0">Gestión de Tipos de Recepción</h4>
+                        {% if permisos.puede_crear_tipo_recepcion %}
+                        <a href="{% url 'bodega:tipo_recepcion_crear' %}" class="btn btn-primary">
+                            <i class="ri-add-line me-1"></i>Nuevo Tipo
+                        </a>
+                        {% endif %}
                     </div>
-                    <div class="modulo-card-content">
-                        <h6 class="modulo-card-title">TIPOS RECEPCIÓN</h6>
-                        <p class="modulo-card-desc">Gestione los tipos de recepción</p>
-                        <div class="modulo-card-actions d-grid gap-2">
-                            <a href="{% url 'bodega:tipo_recepcion_crear' %}" class="btn btn-sm btn-danger">
-                                <i class="ri-add-line align-bottom me-1"></i> Nuevo Tipo
-                            </a>
-                            <a href="{% url 'bodega:tipo_recepcion_lista' %}" class="btn btn-sm btn-outline-danger">
-                                <i class="ri-list-check align-bottom me-1"></i> Ver Tipos
-                            </a>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nombre</th>
+                                        <th>Descripción</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for tipo in tipos_recepcion %}
+                                    <tr>
+                                        <td><code>{{ tipo.codigo }}</code></td>
+                                        <td>{{ tipo.nombre }}</td>
+                                        <td>{{ tipo.descripcion|default:"-" }}</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{% url 'bodega:tipo_recepcion_editar' tipo.pk %}" class="btn btn-sm btn-soft-primary"><i class="ri-pencil-line"></i></a>
+                                                <a href="{% url 'bodega:tipo_recepcion_eliminar' tipo.pk %}" class="btn btn-sm btn-soft-danger"><i class="ri-delete-bin-line"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">No hay tipos de recepción registrados</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
         </div>
+    </div>
+</div>
 
-        <!-- Información adicional -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card border-0 shadow-none">
-                    <div class="card-body">
-                        <div class="alert alert-success border-0 mb-0" role="alert">
-                            <div class="d-flex">
-                                <div class="flex-shrink-0">
-                                    <i class="ri-information-line fs-16 align-middle"></i>
-                                </div>
-                                <div class="flex-grow-1 ms-3">
-                                    <h6 class="alert-heading">Información del Módulo</h6>
-                                    <p class="mb-0">
-                                        Gestione el inventario completo de bodega incluyendo <strong>categorías</strong>, <strong>artículos</strong>, <strong>movimientos</strong>, <strong>recepciones</strong> y <strong>entregas formales</strong>.
-                                        Actualmente el sistema tiene <strong>{{ stats.total_articulos }} artículos</strong> registrados
-                                        distribuidos en <strong>{{ stats.bodegas_activas }} bodegas activas</strong>, con
-                                        <strong>{{ stats.total_entregas_articulos }} entregas de artículos</strong> y
-                                        <strong>{{ stats.total_entregas_bienes }} entregas de bienes</strong> registradas.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+<!-- Modal genérico para artículos -->
+<div class="modal fade" id="articuloModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content" id="articuloModalContent">
+            <div class="modal-body text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
                 </div>
             </div>
         </div>
@@ -376,5 +452,63 @@
 {% endblock %}
 
 {% block extra_js %}
-{{ block.super }}
-{% endblock %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modalEl = document.getElementById('articuloModal');
+    const modalContent = document.getElementById('articuloModalContent');
+    const modalDialog = modalEl.querySelector('.modal-dialog');
+    const modal = new bootstrap.Modal(modalEl);
+
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.btn-modal-articulo');
+        if (!btn) return;
+
+        const url = btn.dataset.url;
+        const size = btn.dataset.size || 'modal-lg';
+
+        // Ajustar tamaño del modal
+        modalDialog.classList.remove('modal-lg', 'modal-xl');
+        modalDialog.classList.add(size);
+
+        // Mostrar spinner
+        modalContent.innerHTML = '<div class="modal-body text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div></div>';
+        modal.show();
+
+        // Cargar contenido via AJAX
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(response => response.text())
+            .then(html => {
+                modalContent.innerHTML = html;
+                // Manejar formularios dentro del modal
+                const form = modalContent.querySelector('form');
+                if (form) {
+                    form.addEventListener('submit', function(ev) {
+                        ev.preventDefault();
+                        const formData = new FormData(form);
+                        fetch(form.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        })
+                        .then(resp => {
+                            if (resp.headers.get('content-type')?.includes('application/json')) {
+                                return resp.json().then(data => {
+                                    if (data.success) {
+                                        modal.hide();
+                                        location.reload();
+                                    }
+                                });
+                            } else {
+                                // El servidor devolvió HTML (errores de validación)
+                                return resp.text().then(html => {
+                                    modalContent.innerHTML = html;
+                                });
+                            }
+                        });
+                    });
+                }
+            });
+    });
+});
+</script>
+{% endblock extra_js %}

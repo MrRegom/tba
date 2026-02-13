@@ -75,48 +75,45 @@ from apps.bodega.excel_services.importacion_excel import ImportacionExcelService
 
 class MenuBodegaView(LoginRequiredMixin, TemplateView):
     """
-    Vista del menú principal de bodega con estadísticas.
+    Vista del menú principal de bodega con tabs.
 
-    Muestra cards con resumen de bodega según las mejores prácticas de Django 5.2.
-    Usa repositories para obtener estadísticas de manera eficiente.
+    Muestra tabs con las tablas de gestión de bodega.
     """
     template_name = 'bodega/menu_bodega.html'
 
     def get_context_data(self, **kwargs) -> dict:
-        """Agrega estadísticas al contexto usando repositories."""
+        """Agrega los querysets de todas las tablas para los tabs."""
+        from apps.bodega.models import (
+            Articulo, Categoria, Operacion, TipoMovimiento,
+            UnidadMedida, EstadoRecepcion, TipoRecepcion
+        )
+        
         context = super().get_context_data(**kwargs)
         user = self.request.user
 
-        # Usar repositories para obtener estadísticas
-        articulo_repo = ArticuloRepository()
-        categoria_repo = CategoriaRepository()
-        bodega_repo = BodegaRepository()
-        movimiento_repo = MovimientoRepository()
-        entrega_articulo_repo = EntregaArticuloRepository()
-        entrega_bien_repo = EntregaBienRepository()
-
-        # Estadísticas para el módulo de bodega
-        context['stats'] = {
-            'total_articulos': articulo_repo.get_all().count(),
-            'total_categorias': categoria_repo.get_all().count(),
-            'total_movimientos': movimiento_repo.get_all().count(),
-            'bodegas_activas': bodega_repo.get_active().count(),
-            'stock_total': articulo_repo.get_all().aggregate(
-                total=Sum('stock_actual')
-            )['total'] or 0,
-            'total_entregas_articulos': entrega_articulo_repo.get_all().count(),
-            'total_entregas_bienes': entrega_bien_repo.get_all().count(),
-        }
+        # Querysets para cada tab
+        context['articulos'] = Articulo.objects.select_related('categoria', 'unidad_medida', 'marca').all()
+        context['categorias'] = Categoria.objects.all()
+        context['operaciones'] = Operacion.objects.all()
+        context['tipos_movimiento'] = TipoMovimiento.objects.all()
+        context['unidades_medida'] = UnidadMedida.objects.all()
+        context['estados_recepcion'] = EstadoRecepcion.objects.all()
+        context['tipos_recepcion'] = TipoRecepcion.objects.all()
 
         # Permisos del usuario
         context['permisos'] = {
             'puede_crear_articulo': user.has_perm('bodega.add_articulo'),
+            'puede_editar_articulo': user.has_perm('bodega.change_articulo'),
+            'puede_eliminar_articulo': user.has_perm('bodega.delete_articulo'),
             'puede_crear_categoria': user.has_perm('bodega.add_categoria'),
-            'puede_crear_movimiento': user.has_perm('bodega.add_movimiento'),
-            'puede_gestionar': user.has_perm('bodega.change_articulo'),
+            'puede_crear_operacion': user.has_perm('bodega.add_operacion'),
+            'puede_crear_tipo_movimiento': user.has_perm('bodega.add_tipomovimiento'),
+            'puede_crear_unidad': user.has_perm('bodega.add_unidadmedida'),
+            'puede_crear_estado_recepcion': user.has_perm('bodega.add_estadorecepcion'),
+            'puede_crear_tipo_recepcion': user.has_perm('bodega.add_tiporecepcion'),
         }
 
-        context['titulo'] = 'Módulo de Bodega'
+        context['titulo'] = 'Gestores - Bodega'
         return context
 
 
@@ -622,6 +619,74 @@ class ArticuloDetailView(BaseAuditedViewMixin, DetailView):
             self.object, limit=20
         )
 
+        return context
+
+
+# ==================== VISTAS MODALES DE ARTÍCULOS (AJAX) ====================
+
+class ArticuloModalDetalle(LoginRequiredMixin, DetailView):
+    """Devuelve el parcial HTML del modal de detalle de artículo."""
+    model = Articulo
+    template_name = 'bodega/articulo/partials/modal_detalle.html'
+    context_object_name = 'articulo'
+
+    def get_queryset(self):
+        return Articulo.objects.select_related(
+            'categoria', 'marca', 'unidad_medida', 'ubicacion_fisica'
+        ).filter(eliminado=False)
+
+
+class ArticuloModalEditar(LoginRequiredMixin, UpdateView):
+    """Devuelve el parcial HTML del modal de edición y procesa el POST."""
+    model = Articulo
+    form_class = ArticuloForm
+    template_name = 'bodega/articulo/partials/modal_editar.html'
+    context_object_name = 'articulo'
+
+    def get_queryset(self):
+        return Articulo.objects.filter(eliminado=False)
+
+    def form_valid(self, form):
+        form.save()
+        return JsonResponse({'success': True})
+
+    def form_invalid(self, form):
+        from django.template.loader import render_to_string
+        html = render_to_string(self.template_name, self.get_context_data(form=form), request=self.request)
+        return HttpResponse(html)
+
+
+class ArticuloModalEliminar(LoginRequiredMixin, DetailView):
+    """Devuelve el parcial HTML del modal de eliminación y procesa el POST."""
+    model = Articulo
+    template_name = 'bodega/articulo/partials/modal_eliminar.html'
+    context_object_name = 'articulo'
+
+    def get_queryset(self):
+        return Articulo.objects.select_related('categoria').filter(eliminado=False)
+
+    def post(self, request, *args, **kwargs):
+        articulo = self.get_object()
+        articulo.eliminado = True
+        articulo.save(update_fields=['eliminado'])
+        return JsonResponse({'success': True})
+
+
+class ArticuloModalMovimientos(LoginRequiredMixin, DetailView):
+    """Devuelve el parcial HTML del modal de movimientos de un artículo."""
+    model = Articulo
+    template_name = 'bodega/articulo/partials/modal_movimientos.html'
+    context_object_name = 'articulo'
+
+    def get_queryset(self):
+        return Articulo.objects.filter(eliminado=False)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        service = MovimientoService()
+        context['movimientos'] = service.obtener_historial_articulo(
+            self.object, limit=20
+        )
         return context
 
 
