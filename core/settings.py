@@ -34,6 +34,12 @@ if 'capacitacion.logisticatba.cloud' not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append('capacitacion.logisticatba.cloud')
     ALLOWED_HOSTS.append('.logisticatba.cloud')
 
+# Configuración de CSRF para producción (Django 4.0+)
+CSRF_TRUSTED_ORIGINS = env.list('DJANGO_CSRF_TRUSTED_ORIGINS', default=[
+    'https://capacitacion.logisticatba.cloud',
+    'https://*.logisticatba.cloud'
+])
+
 # Application definition
 
 INSTALLED_APPS = [
