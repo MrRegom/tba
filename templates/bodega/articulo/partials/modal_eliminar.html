@@ -1,0 +1,33 @@
+<!-- Modal Eliminar Articulo -->
+<div class="modal-header bg-danger text-white">
+    <h5 class="modal-title">
+        <i class="ri-delete-bin-line me-1"></i>Eliminar Articulo
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+</div>
+<form method="post" action="{% url 'bodega:articulo_modal_eliminar' articulo.pk %}">
+    {% csrf_token %}
+    <div class="modal-body">
+        <div class="alert alert-danger">
+            <i class="ri-error-warning-line me-1"></i>
+            <strong>Esta accion no se puede deshacer.</strong>
+        </div>
+        <p>Esta seguro que desea eliminar el siguiente articulo?</p>
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Nombre:</dt>
+            <dd class="col-sm-8">{{ articulo.nombre }}</dd>
+            <dt class="col-sm-4">Categoria:</dt>
+            <dd class="col-sm-8">{{ articulo.categoria.nombre }}</dd>
+            <dt class="col-sm-4">Stock Actual:</dt>
+            <dd class="col-sm-8">
+                <span class="badge bg-secondary">{{ articulo.stock_actual }}</span>
+            </dd>
+        </dl>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-danger">
+            <i class="ri-delete-bin-line me-1"></i>Si, eliminar
+        </button>
+    </div>
+</form>

@@ -1,0 +1,55 @@
+<!-- Modal Movimientos del Articulo -->
+<div class="modal-header">
+    <h5 class="modal-title">
+        <i class="ri-arrow-left-right-line me-1"></i>Movimientos: {{ articulo.nombre }}
+    </h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+</div>
+<div class="modal-body">
+    <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Fecha</th>
+                    <th>Operacion</th>
+                    <th>Tipo</th>
+                    <th>Cantidad</th>
+                    <th>Stock</th>
+                    <th>Usuario</th>
+                    <th>Motivo</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mov in movimientos %}
+                <tr>
+                    <td class="text-nowrap">{{ mov.fecha_creacion|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        <span class="badge {% if mov.operacion.tipo == 'ENTRADA' %}bg-success{% else %}bg-danger{% endif %}">
+                            {{ mov.operacion.nombre }}
+                        </span>
+                    </td>
+                    <td>{{ mov.tipo.nombre }}</td>
+                    <td><strong>{{ mov.cantidad }}</strong></td>
+                    <td>
+                        <span class="text-muted">{{ mov.stock_antes }}</span>
+                        <i class="ri-arrow-right-s-line"></i>
+                        <strong>{{ mov.stock_despues }}</strong>
+                    </td>
+                    <td>{{ mov.usuario.get_full_name|default:mov.usuario.username }}</td>
+                    <td>{{ mov.motivo|truncatewords:8 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">
+                        <i class="ri-inbox-line fs-3 d-block mb-2"></i>
+                        No hay movimientos registrados para este articulo
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+</div>

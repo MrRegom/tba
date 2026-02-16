@@ -1,0 +1,271 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}Menú de Gestores{% endblock %}
+
+{% block extra_css %}
+<style>
+    .gestores-menu-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+        cursor: pointer;
+        background: #fff;
+    }
+    
+    .gestores-menu-card:hover {
+        transform: translateX(8px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .gestores-menu-card.articulos { border-left-color: #4b9fe1; }
+    .gestores-menu-card.articulos:hover { border-left-color: #3182ce; background-color: #eef6ff; }
+    
+    .gestores-menu-card.solicitudes { border-left-color: #f59e0b; }
+    .gestores-menu-card.solicitudes:hover { border-left-color: #d97706; background-color: #fff7ed; }
+    
+    .gestores-menu-card.compras { border-left-color: #10b981; }
+    .gestores-menu-card.compras:hover { border-left-color: #059669; background-color: #ecfdf5; }
+    
+    .gestores-menu-card.bodega { border-left-color: #8b5cf6; }
+    .gestores-menu-card.bodega:hover { border-left-color: #7c3aed; background-color: #f5f3ff; }
+    
+    .gestores-menu-card.inventario { border-left-color: #ef4444; }
+    .gestores-menu-card.inventario:hover { border-left-color: #dc2626; background-color: #fef2f2; }
+    
+    .gestores-menu-card.organizacion { border-left-color: #06b6d4; }
+    .gestores-menu-card.organizacion:hover { border-left-color: #0891b2; background-color: #ecfeff; }
+    
+    .gestores-menu-card.usuarios { border-left-color: #6366f1; }
+    .gestores-menu-card.usuarios:hover { border-left-color: #4f46e5; background-color: #eef2ff; }
+    
+    .gestores-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        color: #fff;
+    }
+    
+    .gestores-icon.articulos { background: linear-gradient(135deg, #4b9fe1 0%, #3182ce 100%); }
+    .gestores-icon.solicitudes { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+    .gestores-icon.compras { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+    .gestores-icon.bodega { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+    .gestores-icon.inventario { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+    .gestores-icon.organizacion { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); }
+    .gestores-icon.usuarios { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
+    
+    .gestores-menu-card .card-body {
+        padding: 1.5rem;
+    }
+    
+    .gestores-menu-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #1e293b;
+    }
+    
+    .gestores-menu-desc {
+        font-size: 0.875rem;
+        color: #64748b;
+        margin-bottom: 0;
+    }
+    
+    .gestores-arrow {
+        color: #cbd5e1;
+        font-size: 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .gestores-menu-card:hover .gestores-arrow {
+        color: #64748b;
+        transform: translateX(4px);
+    }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<!-- start page title -->
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between mb-3">
+            <h4 class="mb-sm-0">Gestores del Sistema</h4>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard_analytics' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Gestores</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- end page title -->
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<!-- Menú de Gestores -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="ri-settings-3-line me-2"></i>Administración de Catálogos
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-4">Selecciona un módulo para gestionar sus catálogos y configuración</p>
+                
+                <!-- Artículos -->
+                <a href="{% url 'bodega:articulo_lista' %}" class="text-decoration-none">
+                    <div class="card gestores-menu-card articulos mb-3">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="gestores-icon articulos flex-shrink-0">
+                                    <i class="ri-shopping-bag-3-line"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h5 class="gestores-menu-title">Artículos</h5>
+                                    <p class="gestores-menu-desc">Gestión de artículos, categorías de bodega, unidades de medida</p>
+                                </div>
+                                <div class="gestores-arrow">
+                                    <i class="ri-arrow-right-s-line"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Solicitudes -->
+                <a href="{% url 'solicitudes:menu_solicitudes' %}" class="text-decoration-none">
+                    <div class="card gestores-menu-card solicitudes mb-3">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="gestores-icon solicitudes flex-shrink-0">
+                                    <i class="ri-file-list-3-line"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h5 class="gestores-menu-title">Solicitudes</h5>
+                                    <p class="gestores-menu-desc">Solicitudes de artículos, activos y gestión de requisiciones</p>
+                                </div>
+                                <div class="gestores-arrow">
+                                    <i class="ri-arrow-right-s-line"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Compras -->
+                <a href="{% url 'compras:menu_compras' %}" class="text-decoration-none">
+                    <div class="card gestores-menu-card compras mb-3">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="gestores-icon compras flex-shrink-0">
+                                    <i class="ri-shopping-cart-2-line"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h5 class="gestores-menu-title">Compras</h5>
+                                    <p class="gestores-menu-desc">Órdenes de compra, proveedores y gestión de adquisiciones</p>
+                                </div>
+                                <div class="gestores-arrow">
+                                    <i class="ri-arrow-right-s-line"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Bodega -->
+                <a href="{% url 'bodega:menu_bodega' %}" class="text-decoration-none">
+                    <div class="card gestores-menu-card bodega mb-3">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="gestores-icon bodega flex-shrink-0">
+                                    <i class="ri-store-2-line"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h5 class="gestores-menu-title">Bodega</h5>
+                                    <p class="gestores-menu-desc">Control de inventario, movimientos y gestión de stock</p>
+                                </div>
+                                <div class="gestores-arrow">
+                                    <i class="ri-arrow-right-s-line"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Inventario -->
+                <a href="{% url 'activos:lista_activos' %}" class="text-decoration-none">
+                    <div class="card gestores-menu-card inventario mb-3">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="gestores-icon inventario flex-shrink-0">
+                                    <i class="ri-archive-line"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h5 class="gestores-menu-title">Inventario</h5>
+                                    <p class="gestores-menu-desc">Activos fijos, categorías, estados y tipos de movimiento</p>
+                                </div>
+                                <div class="gestores-arrow">
+                                    <i class="ri-arrow-right-s-line"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Organización -->
+                <a href="{% url 'accounts:ubicacion_lista' %}" class="text-decoration-none">
+                    <div class="card gestores-menu-card organizacion mb-3">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="gestores-icon organizacion flex-shrink-0">
+                                    <i class="ri-building-line"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h5 class="gestores-menu-title">Organización</h5>
+                                    <p class="gestores-menu-desc">Ubicaciones, departamentos, áreas y estructura organizacional</p>
+                                </div>
+                                <div class="gestores-arrow">
+                                    <i class="ri-arrow-right-s-line"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Usuarios -->
+                <a href="{% url 'accounts:cargo_lista' %}" class="text-decoration-none">
+                    <div class="card gestores-menu-card usuarios mb-3">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="gestores-icon usuarios flex-shrink-0">
+                                    <i class="ri-team-line"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h5 class="gestores-menu-title">Usuarios</h5>
+                                    <p class="gestores-menu-desc">Cargos, perfiles de usuario y gestión de permisos</p>
+                                </div>
+                                <div class="gestores-arrow">
+                                    <i class="ri-arrow-right-s-line"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
