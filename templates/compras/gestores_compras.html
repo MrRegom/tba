@@ -1,0 +1,185 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<!-- Page Title -->
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0"><i class="ri-settings-3-line me-2"></i>{{ titulo }}</h4>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard_analytics' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'compras:menu_compras' %}">Compras</a></li>
+                    <li class="breadcrumb-item active">Gestores</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs Navigation -->
+<div class="row">
+    <div class="col-lg-12">
+        <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="estados-oc-tab" data-bs-toggle="pill"
+                    data-bs-target="#estados-oc" type="button" role="tab"
+                    aria-controls="estados-oc" aria-selected="true">
+                    <i class="ri-file-list-line me-1"></i>Estados de Orden de Compra
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="proveedores-tab" data-bs-toggle="pill"
+                    data-bs-target="#proveedores" type="button" role="tab"
+                    aria-controls="proveedores" aria-selected="false">
+                    <i class="ri-store-2-line me-1"></i>Proveedores
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="pills-tabContent">
+
+            <!-- ============ ESTADOS OC TAB ============ -->
+            <div class="tab-pane fade show active" id="estados-oc" role="tabpanel" aria-labelledby="estados-oc-tab">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4 class="card-title flex-grow-1 mb-0">Estados de Orden de Compra</h4>
+                        {% if puede_crear_estado %}
+                        <a href="{% url 'compras:estado_orden_compra_crear' %}" class="btn btn-primary">
+                            <i class="ri-add-line me-1"></i>Nuevo Estado
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nombre</th>
+                                        <th>Color</th>
+                                        <th>Descripción</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for estado in estados %}
+                                    <tr>
+                                        <td><code>{{ estado.codigo }}</code></td>
+                                        <td>{{ estado.nombre }}</td>
+                                        <td>
+                                            <span class="badge" style="background-color: {{ estado.color }}; color: white;">
+                                                {{ estado.color }}
+                                            </span>
+                                        </td>
+                                        <td>{{ estado.descripcion|truncatewords:10|default:"-" }}</td>
+                                        <td>
+                                            {% if estado.activo %}
+                                                <span class="badge bg-success">Activo</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Inactivo</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                {% if puede_editar_estado %}
+                                                <a href="{% url 'compras:estado_orden_compra_editar' estado.pk %}" class="btn btn-sm btn-soft-primary" title="Editar">
+                                                    <i class="ri-pencil-line"></i>
+                                                </a>
+                                                {% endif %}
+                                                {% if puede_eliminar_estado %}
+                                                <a href="{% url 'compras:estado_orden_compra_eliminar' estado.pk %}" class="btn btn-sm btn-soft-danger" title="Eliminar">
+                                                    <i class="ri-delete-bin-line"></i>
+                                                </a>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-4">No hay estados registrados</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ PROVEEDORES TAB ============ -->
+            <div class="tab-pane fade" id="proveedores" role="tabpanel" aria-labelledby="proveedores-tab">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4 class="card-title flex-grow-1 mb-0">Proveedores</h4>
+                        {% if puede_crear_proveedor %}
+                        <a href="{% url 'compras:proveedor_crear' %}" class="btn btn-primary">
+                            <i class="ri-add-line me-1"></i>Nuevo Proveedor
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>RUT</th>
+                                        <th>Razón Social</th>
+                                        <th>Email</th>
+                                        <th>Teléfono</th>
+                                        <th>Ciudad</th>
+                                        <th>Activo</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for proveedor in proveedores %}
+                                    <tr>
+                                        <td><strong>{{ proveedor.rut }}</strong></td>
+                                        <td>{{ proveedor.razon_social }}</td>
+                                        <td>{{ proveedor.email|default:"-" }}</td>
+                                        <td>{{ proveedor.telefono|default:"-" }}</td>
+                                        <td>{{ proveedor.ciudad|default:"-" }}</td>
+                                        <td>
+                                            {% if proveedor.activo %}
+                                                <span class="badge bg-success">Sí</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">No</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                {% if puede_editar_proveedor %}
+                                                <a href="{% url 'compras:proveedor_editar' proveedor.pk %}" class="btn btn-sm btn-soft-primary" title="Editar">
+                                                    <i class="ri-pencil-line"></i>
+                                                </a>
+                                                {% endif %}
+                                                {% if puede_eliminar_proveedor %}
+                                                <a href="{% url 'compras:proveedor_eliminar' proveedor.pk %}" class="btn btn-sm btn-soft-danger" title="Eliminar">
+                                                    <i class="ri-delete-bin-line"></i>
+                                                </a>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted py-4">No hay proveedores registrados</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
