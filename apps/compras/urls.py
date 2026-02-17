@@ -7,6 +7,9 @@ urlpatterns = [
     # Menú principal de compras
     path('', views.MenuComprasView.as_view(), name='menu_compras'),
 
+    # Gestores (tabs: estados OC + proveedores)
+    path('gestores/', views.GestoresComprasView.as_view(), name='gestores_compras'),
+
     # ==================== PROVEEDORES ====================
     path('proveedores/', views.ProveedorListView.as_view(), name='proveedor_lista'),
     path('proveedores/crear/', views.ProveedorCreateView.as_view(), name='proveedor_crear'),
