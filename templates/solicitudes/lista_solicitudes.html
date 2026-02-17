@@ -150,7 +150,7 @@
                                         </td>
                                         <td>
                                             <div class="d-flex gap-1">
-                                                <a href="{% url 'solicitudes:detalle_solicitud' solicitud.pk %}" class="btn btn-sm btn-soft-primary solicitudes-modal-link" title="Ver Detalle" data-modal-title="Detalle Solicitud {{ solicitud.numero }}">
+                                                <a href="{% url 'solicitudes:detalle_solicitud' solicitud.pk %}?origen=admin" class="btn btn-sm btn-soft-primary solicitudes-modal-link" title="Ver Detalle" data-modal-title="Detalle Solicitud {{ solicitud.numero }}">
                                                     <i class="ri-eye-line align-bottom me-1"></i> Ver
                                                 </a>
                                                 {% if perms.solicitudes.change_solicitud and not solicitud.estado.es_final %}
