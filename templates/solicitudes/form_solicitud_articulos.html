@@ -1,4 +1,4 @@
-﻿{% extends 'partials/base.html' %}
+{% extends 'partials/base.html' %}
 {% load static %}
 
 {% block title %}{{ titulo }}{% endblock %}
@@ -12,7 +12,7 @@
                     <div class="page-title-right">
                         <ol class="breadcrumb m-0">
                             <li class="breadcrumb-item"><a href="{% url 'dashboard_analytics' %}">Dashboard</a></li>
-                            <li class="breadcrumb-item"><a href="{% url 'solicitudes:lista_solicitudes_articulos' %}">Solicitudes de Artículos</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'solicitudes:lista_solicitudes_articulos' %}">Solicitudes de Art&iacute;culos</a></li>
                             <li class="breadcrumb-item active">{{ action }}</li>
                         </ol>
                     </div>
@@ -25,151 +25,25 @@
             {% csrf_token %}
 
             <div class="row">
-                <!-- Información General -->
                 <div class="col-lg-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">
-                                <i class="ri-file-list-3-line align-middle me-1"></i> Información General
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-3">
-                                <div class="col-md-12">
-                                    <label for="{{ form.tipo_solicitud.id_for_label }}" class="form-label">
-                                        {{ form.tipo_solicitud.label }} <span class="text-danger">*</span>
-                                    </label>
-                                    {{ form.tipo_solicitud }}
-                                    {% if form.tipo_solicitud.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.tipo_solicitud.errors }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-12">
-                                    <label for="{{ form.fecha_requerida.id_for_label }}" class="form-label">
-                                        {{ form.fecha_requerida.label }} <span class="text-danger">*</span>
-                                    </label>
-                                    {{ form.fecha_requerida }}
-                                    {% if form.fecha_requerida.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.fecha_requerida.errors }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-12">
-                                    <label for="{{ form.bodega_origen.id_for_label }}" class="form-label">
-                                        {{ form.bodega_origen.label }} <span class="text-danger">*</span>
-                                    </label>
-                                    {{ form.bodega_origen }}
-                                    {% if form.bodega_origen.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.bodega_origen.errors }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    {% include 'solicitudes/partials/_card_info_general.html' with show_bodega=True %}
                 </div>
-
-                <!-- Estructura Organizacional -->
                 <div class="col-lg-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">
-                                <i class="ri-building-line align-middle me-1"></i> Estructura Organizacional
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-3">
-                                <div class="col-md-12">
-                                    <label for="{{ form.departamento.id_for_label }}" class="form-label">
-                                        {{ form.departamento.label }}
-                                    </label>
-                                    {{ form.departamento }}
-                                    {% if form.departamento.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.departamento.errors }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-12">
-                                    <label for="{{ form.area.id_for_label }}" class="form-label">
-                                        {{ form.area.label }}
-                                    </label>
-                                    {{ form.area }}
-                                    {% if form.area.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.area.errors }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-12">
-                                    <label for="{{ form.equipo.id_for_label }}" class="form-label">
-                                        {{ form.equipo.label }}
-                                    </label>
-                                    {{ form.equipo }}
-                                    {% if form.equipo.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.equipo.errors }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    {% include 'solicitudes/partials/_card_estructura_org.html' %}
                 </div>
             </div>
 
-            <!-- Motivo y Observaciones -->
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">
-                                <i class="ri-message-3-line align-middle me-1"></i> Motivo y Observaciones
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-3">
-                                <div class="col-md-12">
-                                    <label for="{{ form.motivo.id_for_label }}" class="form-label">
-                                        {{ form.motivo.label }} <span class="text-danger">*</span>
-                                    </label>
-                                    {{ form.motivo }}
-                                    {% if form.motivo.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.motivo.errors }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-12">
-                                    <label for="{{ form.observaciones.id_for_label }}" class="form-label">
-                                        {{ form.observaciones.label }}
-                                    </label>
-                                    {{ form.observaciones }}
-                                    {% if form.observaciones.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.observaciones.errors }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {% include 'solicitudes/partials/_card_motivo.html' %}
 
-            <!-- Detalles -->
+            <!-- Detalles de Articulos -->
             <div class="row">
                 <div class="col-lg-12">
                     <div class="card">
                         <div class="card-header">
                             <div class="d-flex justify-content-between align-items-center">
-                                <h5 class="card-title mb-0">Artículos Solicitados</h5>
+                                <h5 class="card-title mb-0">Art&iacute;culos Solicitados</h5>
                                 <button type="button" class="btn btn-sm btn-primary" id="btn-agregar-articulo">
-                                    <i class="ri-add-line"></i> Agregar Artículo
+                                    <i class="ri-add-line"></i> Agregar Art&iacute;culo
                                 </button>
                             </div>
                         </div>
@@ -178,21 +52,18 @@
                                 <table class="table table-nowrap" id="tabla-articulos">
                                     <thead class="table-light">
                                         <tr>
-                                            <th style="width: 35%">Artículo <span class="text-danger">*</span></th>
+                                            <th style="width: 35%">Art&iacute;culo <span class="text-danger">*</span></th>
                                             <th style="width: 15%">Cantidad <span class="text-danger">*</span></th>
                                             <th style="width: 40%">Observaciones</th>
-                                            <th style="width: 10%" class="text-center">Acción</th>
+                                            <th style="width: 10%" class="text-center">Acci&oacute;n</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="tbody-articulos">
-                                        <!-- Las filas se agregarán dinámicamente vía JavaScript -->
-                                    </tbody>
+                                    <tbody id="tbody-articulos"></tbody>
                                 </table>
                             </div>
-
                             <div id="sin-articulos" class="text-center text-muted py-4">
                                 <i class="ri-inbox-line" style="font-size: 3rem;"></i>
-                                <p class="mb-0">No hay artículos agregados. Haga clic en "Agregar Artículo" para comenzar.</p>
+                                <p class="mb-0">No hay art&iacute;culos agregados. Haga clic en "Agregar Art&iacute;culo" para comenzar.</p>
                             </div>
                         </div>
                     </div>
@@ -217,42 +88,42 @@
     </div>
 </div>
 
-<!-- Modal para seleccionar artículo -->
-<div class="modal fade" id="modalArticulo" tabindex="-1" aria-labelledby="modalArticuloLabel" aria-hidden="true">
+<!-- Modal para seleccionar articulo -->
+<div class="modal fade" id="modalSeleccionItem" tabindex="-1" aria-labelledby="modalSeleccionItemLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalArticuloLabel">Seleccionar Artículo</h5>
+                <h5 class="modal-title" id="modalSeleccionItemLabel">Seleccionar Art&iacute;culo</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label class="form-label">Buscar Artículo</label>
-                    <input type="text" class="form-control" id="buscar-articulo" placeholder="Buscar por código o nombre...">
+                    <label class="form-label">Buscar Art&iacute;culo</label>
+                    <input type="text" class="form-control" id="buscar-item" placeholder="Buscar por c&oacute;digo o nombre...">
                 </div>
                 <div class="table-responsive" style="max-height: 400px;">
                     <table class="table table-hover">
                         <thead class="table-light sticky-top">
                             <tr>
-                                <th>Código</th>
+                                <th>C&oacute;digo</th>
                                 <th>Nombre</th>
-                                <th>Categoría</th>
+                                <th>Categor&iacute;a</th>
                                 <th>Stock</th>
-                                <th>Acción</th>
+                                <th>Acci&oacute;n</th>
                             </tr>
                         </thead>
-                        <tbody id="tbody-lista-articulos">
+                        <tbody id="tbody-lista-items">
                             {% for articulo in articulos %}
-                            <tr data-articulo-id="{{ articulo.id }}"
-                                data-articulo-codigo="{{ articulo.codigo }}"
-                                data-articulo-nombre="{{ articulo.nombre }}"
-                                data-articulo-unidad="{% for u in articulo.unidades_medida.all %}{{ u.simbolo }}{% if not forloop.last %}, {% endif %}{% empty %}unidad{% endfor %}">
+                            <tr data-item-id="{{ articulo.id }}"
+                                data-item-codigo="{{ articulo.codigo }}"
+                                data-item-nombre="{{ articulo.nombre }}"
+                                data-item-unidad="{% for u in articulo.unidades_medida.all %}{{ u.simbolo }}{% if not forloop.last %}, {% endif %}{% empty %}unidad{% endfor %}">
                                 <td><code>{{ articulo.codigo }}</code></td>
                                 <td>{{ articulo.nombre }}</td>
                                 <td>{{ articulo.categoria.nombre }}</td>
                                 <td>{{ articulo.stock_actual }} {% for u in articulo.unidades_medida.all %}{{ u.simbolo }}{% if not forloop.last %}, {% endif %}{% empty %}unidad{% endfor %}</td>
                                 <td>
-                                    <button type="button" class="btn btn-sm btn-success btn-seleccionar-articulo">
+                                    <button type="button" class="btn btn-sm btn-success btn-seleccionar-item">
                                         <i class="ri-check-line"></i> Seleccionar
                                     </button>
                                 </td>
@@ -265,8 +136,27 @@
         </div>
     </div>
 </div>
+
+<!-- Config para JS unificado -->
+<div id="solicitud-crear-config" class="d-none"
+     data-item-type="articulo"
+     data-item-id-field="articulo_id"
+     data-table-id="tabla-articulos"
+     data-tbody-id="tbody-articulos"
+     data-empty-state-id="sin-articulos"
+     data-btn-agregar-id="btn-agregar-articulo"
+     data-has-unidad="true"
+     data-min-step="0.01"
+     data-min-value="0.01"
+     data-use-inline-selector="false"
+     data-modal-selector-id="modalSeleccionItem"
+     data-empty-message="No hay art&iacute;culos agregados."
+     data-duplicate-message="Este art&iacute;culo ya ha sido agregado"
+     data-validation-message="Debe agregar al menos un art&iacute;culo a la solicitud"
+     data-qty-validation-message="Todas las cantidades deben ser mayores a cero">
+</div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/solicitudes/crear-solicitud-articulos.js' %}"></script>
+<script src="{% static 'js/solicitudes/crear-solicitud.js' %}"></script>
 {% endblock %}
