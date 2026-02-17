@@ -7,7 +7,11 @@
     </div>
 
     <!-- Detalles de Articulos/Bienes -->
-    {% include 'solicitudes/partials/_detalle_items_table.html' %}
+    {% if es_mis_solicitudes %}
+        {% include 'solicitudes/partials/_detalle_items_table_mis_solicitudes.html' %}
+    {% else %}
+        {% include 'solicitudes/partials/_detalle_items_table_admin.html' %}
+    {% endif %}
 
     <!-- Historial de Cambios -->
     {% include 'solicitudes/partials/_detalle_historial.html' %}
