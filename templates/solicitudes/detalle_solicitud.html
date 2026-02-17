@@ -47,7 +47,7 @@
         </div>
 
         <!-- Detalles de Articulos/Bienes -->
-        {% if es_vista_admin %}
+        {% if origen == 'admin' %}
             {% include 'solicitudes/partials/_detalle_items_table_admin.html' %}
         {% else %}
             {% include 'solicitudes/partials/_detalle_items_table_mis_solicitudes.html' %}
