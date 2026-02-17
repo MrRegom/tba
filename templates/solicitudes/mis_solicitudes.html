@@ -32,12 +32,12 @@
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li>
-                                    <a class="dropdown-item" href="{% url 'solicitudes:crear_solicitud_articulos' %}">
+                                    <a class="dropdown-item solicitudes-modal-link" href="{% url 'solicitudes:crear_solicitud_articulos' %}" data-modal-title="Crear Solicitud de Artículos">
                                         <i class="ri-box-3-line align-bottom me-2"></i> Solicitud de Artículos
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" href="{% url 'solicitudes:crear_solicitud_bienes' %}">
+                                    <a class="dropdown-item solicitudes-modal-link" href="{% url 'solicitudes:crear_solicitud_bienes' %}" data-modal-title="Crear Solicitud de Bienes">
                                         <i class="ri-building-line align-bottom me-2"></i> Solicitud de Bienes
                                     </a>
                                 </li>
@@ -77,12 +77,12 @@
                                         </td>
                                         <td>
                                             <div class="d-flex gap-1">
-                                                <a href="{% url 'solicitudes:detalle_solicitud' solicitud.pk %}" class="btn btn-sm btn-soft-primary" title="Ver Detalle">
+                                                <a href="{% url 'solicitudes:detalle_solicitud' solicitud.pk %}" class="btn btn-sm btn-soft-primary solicitudes-modal-link" title="Ver Detalle" data-modal-title="Detalle Solicitud {{ solicitud.numero }}">
                                                     <i class="ri-eye-line"></i>
                                                 </a>
                                                 {% if solicitud.estado %}
                                                     {% if solicitud.estado.codigo == 'PENDIENTE' or solicitud.estado.nombre|lower == 'pendiente' %}
-                                                    <a href="{% url 'solicitudes:editar_solicitud' solicitud.pk %}" class="btn btn-sm btn-soft-secondary" title="Editar">
+                                                    <a href="{% url 'solicitudes:editar_solicitud' solicitud.pk %}" class="btn btn-sm btn-soft-secondary solicitudes-modal-link" title="Editar" data-modal-title="Editar Solicitud {{ solicitud.numero }}">
                                                         <i class="ri-edit-line"></i>
                                                     </a>
                                                     {% endif %}
@@ -115,4 +115,11 @@
 
     </div>
 </div>
+
+{% include 'solicitudes/partials/modal_container.html' %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/solicitudes/crear-solicitud.js' %}"></script>
+<script src="{% static 'js/solicitudes_modal.js' %}"></script>
 {% endblock %}
