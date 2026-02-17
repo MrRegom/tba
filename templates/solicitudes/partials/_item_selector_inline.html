@@ -1,0 +1,39 @@
+{# Selector inline de items (reemplaza modal anidado cuando se usa dentro de un modal) #}
+{# Requiere: items (queryset), item_type (articulo|bien) #}
+<div class="collapse" id="collapseItemSelector">
+    <div class="card card-body border mt-3 mb-3">
+        <h6 class="mb-2">Seleccionar {{ item_type_label|default:"Item" }}</h6>
+        <div class="mb-3">
+            <input type="text" class="form-control form-control-sm" id="buscar-item" placeholder="Buscar por c&oacute;digo o nombre...">
+        </div>
+        <div class="table-responsive" style="max-height: 300px;">
+            <table class="table table-hover table-sm">
+                <thead class="table-light sticky-top">
+                    <tr>
+                        <th>C&oacute;digo</th>
+                        <th>Nombre</th>
+                        {% if show_stock %}<th>Stock</th>{% endif %}
+                        <th>Acci&oacute;n</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody-lista-items">
+                    {% for item in items %}
+                    <tr data-item-id="{{ item.id }}"
+                        data-item-codigo="{{ item.codigo }}"
+                        data-item-nombre="{{ item.nombre }}"
+                        {% if item_type == 'articulo' %}data-item-unidad="{% for u in item.unidades_medida.all %}{{ u.simbolo }}{% if not forloop.last %}, {% endif %}{% empty %}unidad{% endfor %}"{% endif %}>
+                        <td><code>{{ item.codigo }}</code></td>
+                        <td>{{ item.nombre }}</td>
+                        {% if show_stock %}<td>{{ item.stock_actual|default:"-" }}</td>{% endif %}
+                        <td>
+                            <button type="button" class="btn btn-sm btn-success btn-seleccionar-item">
+                                <i class="ri-check-line"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
