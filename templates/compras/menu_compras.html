@@ -1,17 +1,13 @@
-﻿{% extends 'partials/base.html' %}
+{% extends 'partials/base.html' %}
 {% load static %}
 
 {% block title %}{{ titulo }}{% endblock %}
-
-{% block extra_css %}
-<link href="{% static 'css/modulo-cards.css' %}" rel="stylesheet" type="text/css">
-{% endblock extra_css %}
 
 {% block content %}
         <!-- start page title -->
         <div class="row">
             <div class="col-12">
-                <div class="page-title-box d-sm-flex align-items-center justify-content-between mb-3">
+                <div class="page-title-box d-sm-flex align-items-center justify-content-between">
                     <h4 class="mb-sm-0">{{ titulo }}</h4>
                     <div class="page-title-right">
                         <ol class="breadcrumb m-0">
@@ -33,152 +29,172 @@
             {% endfor %}
         {% endif %}
 
-        <!-- Menú principal con Cards -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i class="ri-menu-line me-2"></i>Seleccione una opción:
-                        </h5>
-                    </div>
+        <!-- Stats Card -->
+        <div class="row mb-3">
+            <div class="col-xl-3 col-md-6">
+                <div class="card card-animate">
                     <div class="card-body">
-                        <div class="row g-3">
-            <!-- Card 1: Órdenes de Compra -->
-            <div class="col-lg-3 col-sm-6 mb-4">
-                <div class="modulo-card">
-                    <div class="modulo-card-icon modulo-card-icon-success">
-                        <i class="ri-shopping-cart-line"></i>
-                    </div>
-                    <div class="modulo-card-content">
-                        <h6 class="modulo-card-title">ÓRDENES DE COMPRA</h6>
-                        <p class="modulo-card-desc">Gestione las órdenes de compra a proveedores</p>
-                        <div class="modulo-card-actions d-grid gap-2">
-                            {% if permisos.puede_crear %}
-                            <a href="{% url 'compras:orden_compra_crear' %}" class="btn btn-sm btn-success">
-                                <i class="ri-add-line align-bottom me-1"></i> Nueva Orden
-                            </a>
-                            {% endif %}
-                            <a href="{% url 'compras:orden_compra_lista' %}" class="btn btn-sm btn-outline-success">
-                                <i class="ri-list-check align-bottom me-1"></i> Ver Órdenes
-                            </a>
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1 overflow-hidden">
+                                <p class="text-uppercase fw-medium text-muted text-truncate mb-0">Órdenes Pendientes</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-end justify-content-between mt-4">
+                            <div>
+                                <h4 class="fs-22 fw-semibold ff-secondary mb-4">{{ stats.ordenes_pendientes }}</h4>
+                                <span class="text-muted">de {{ stats.total_ordenes }} órdenes totales</span>
+                            </div>
+                            <div class="avatar-sm flex-shrink-0">
+                                <span class="avatar-title bg-warning-subtle rounded fs-3">
+                                    <i class="ri-shopping-cart-line text-warning"></i>
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Card 2: Proveedores -->
-            <div class="col-lg-3 col-sm-6 mb-4">
-                <div class="modulo-card">
-                    <div class="modulo-card-icon modulo-card-icon-info">
-                        <i class="ri-store-2-line"></i>
-                    </div>
-                    <div class="modulo-card-content">
-                        <h6 class="modulo-card-title">PROVEEDORES</h6>
-                        <p class="modulo-card-desc">Gestione los proveedores de la organización</p>
-                        <div class="modulo-card-actions d-grid gap-2">
-                            {% if permisos.puede_crear %}
-                            <a href="{% url 'compras:proveedor_crear' %}" class="btn btn-sm btn-info">
-                                <i class="ri-add-line align-bottom me-1"></i> Nuevo Proveedor
-                            </a>
-                            {% endif %}
-                            <a href="{% url 'compras:proveedor_lista' %}" class="btn btn-sm btn-outline-info">
-                                <i class="ri-list-check align-bottom me-1"></i> Ver Proveedores
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 3: Solicitudes Pendientes para Compra -->
-            <div class="col-lg-3 col-sm-6 mb-4">
-                <div class="modulo-card">
-                    <div class="modulo-card-icon modulo-card-icon-warning">
-                        <i class="ri-file-list-3-line"></i>
-                    </div>
-                    <div class="modulo-card-content">
-                        <h6 class="modulo-card-title">SOLICITUDES PENDIENTES</h6>
-                        <p class="modulo-card-desc">
-                            <strong class="fs-20 text-warning">{{ stats.solicitudes_pendientes }}</strong>
-                            solicitudes listas para comprar sin orden asociada
-                        </p>
-                        <div class="modulo-card-actions d-grid gap-2">
-                            <a href="{% url 'solicitudes:lista_solicitudes_articulos' %}" class="btn btn-sm btn-outline-warning">
-                                <i class="ri-eye-line align-bottom me-1"></i> Ver Solicitudes
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Sección de Mantenedores -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i class="ri-settings-3-line me-2"></i>Mantenedores
-                        </h5>
-                    </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card card-animate">
                     <div class="card-body">
-                        <div class="row g-3">
-            <!-- Card: Estados de Orden de Compra -->
-            <div class="col-lg-3 col-sm-6 mb-4">
-                <div class="modulo-card">
-                    <div class="modulo-card-icon modulo-card-icon-dark">
-                        <i class="ri-file-list-line"></i>
-                    </div>
-                    <div class="modulo-card-content">
-                        <h6 class="modulo-card-title">ESTADOS ORDEN COMPRA</h6>
-                        <p class="modulo-card-desc">Gestione los estados de órdenes de compra</p>
-                        <div class="modulo-card-actions d-grid gap-2">
-                            {% if permisos.puede_gestionar_mantenedores %}
-                            <a href="{% url 'compras:estado_orden_compra_crear' %}" class="btn btn-sm btn-dark">
-                                <i class="ri-add-line align-bottom me-1"></i> Nuevo Estado
-                            </a>
-                            {% endif %}
-                            <a href="{% url 'compras:estado_orden_compra_lista' %}" class="btn btn-sm btn-outline-dark">
-                                <i class="ri-list-check align-bottom me-1"></i> Ver Estados
-                            </a>
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1 overflow-hidden">
+                                <p class="text-uppercase fw-medium text-muted text-truncate mb-0">Proveedores Activos</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-end justify-content-between mt-4">
+                            <div>
+                                <h4 class="fs-22 fw-semibold ff-secondary mb-4">{{ stats.proveedores_activos }}</h4>
+                                <span class="text-muted">proveedores disponibles</span>
+                            </div>
+                            <div class="avatar-sm flex-shrink-0">
+                                <span class="avatar-title bg-info-subtle rounded fs-3">
+                                    <i class="ri-store-2-line text-info"></i>
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Información adicional -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card border-0 shadow-none">
+            <div class="col-xl-3 col-md-6">
+                <div class="card card-animate">
                     <div class="card-body">
-                        <div class="alert alert-info border-0 mb-0" role="alert">
-                            <div class="d-flex">
-                                <div class="flex-shrink-0">
-                                    <i class="ri-information-line fs-16 align-middle"></i>
-                                </div>
-                                <div class="flex-grow-1 ms-3">
-                                    <h6 class="alert-heading">Información del Módulo</h6>
-                                    <p class="mb-0">
-                                        Gestione el proceso de compras generando órdenes de compra a proveedores.
-                                        El sistema maneja <strong>{{ stats.proveedores_activos }} proveedores activos</strong>.
-                                        Las recepciones de productos se gestionan desde el módulo de Bodega.
-                                    </p>
-                                </div>
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1 overflow-hidden">
+                                <p class="text-uppercase fw-medium text-muted text-truncate mb-0">Solicitudes para Comprar</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-end justify-content-between mt-4">
+                            <div>
+                                <h4 class="fs-22 fw-semibold ff-secondary mb-4">{{ stats.solicitudes_pendientes }}</h4>
+                                <span class="text-muted">sin orden de compra asignada</span>
+                            </div>
+                            <div class="avatar-sm flex-shrink-0">
+                                <span class="avatar-title bg-danger-subtle rounded fs-3">
+                                    <i class="ri-file-list-3-line text-danger"></i>
+                                </span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
+
+        <!-- Órdenes de Compra -->
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h5 class="card-title mb-0 flex-grow-1">Órdenes de Compra</h5>
+                        {% if permisos.puede_crear %}
+                        <a href="{% url 'compras:orden_compra_crear' %}" class="btn btn-primary">
+                            <i class="ri-add-line align-bottom me-1"></i> Nueva Orden
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <!-- Filtros -->
+                        <form method="get" class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <input type="text" name="q" class="form-control" placeholder="Buscar por número..." value="{{ query }}">
+                            </div>
+                            <div class="col-md-3">
+                                <select name="estado" class="form-select">
+                                    <option value="">Todos los estados</option>
+                                    {% for estado in estados %}
+                                    <option value="{{ estado.id }}" {% if estado.id|stringformat:"s" == estado_id %}selected{% endif %}>{{ estado.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select name="proveedor" class="form-select">
+                                    <option value="">Todos los proveedores</option>
+                                    {% for prov in proveedores %}
+                                    <option value="{{ prov.id }}" {% if prov.id|stringformat:"s" == proveedor_id %}selected{% endif %}>{{ prov.razon_social }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-flex gap-2">
+                                <button type="submit" class="btn btn-secondary flex-grow-1">
+                                    <i class="ri-filter-3-line"></i> Filtrar
+                                </button>
+                                <a href="{% url 'compras:menu_compras' %}" class="btn btn-light">
+                                    <i class="ri-refresh-line"></i>
+                                </a>
+                            </div>
+                        </form>
+
+                        <!-- Tabla -->
+                        <div class="table-responsive">
+                            <table class="table table-hover table-nowrap align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Número</th>
+                                        <th>Fecha</th>
+                                        <th>Proveedor</th>
+                                        <th>Estado</th>
+                                        <th>Total</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for orden in ordenes %}
+                                    <tr>
+                                        <td><strong>{{ orden.numero }}</strong></td>
+                                        <td>{{ orden.fecha_orden|date:"d/m/Y" }}</td>
+                                        <td>{{ orden.proveedor.razon_social }}</td>
+                                        <td>{{ orden.estado.nombre }}</td>
+                                        <td>${{ orden.total|floatformat:0 }}</td>
+                                        <td>
+                                            <div class="d-flex gap-1">
+                                                <a href="{% url 'compras:orden_compra_detalle' orden.pk %}" class="btn btn-sm btn-soft-primary ordenes-modal-link" title="Ver detalle" data-modal-title="Detalle Orden {{ orden.numero }}">
+                                                    <i class="ri-eye-line align-bottom me-1"></i> Ver
+                                                </a>
+                                                {% if orden.estado.codigo == 'PENDIENTE' %}
+                                                <a href="{% url 'compras:orden_compra_editar' orden.pk %}" class="btn btn-sm btn-soft-secondary" title="Editar orden">
+                                                    <i class="ri-edit-line align-bottom me-1"></i> Editar
+                                                </a>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4">
+                                            <p class="text-muted mb-0">No hay órdenes registradas.</p>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+{% include 'compras/partials/modal_container.html' %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/ordenes_modal.js' %}"></script>
 {% endblock %}
