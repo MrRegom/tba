@@ -29,6 +29,18 @@ DEBUG = env.bool('DJANGO_DEBUG')
 # Permitir todos los hosts (útil para desarrollo, pero especificar hosts específicos en producción)
 ALLOWED_HOSTS = env.list('DJANGO_ALLOWED_HOSTS', default=['*'])
 
+# Configuración de Orígenes de Confianza para CSRF (CRITICO para producción)
+CSRF_TRUSTED_ORIGINS = env.list('DJANGO_CSRF_TRUSTED_ORIGINS', default=[
+    'https://capacitacion.logisticatba.cloud',
+    'https://*.logisticatba.cloud'
+])
+
+# Configuración para Proxy SSL (Nginx/Cloudflare/etc)
+# Necesario para que Django sepa que está corriendo bajo HTTPS
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
 # Asegurar que el dominio de capacitación siempre esté permitido
 if 'capacitacion.logisticatba.cloud' not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append('capacitacion.logisticatba.cloud')
@@ -207,6 +219,8 @@ ACCOUNT_LOGOUT_REDIRECT_URL = "/account/login/"
 ACCOUNT_LOGOUT_ON_GET = False
 ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = True
+ACCOUNT_RATE_LIMITS = {}
+ACCOUNT_ADAPTER = 'apps.accounts.adapters.CustomAccountAdapter'
 
 SITE_ID = 1
 
