@@ -789,6 +789,11 @@ class SolicitudActivoCreateView(CrearSolicitudBienesPermissionMixin, SolicitudCr
     """
     template_name = 'solicitudes/form_solicitud_bienes.html'
 
+    def get_template_names(self):
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest' or self.request.GET.get('modal') == '1':
+            return ['solicitudes/partials/modal_form_crear.html']
+        return [self.template_name]
+
     def get_context_data(self, **kwargs) -> dict:
         """Agrega datos adicionales al contexto y lista de activos disponibles."""
         from apps.activos.models import Activo
@@ -798,10 +803,30 @@ class SolicitudActivoCreateView(CrearSolicitudBienesPermissionMixin, SolicitudCr
         context['action'] = 'Crear'
         context['tipo'] = 'ACTIVO'
 
-        # Agregar lista de activos disponibles para el modal
-        context['activos'] = Activo.objects.filter(
+        activos = Activo.objects.filter(
             activo=True, eliminado=False
         ).select_related('categoria').order_by('codigo')
+
+        context['activos'] = activos
+        context['items'] = activos
+        context['form_action'] = self.request.get_full_path()
+        context['show_bodega'] = False
+        context['item_type'] = 'bien'
+        context['item_type_label'] = 'Bien/Activo'
+        context['item_id_field'] = 'activo_id'
+        context['table_id'] = 'tabla-bienes'
+        context['tbody_id'] = 'tbody-bienes'
+        context['empty_state_id'] = 'sin-bienes'
+        context['btn_agregar_id'] = 'btn-agregar-bien'
+        context['items_title'] = 'Bienes/Activos Solicitados'
+        context['has_unidad'] = False
+        context['show_stock'] = False
+        context['min_step'] = '1'
+        context['min_value'] = '1'
+        context['empty_message'] = 'No hay bienes/activos agregados. Haga clic en "Agregar Bien/Activo" para comenzar.'
+        context['duplicate_message'] = 'Este bien/activo ya ha sido agregado'
+        context['validation_message'] = 'Debe agregar al menos un bien/activo a la solicitud'
+        context['qty_validation_message'] = 'Todas las cantidades deben ser mayores a cero'
 
         return context
 
@@ -848,6 +873,10 @@ class SolicitudActivoCreateView(CrearSolicitudBienesPermissionMixin, SolicitudCr
                 messages.success(self.request, self.get_success_message(self.object))
                 self.log_action(self.object, self.request)
 
+                # Si es AJAX/modal, devolver detalle parcial
+                if self.request.headers.get('x-requested-with') == 'XMLHttpRequest' or self.request.GET.get('modal') == '1':
+                    return self._render_modal_detalle()
+
                 return redirect(self.get_success_url())
 
         except ValidationError as e:
@@ -858,6 +887,19 @@ class SolicitudActivoCreateView(CrearSolicitudBienesPermissionMixin, SolicitudCr
         except Exception as e:
             form.add_error(None, f'Error al crear la solicitud: {str(e)}')
             return self.form_invalid(form)
+
+    def _render_modal_detalle(self):
+        """Renderiza el detalle de la solicitud recién creada para mostrar en modal."""
+        context = {
+            'solicitud': self.object,
+            'detalles': self.object.detalles.filter(eliminado=False).select_related(
+                'articulo', 'articulo__categoria', 'activo', 'activo__categoria'
+            ).order_by('id'),
+            'historial': self.object.historial.select_related(
+                'estado_anterior', 'estado_nuevo', 'usuario'
+            )
+        }
+        return render(self.request, 'solicitudes/partials/modal_detalle.html', context)
 
     def _extraer_detalles_post(self, post_data):
         """
@@ -962,6 +1004,11 @@ class SolicitudArticuloCreateView(CrearSolicitudArticulosPermissionMixin, Solici
     """
     template_name = 'solicitudes/form_solicitud_articulos.html'
 
+    def get_template_names(self):
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest' or self.request.GET.get('modal') == '1':
+            return ['solicitudes/partials/modal_form_crear.html']
+        return [self.template_name]
+
     def get_context_data(self, **kwargs) -> dict:
         """Agrega datos adicionales al contexto y lista de artículos disponibles."""
         from apps.bodega.models import Articulo
@@ -971,10 +1018,30 @@ class SolicitudArticuloCreateView(CrearSolicitudArticulosPermissionMixin, Solici
         context['action'] = 'Crear'
         context['tipo'] = 'ARTICULO'
 
-        # Agregar lista de artículos disponibles para el modal
-        context['articulos'] = Articulo.objects.filter(
+        articulos = Articulo.objects.filter(
             activo=True, eliminado=False
         ).select_related('categoria', 'unidad_medida').order_by('codigo')
+
+        context['articulos'] = articulos
+        context['items'] = articulos
+        context['form_action'] = self.request.get_full_path()
+        context['show_bodega'] = True
+        context['item_type'] = 'articulo'
+        context['item_type_label'] = 'Artículo'
+        context['item_id_field'] = 'articulo_id'
+        context['table_id'] = 'tabla-articulos'
+        context['tbody_id'] = 'tbody-articulos'
+        context['empty_state_id'] = 'sin-articulos'
+        context['btn_agregar_id'] = 'btn-agregar-articulo'
+        context['items_title'] = 'Artículos Solicitados'
+        context['has_unidad'] = True
+        context['show_stock'] = True
+        context['min_step'] = '0.01'
+        context['min_value'] = '0.01'
+        context['empty_message'] = 'No hay artículos agregados. Haga clic en "Agregar Artículo" para comenzar.'
+        context['duplicate_message'] = 'Este artículo ya ha sido agregado'
+        context['validation_message'] = 'Debe agregar al menos un artículo a la solicitud'
+        context['qty_validation_message'] = 'Todas las cantidades deben ser mayores a cero'
 
         return context
 
@@ -1021,6 +1088,10 @@ class SolicitudArticuloCreateView(CrearSolicitudArticulosPermissionMixin, Solici
                 messages.success(self.request, self.get_success_message(self.object))
                 self.log_action(self.object, self.request)
 
+                # Si es AJAX/modal, devolver detalle parcial
+                if self.request.headers.get('x-requested-with') == 'XMLHttpRequest' or self.request.GET.get('modal') == '1':
+                    return self._render_modal_detalle()
+
                 return redirect(self.get_success_url())
 
         except ValidationError as e:
@@ -1031,6 +1102,19 @@ class SolicitudArticuloCreateView(CrearSolicitudArticulosPermissionMixin, Solici
         except Exception as e:
             form.add_error(None, f'Error al crear la solicitud: {str(e)}')
             return self.form_invalid(form)
+
+    def _render_modal_detalle(self):
+        """Renderiza el detalle de la solicitud recién creada para mostrar en modal."""
+        context = {
+            'solicitud': self.object,
+            'detalles': self.object.detalles.filter(eliminado=False).select_related(
+                'articulo', 'articulo__categoria', 'activo', 'activo__categoria'
+            ).order_by('id'),
+            'historial': self.object.historial.select_related(
+                'estado_anterior', 'estado_nuevo', 'usuario'
+            )
+        }
+        return render(self.request, 'solicitudes/partials/modal_detalle.html', context)
 
     def _extraer_detalles_post(self, post_data):
         """
