@@ -1,4 +1,5 @@
 ﻿{% extends 'partials/base.html' %}
+{% load static %}
 
 {% block content %}
         <div class="row">
@@ -6,7 +7,8 @@
                 <div class="page-title-box d-sm-flex align-items-center justify-content-between">
                     <h4 class="mb-sm-0">{{ titulo }}</h4>
                     <div>
-                        <a href="{% url 'bodega:recepcion_activo_crear' %}" class="btn btn-primary">
+                        <a href="{% url 'bodega:recepcion_activo_crear' %}" class="btn btn-primary bodega-modal-link"
+                           data-modal-title="Nueva Recepción de Bienes/Activos">
                             <i class="ri-add-line"></i> Nueva Recepción
                         </a>
                     </div>
@@ -60,7 +62,8 @@
                                         <td><span class="badge bg-success">{{ recepcion.estado.nombre }}</span></td>
                                         <td>{{ recepcion.recibido_por.get_full_name }}</td>
                                         <td>
-                                            <a href="{% url 'bodega:recepcion_activo_detalle' recepcion.pk %}" class="btn btn-sm btn-info">
+                                            <a href="{% url 'bodega:recepcion_activo_detalle' recepcion.pk %}" class="btn btn-sm btn-info bodega-modal-link"
+                                               data-modal-title="Detalle Recepción de Bienes/Activos">
                                                 <i class="ri-eye-line"></i> Ver
                                             </a>
                                         </td>
@@ -79,4 +82,11 @@
         </div>
     </div>
 </div>
+
+{% include 'bodega/partials/modal_container.html' %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/compras/crear-recepcion-activos.js' %}"></script>
+<script src="{% static 'js/bodega_modal.js' %}"></script>
 {% endblock %}

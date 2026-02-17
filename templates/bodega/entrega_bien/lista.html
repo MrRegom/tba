@@ -7,11 +7,9 @@
                 <div class="page-title-box d-sm-flex align-items-center justify-content-between">
                     <h4 class="mb-sm-0">{{ titulo }}</h4>
                     <div class="page-title-right">
-                        <a href="{% url 'bodega:entrega_bien_crear' %}" class="btn btn-primary">
+                        <a href="{% url 'bodega:entrega_bien_crear' %}" class="btn btn-primary bodega-modal-link"
+                           data-modal-title="Nueva Entrega de Bienes/Activos">
                             <i class="ri-add-line"></i> Nueva Entrega de Bienes/Activos
-                        </a>
-                        <a href="{% url 'bodega:menu_bodega' %}" class="btn btn-secondary">
-                            <i class="ri-arrow-left-line"></i> Volver
                         </a>
                     </div>
                 </div>
@@ -75,7 +73,8 @@
                                         </td>
                                         <td>
                                             <a href="{% url 'bodega:entrega_bien_detalle' entrega.pk %}"
-                                               class="btn btn-sm btn-primary" title="Ver detalle">
+                                               class="btn btn-sm btn-primary bodega-modal-link" title="Ver detalle"
+                                               data-modal-title="Detalle Entrega de Bienes/Activos">
                                                 <i class="ri-eye-line"></i> Ver
                                             </a>
                                         </td>
@@ -136,4 +135,11 @@
         </div>
     </div>
 </div>
+
+{% include 'bodega/partials/modal_container.html' %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/bodega/entrega-bienes.js' %}"></script>
+<script src="{% static 'js/bodega_modal.js' %}"></script>
 {% endblock %}

@@ -26,9 +26,39 @@
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="{% url 'bodega:menu_bodega' %}">
+                    <a class="nav-link menu-link" href="#sidebarBodega" data-bs-toggle="collapse" role="button"
+                        aria-expanded="false" aria-controls="sidebarBodega">
                         <i class="ri-archive-line"></i> <span data-key="t-bodega">Bodega</span>
                     </a>
+                    <div class="collapse menu-dropdown" id="sidebarBodega">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{% url 'bodega:entrega_articulo_lista' %}" class="nav-link" data-key="t-entrega-articulos">
+                                    Entrega de Artículos
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'bodega:entrega_bien_lista' %}" class="nav-link" data-key="t-entrega-bienes">
+                                    Entrega de Bienes
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'bodega:recepcion_articulo_lista' %}" class="nav-link" data-key="t-recepcion-articulos">
+                                    Recepción de Artículos
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'bodega:recepcion_activo_lista' %}" class="nav-link" data-key="t-recepcion-bienes">
+                                    Recepción de Bienes
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'bodega:movimiento_lista' %}" class="nav-link" data-key="t-movimientos-bodega">
+                                    Movimientos de Bodega
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </li>
 
                 <li class="nav-item">

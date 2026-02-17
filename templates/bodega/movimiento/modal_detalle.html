@@ -1,0 +1,31 @@
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-body">
+            <h5>Informaci&oacute;n del Movimiento</h5>
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Fecha:</dt>
+                <dd class="col-sm-8">{{ movimiento.fecha_creacion|date:"d/m/Y H:i:s" }}</dd>
+                <dt class="col-sm-4">Art&iacute;culo:</dt>
+                <dd class="col-sm-8"><strong>{{ movimiento.articulo.codigo }}</strong> - {{ movimiento.articulo.nombre }}</dd>
+                <dt class="col-sm-4">Tipo:</dt>
+                <dd class="col-sm-8">{{ movimiento.tipo.nombre }}</dd>
+                <dt class="col-sm-4">Operaci&oacute;n:</dt>
+                <dd class="col-sm-8">
+                    <span class="badge {% if movimiento.operacion == 'ENTRADA' %}bg-success{% else %}bg-danger{% endif %}">
+                        {{ movimiento.get_operacion_display }}
+                    </span>
+                </dd>
+                <dt class="col-sm-4">Cantidad:</dt>
+                <dd class="col-sm-8"><strong>{{ movimiento.cantidad }} {{ movimiento.articulo.unidad_medida.simbolo|default:"unidad" }}</strong></dd>
+                <dt class="col-sm-4">Stock Antes:</dt>
+                <dd class="col-sm-8">{{ movimiento.stock_antes }} {{ movimiento.articulo.unidad_medida.simbolo|default:"unidad" }}</dd>
+                <dt class="col-sm-4">Stock Despu&eacute;s:</dt>
+                <dd class="col-sm-8">{{ movimiento.stock_despues }} {{ movimiento.articulo.unidad_medida.simbolo|default:"unidad" }}</dd>
+                <dt class="col-sm-4">Usuario:</dt>
+                <dd class="col-sm-8">{{ movimiento.usuario.username }}</dd>
+                <dt class="col-sm-4">Motivo:</dt>
+                <dd class="col-sm-8">{{ movimiento.motivo }}</dd>
+            </dl>
+        </div>
+    </div>
+</div>

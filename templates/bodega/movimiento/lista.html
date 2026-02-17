@@ -1,4 +1,5 @@
 ﻿{% extends 'partials/base.html' %}
+{% load static %}
 
 {% block content %}
         <div class="row">
@@ -79,7 +80,8 @@
                                         <td>{{ mov.stock_despues }}</td>
                                         <td>{{ mov.usuario.username }}</td>
                                         <td>
-                                            <a href="{% url 'bodega:movimiento_detalle' mov.pk %}" class="btn btn-sm btn-info">
+                                            <a href="{% url 'bodega:movimiento_detalle' mov.pk %}" class="btn btn-sm btn-info bodega-modal-link"
+                                               data-modal-title="Detalle Movimiento de Bodega">
                                                 <i class="ri-eye-line"></i> Ver
                                             </a>
                                         </td>
@@ -98,4 +100,10 @@
         </div>
     </div>
 </div>
+
+{% include 'bodega/partials/modal_container.html' %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/bodega_modal.js' %}"></script>
 {% endblock %}

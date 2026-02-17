@@ -814,6 +814,11 @@ class MovimientoDetailView(BaseAuditedViewMixin, DetailView):
             'articulo', 'tipo', 'usuario'
         ).filter(eliminado=False)
 
+    def get_template_names(self):
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest' or self.request.GET.get('modal') == '1':
+            return ['bodega/movimiento/modal_detalle.html']
+        return [self.template_name]
+
     def get_context_data(self, **kwargs) -> dict:
         """Agrega datos al contexto."""
         context = super().get_context_data(**kwargs)
@@ -890,6 +895,11 @@ class EntregaArticuloCreateView(BaseAuditedViewMixin, AtomicTransactionMixin, Cr
     # Configuración de auditoría
     audit_action = 'CREAR'
     success_message = 'Entrega {obj.numero} registrada exitosamente.'
+
+    def get_template_names(self):
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest' or self.request.GET.get('modal') == '1':
+            return ['bodega/entrega_articulo/modal_form.html']
+        return [self.template_name]
 
     def form_valid(self, form):
         """
@@ -998,6 +1008,11 @@ class EntregaArticuloDetailView(BaseAuditedViewMixin, DetailView):
             'detalles__articulo__categoria'
         ).filter(eliminado=False)
 
+    def get_template_names(self):
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest' or self.request.GET.get('modal') == '1':
+            return ['bodega/entrega_articulo/modal_detalle.html']
+        return [self.template_name]
+
     def get_context_data(self, **kwargs) -> dict:
         """Agrega datos al contexto."""
         context = super().get_context_data(**kwargs)
@@ -1070,6 +1085,11 @@ class EntregaBienCreateView(BaseAuditedViewMixin, AtomicTransactionMixin, Create
     # Configuración de auditoría
     audit_action = 'CREAR'
     success_message = 'Entrega {obj.numero} registrada exitosamente.'
+
+    def get_template_names(self):
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest' or self.request.GET.get('modal') == '1':
+            return ['bodega/entrega_bien/modal_form.html']
+        return [self.template_name]
 
     def form_valid(self, form):
         """
@@ -1175,6 +1195,11 @@ class EntregaBienDetailView(BaseAuditedViewMixin, DetailView):
         ).prefetch_related(
             'detalles__equipo__tipo_equipo'
         ).filter(eliminado=False)
+
+    def get_template_names(self):
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest' or self.request.GET.get('modal') == '1':
+            return ['bodega/entrega_bien/modal_detalle.html']
+        return [self.template_name]
 
     def get_context_data(self, **kwargs) -> dict:
         """Agrega datos al contexto."""
@@ -2278,6 +2303,11 @@ class RecepcionArticuloDetailView(RecepcionDetailMixin, BaseAuditedViewMixin, De
     context_object_name = 'recepcion'
     permission_required = 'bodega.view_recepcionarticulo'
 
+    def get_template_names(self):
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest' or self.request.GET.get('modal') == '1':
+            return ['bodega/recepcion_articulo/modal_detalle.html']
+        return [self.template_name]
+
     def _optimize_detalles_queryset(self, queryset):
         """Optimiza consultas de detalles con select_related."""
         return queryset.select_related('articulo', 'articulo__categoria')
@@ -2302,6 +2332,11 @@ class RecepcionArticuloCreateView(BaseAuditedViewMixin, AtomicTransactionMixin, 
 
     # Mensaje de éxito
     success_message = 'Recepción creada exitosamente.'
+
+    def get_template_names(self):
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest' or self.request.GET.get('modal') == '1':
+            return ['bodega/recepcion_articulo/modal_form.html']
+        return [self.template_name]
 
     def get_success_url(self) -> str:
         """Redirige al detalle de la recepción creada."""
@@ -2561,6 +2596,11 @@ class RecepcionActivoDetailView(RecepcionDetailMixin, BaseAuditedViewMixin, Deta
     context_object_name = 'recepcion'
     permission_required = 'bodega.view_recepcionactivo'
 
+    def get_template_names(self):
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest' or self.request.GET.get('modal') == '1':
+            return ['bodega/recepcion_activo/modal_detalle.html']
+        return [self.template_name]
+
     def _optimize_detalles_queryset(self, queryset):
         """Optimiza consultas de detalles con select_related."""
         return queryset.select_related('activo')
@@ -2586,6 +2626,11 @@ class RecepcionActivoCreateView(BaseAuditedViewMixin, AtomicTransactionMixin, Cr
 
     # Mensaje de éxito
     success_message = 'Recepción de bienes creada exitosamente.'
+
+    def get_template_names(self):
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest' or self.request.GET.get('modal') == '1':
+            return ['bodega/recepcion_activo/modal_form.html']
+        return [self.template_name]
 
     def get_success_url(self) -> str:
         """Redirige al detalle de la recepción creada."""

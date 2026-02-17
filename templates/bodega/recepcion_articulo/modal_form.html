@@ -1,0 +1,181 @@
+{% load static %}
+<form method="post" id="formRecepcion" action="{% url 'bodega:recepcion_articulo_crear' %}?modal=1">
+    {% csrf_token %}
+
+    {% if form.errors %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>Error:</strong> Por favor corrija los siguientes errores:
+        <ul class="mb-0">
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <li>{{ field.label }}: {{ error }}</li>
+                {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Informaci&oacute;n de la Recepci&oacute;n</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="ri-information-line"></i> El n&uacute;mero de recepci&oacute;n se generar&aacute; autom&aacute;ticamente con el formato: <strong>REC-ART-2025-XXXXXX</strong>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Tipo de Recepci&oacute;n <span class="text-danger">*</span></label>
+                            {{ form.tipo }}
+                            {% if form.tipo.errors %}
+                                <div class="text-danger small">{{ form.tipo.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 d-none" id="orden_compra_wrapper">
+                            <label class="form-label">Orden de Compra <span class="text-danger orden-required d-none">*</span></label>
+                            {{ form.orden_compra }}
+                            {% if form.orden_compra.errors %}
+                                <div class="text-danger small">{{ form.orden_compra.errors.0 }}</div>
+                            {% endif %}
+                            <div class="form-text">Solo si la recepci&oacute;n proviene de una orden de compra</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Bodega Destino <span class="text-danger">*</span></label>
+                            {{ form.bodega }}
+                            {% if form.bodega.errors %}
+                                <div class="text-danger small">{{ form.bodega.errors.0 }}</div>
+                            {% endif %}
+                            <div class="form-text">Bodega donde se registrar&aacute;n los art&iacute;culos</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Documento de Referencia</label>
+                            {{ form.documento_referencia }}
+                            {% if form.documento_referencia.errors %}
+                                <div class="text-danger small">{{ form.documento_referencia.errors.0 }}</div>
+                            {% endif %}
+                            <div class="form-text">Ej: Gu&iacute;a de despacho, Factura, etc.</div>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Observaciones</label>
+                            {{ form.observaciones }}
+                            {% if form.observaciones.errors %}
+                                <div class="text-danger small">{{ form.observaciones.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Art&iacute;culos a Recibir -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Art&iacute;culos a Recibir</h5>
+                        <button type="button" class="btn btn-sm btn-primary" id="btn-agregar-articulo">
+                            <i class="ri-add-line"></i> Agregar Art&iacute;culo
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="tabla-articulos">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="25%">Art&iacute;culo</th>
+                                    <th width="12%">Pedido</th>
+                                    <th width="15%">Cantidad a Recepcionar</th>
+                                    <th width="15%">Lote</th>
+                                    <th width="15%">Fecha Vencimiento</th>
+                                    <th width="8%">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-articulos">
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">
+                                        No hay art&iacute;culos agregados. Haga clic en "Agregar Art&iacute;culo" para comenzar.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-end">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+            <i class="ri-close-line"></i> Cancelar
+        </button>
+        <button type="submit" class="btn btn-primary">
+            <i class="ri-save-line"></i> Crear Recepci&oacute;n
+        </button>
+    </div>
+</form>
+
+<!-- Modal para seleccionar art&iacute;culo (se reubica a body via JS) -->
+<div class="modal fade bodega-nested-modal" id="modalArticulo" tabindex="-1" aria-labelledby="modalArticuloLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalArticuloLabel">Seleccionar Art&iacute;culo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Buscar Art&iacute;culo</label>
+                    <input type="text" class="form-control" id="buscar-articulo" placeholder="Buscar por SKU o nombre...">
+                </div>
+                <div class="table-responsive" style="max-height: 400px;">
+                    <table class="table table-hover">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>SKU</th>
+                                <th>C&oacute;digo</th>
+                                <th>Nombre</th>
+                                <th>Categor&iacute;a</th>
+                                <th>Stock</th>
+                                <th>Acci&oacute;n</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-lista-articulos">
+                            {% for articulo in articulos %}
+                            <tr data-articulo-id="{{ articulo.id }}"
+                                data-articulo-codigo="{{ articulo.codigo }}"
+                                data-articulo-nombre="{{ articulo.nombre }}"
+                                data-articulo-unidad="{% for u in articulo.unidades_medida.all %}{{ u.simbolo }}{% if not forloop.last %}, {% endif %}{% empty %}unidad{% endfor %}">
+                                <td><code>{{ articulo.codigo }}</code></td>
+                                <td>{{ articulo.codigo_barras|default:"-" }}</td>
+                                <td>{{ articulo.nombre }}</td>
+                                <td>{{ articulo.categoria.nombre }}</td>
+                                <td>{{ articulo.stock_actual }} {% for u in articulo.unidades_medida.all %}{{ u.simbolo }}{% if not forloop.last %}, {% endif %}{% empty %}unidad{% endfor %}</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-success btn-seleccionar-articulo">
+                                        <i class="ri-check-line"></i> Seleccionar
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const tiposRecepcion = {{ tipos_recepcion|safe }};
+    const urlObtenerArticulosOC = "{% url 'compras:obtener_articulos_orden_compra' %}";
+</script>
+<script src="{% static 'js/compras/crear-recepcion.js' %}"></script>
