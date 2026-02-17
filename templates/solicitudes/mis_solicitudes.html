@@ -77,7 +77,7 @@
                                         </td>
                                         <td>
                                             <div class="d-flex gap-1">
-                                                <a href="{% url 'solicitudes:detalle_solicitud' solicitud.pk %}" class="btn btn-sm btn-soft-primary solicitudes-modal-link" title="Ver Detalle" data-modal-title="Detalle Solicitud {{ solicitud.numero }}">
+                                                <a href="{% url 'solicitudes:detalle_solicitud' solicitud.pk %}?origen=mis" class="btn btn-sm btn-soft-primary solicitudes-modal-link" title="Ver Detalle" data-modal-title="Detalle Solicitud {{ solicitud.numero }}">
                                                     <i class="ri-eye-line"></i>
                                                 </a>
                                                 {% if solicitud.estado %}
