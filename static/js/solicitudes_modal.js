@@ -62,6 +62,11 @@
     function initModalBindings(root){
         if(!root) return;
 
+        // Si el contenido cargado tiene config de crear-solicitud, inicializar JS unificado
+        if(root.querySelector('#solicitud-crear-config') && window.SolicitudCrear){
+            window.SolicitudCrear.init();
+        }
+
         // Manejar submits de TODOS los formularios en el modal
         root.querySelectorAll('form').forEach(function(form){
             form.addEventListener('submit', function(ev){
