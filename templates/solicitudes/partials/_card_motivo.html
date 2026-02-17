@@ -1,0 +1,19 @@
+{# Card "Motivo y Observaciones" para formularios de solicitud #}
+{# Requiere: form #}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="ri-message-3-line align-middle me-1"></i> Motivo y Observaciones
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    {% include 'solicitudes/partials/_field.html' with field=form.motivo required=True %}
+                    {% include 'solicitudes/partials/_field.html' with field=form.observaciones %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
