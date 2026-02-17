@@ -124,13 +124,7 @@
                                         </td>
                                         <td>{{ solicitud.solicitante.get_full_name|default:solicitud.solicitante.username }}</td>
                                         <td>
-                                            {% if solicitud.area %}
-                                                {{ solicitud.area.nombre }}
-                                            {% elif solicitud.departamento %}
-                                                {{ solicitud.departamento.nombre }}
-                                            {% else %}
-                                                -
-                                            {% endif %}
+                                            {{ solicitud.area.nombre|default:"-" }}
                                         </td>
                                         <td>
                                             {% if solicitud.departamento %}
