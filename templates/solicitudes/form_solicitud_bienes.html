@@ -1,4 +1,4 @@
-﻿{% extends 'partials/base.html' %}
+{% extends 'partials/base.html' %}
 {% load static %}
 
 {% block title %}{{ titulo }}{% endblock %}
@@ -21,151 +21,36 @@
         </div>
         <!-- end page title -->
 
+        {% if form.errors %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Error:</strong> Por favor corrija los siguientes errores:
+            <ul class="mb-0">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li>{{ field.label }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
+
         <form method="post" id="formSolicitud">
             {% csrf_token %}
 
-            {% if form.errors %}
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <strong>Error:</strong> Por favor corrija los siguientes errores:
-                <ul class="mb-0">
-                    {% for field in form %}
-                        {% for error in field.errors %}
-                            <li>{{ field.label }}: {{ error }}</li>
-                        {% endfor %}
-                    {% endfor %}
-                    {% for error in form.non_field_errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            {% endif %}
-
             <div class="row">
-                <!-- Información General -->
                 <div class="col-lg-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">
-                                <i class="ri-file-list-3-line align-middle me-1"></i> Información General
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-3">
-                                <div class="col-md-12">
-                                    <label for="{{ form.tipo_solicitud.id_for_label }}" class="form-label">
-                                        {{ form.tipo_solicitud.label }} <span class="text-danger">*</span>
-                                    </label>
-                                    {{ form.tipo_solicitud }}
-                                    {% if form.tipo_solicitud.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.tipo_solicitud.errors }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-12">
-                                    <label for="{{ form.fecha_requerida.id_for_label }}" class="form-label">
-                                        {{ form.fecha_requerida.label }} <span class="text-danger">*</span>
-                                    </label>
-                                    {{ form.fecha_requerida }}
-                                    {% if form.fecha_requerida.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.fecha_requerida.errors }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    {% include 'solicitudes/partials/_card_info_general.html' with show_bodega=False %}
                 </div>
-
-                <!-- Estructura Organizacional -->
                 <div class="col-lg-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">
-                                <i class="ri-building-line align-middle me-1"></i> Estructura Organizacional
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-3">
-                                <div class="col-md-12">
-                                    <label for="{{ form.departamento.id_for_label }}" class="form-label">
-                                        {{ form.departamento.label }}
-                                    </label>
-                                    {{ form.departamento }}
-                                    {% if form.departamento.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.departamento.errors }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-12">
-                                    <label for="{{ form.area.id_for_label }}" class="form-label">
-                                        {{ form.area.label }}
-                                    </label>
-                                    {{ form.area }}
-                                    {% if form.area.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.area.errors }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-12">
-                                    <label for="{{ form.equipo.id_for_label }}" class="form-label">
-                                        {{ form.equipo.label }}
-                                    </label>
-                                    {{ form.equipo }}
-                                    {% if form.equipo.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.equipo.errors }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    {% include 'solicitudes/partials/_card_estructura_org.html' %}
                 </div>
             </div>
 
-            <!-- Motivo y Observaciones -->
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">
-                                <i class="ri-message-3-line align-middle me-1"></i> Motivo y Observaciones
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-3">
-                                <div class="col-md-12">
-                                    <label for="{{ form.motivo.id_for_label }}" class="form-label">
-                                        {{ form.motivo.label }} <span class="text-danger">*</span>
-                                    </label>
-                                    {{ form.motivo }}
-                                    {% if form.motivo.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.motivo.errors }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-12">
-                                    <label for="{{ form.observaciones.id_for_label }}" class="form-label">
-                                        {{ form.observaciones.label }}
-                                    </label>
-                                    {{ form.observaciones }}
-                                    {% if form.observaciones.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.observaciones.errors }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {% include 'solicitudes/partials/_card_motivo.html' %}
 
             <!-- Bienes/Activos Solicitados -->
             <div class="row">
@@ -187,15 +72,12 @@
                                             <th style="width: 35%">Bien/Activo <span class="text-danger">*</span></th>
                                             <th style="width: 15%">Cantidad <span class="text-danger">*</span></th>
                                             <th style="width: 40%">Observaciones</th>
-                                            <th style="width: 10%" class="text-center">Acción</th>
+                                            <th style="width: 10%" class="text-center">Acci&oacute;n</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="tbody-bienes">
-                                        <!-- Las filas se agregarán dinámicamente vía JavaScript -->
-                                    </tbody>
+                                    <tbody id="tbody-bienes"></tbody>
                                 </table>
                             </div>
-
                             <div id="sin-bienes" class="text-center text-muted py-4">
                                 <i class="ri-inbox-line" style="font-size: 3rem;"></i>
                                 <p class="mb-0">No hay bienes/activos agregados. Haga clic en "Agregar Bien/Activo" para comenzar.</p>
@@ -224,38 +106,38 @@
 </div>
 
 <!-- Modal para seleccionar bien/activo -->
-<div class="modal fade" id="modalBien" tabindex="-1" aria-labelledby="modalBienLabel" aria-hidden="true">
+<div class="modal fade" id="modalSeleccionItem" tabindex="-1" aria-labelledby="modalSeleccionItemLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalBienLabel">Seleccionar Bien/Activo</h5>
+                <h5 class="modal-title" id="modalSeleccionItemLabel">Seleccionar Bien/Activo</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">
                     <label class="form-label">Buscar Bien/Activo</label>
-                    <input type="text" class="form-control" id="buscar-bien" placeholder="Buscar por código o nombre...">
+                    <input type="text" class="form-control" id="buscar-item" placeholder="Buscar por c&oacute;digo o nombre...">
                 </div>
                 <div class="table-responsive" style="max-height: 400px;">
                     <table class="table table-hover">
                         <thead class="table-light sticky-top">
                             <tr>
-                                <th>Código</th>
+                                <th>C&oacute;digo</th>
                                 <th>Nombre</th>
-                                <th>Categoría</th>
-                                <th>Acción</th>
+                                <th>Categor&iacute;a</th>
+                                <th>Acci&oacute;n</th>
                             </tr>
                         </thead>
-                        <tbody id="tbody-lista-bienes">
+                        <tbody id="tbody-lista-items">
                             {% for activo in activos %}
-                            <tr data-bien-id="{{ activo.id }}"
-                                data-bien-codigo="{{ activo.codigo }}"
-                                data-bien-nombre="{{ activo.nombre }}">
+                            <tr data-item-id="{{ activo.id }}"
+                                data-item-codigo="{{ activo.codigo }}"
+                                data-item-nombre="{{ activo.nombre }}">
                                 <td><code>{{ activo.codigo }}</code></td>
                                 <td>{{ activo.nombre }}</td>
                                 <td>{{ activo.categoria.nombre }}</td>
                                 <td>
-                                    <button type="button" class="btn btn-sm btn-success btn-seleccionar-bien">
+                                    <button type="button" class="btn btn-sm btn-success btn-seleccionar-item">
                                         <i class="ri-check-line"></i> Seleccionar
                                     </button>
                                 </td>
@@ -268,8 +150,27 @@
         </div>
     </div>
 </div>
+
+<!-- Config para JS unificado -->
+<div id="solicitud-crear-config" class="d-none"
+     data-item-type="bien"
+     data-item-id-field="activo_id"
+     data-table-id="tabla-bienes"
+     data-tbody-id="tbody-bienes"
+     data-empty-state-id="sin-bienes"
+     data-btn-agregar-id="btn-agregar-bien"
+     data-has-unidad="false"
+     data-min-step="1"
+     data-min-value="1"
+     data-use-inline-selector="false"
+     data-modal-selector-id="modalSeleccionItem"
+     data-empty-message="No hay bienes/activos agregados."
+     data-duplicate-message="Este bien/activo ya ha sido agregado"
+     data-validation-message="Debe agregar al menos un bien/activo a la solicitud"
+     data-qty-validation-message="Todas las cantidades deben ser mayores a cero">
+</div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/solicitudes/crear-solicitud-bienes.js' %}"></script>
+<script src="{% static 'js/solicitudes/crear-solicitud.js' %}"></script>
 {% endblock %}
