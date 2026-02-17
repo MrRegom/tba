@@ -1,0 +1,105 @@
+{# Partial de formulario de creación para carga dentro de modal AJAX #}
+{# Requiere: form, items, item_config (dict con tipo, id_field, etc.) #}
+<div class="container-fluid">
+    {% if form.errors %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>Error:</strong> Por favor corrija los siguientes errores:
+        <ul class="mb-0">
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <li>{{ field.label }}: {{ error }}</li>
+                {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+
+    <form method="post" id="formSolicitud" action="{{ form_action }}">
+        {% csrf_token %}
+
+        <div class="row">
+            <div class="col-lg-6">
+                {% include 'solicitudes/partials/_card_info_general.html' with show_bodega=show_bodega %}
+            </div>
+            <div class="col-lg-6">
+                {% include 'solicitudes/partials/_card_estructura_org.html' %}
+            </div>
+        </div>
+
+        {% include 'solicitudes/partials/_card_motivo.html' %}
+
+        <!-- Items Solicitados -->
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">{{ items_title }}</h5>
+                            <button type="button" class="btn btn-sm btn-primary" id="{{ btn_agregar_id }}">
+                                <i class="ri-add-line"></i> Agregar {{ item_type_label }}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% include 'solicitudes/partials/_item_selector_inline.html' with items=items item_type=item_type show_stock=show_stock item_type_label=item_type_label %}
+
+                        <div class="table-responsive">
+                            <table class="table table-nowrap" id="{{ table_id }}">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 35%">{{ item_type_label }} <span class="text-danger">*</span></th>
+                                        <th style="width: 15%">Cantidad <span class="text-danger">*</span></th>
+                                        <th style="width: 40%">Observaciones</th>
+                                        <th style="width: 10%" class="text-center">Acci&oacute;n</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="{{ tbody_id }}"></tbody>
+                            </table>
+                        </div>
+                        <div id="{{ empty_state_id }}" class="text-center text-muted py-4">
+                            <i class="ri-inbox-line" style="font-size: 3rem;"></i>
+                            <p class="mb-0">{{ empty_message }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="text-end">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                        <i class="ri-close-line"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ri-save-line"></i> {{ action }} Solicitud
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- Config para JS unificado -->
+    <div id="solicitud-crear-config" class="d-none"
+         data-item-type="{{ item_type }}"
+         data-item-id-field="{{ item_id_field }}"
+         data-table-id="{{ table_id }}"
+         data-tbody-id="{{ tbody_id }}"
+         data-empty-state-id="{{ empty_state_id }}"
+         data-btn-agregar-id="{{ btn_agregar_id }}"
+         data-has-unidad="{{ has_unidad|yesno:'true,false' }}"
+         data-min-step="{{ min_step }}"
+         data-min-value="{{ min_value }}"
+         data-use-inline-selector="true"
+         data-collapse-id="collapseItemSelector"
+         data-empty-message="{{ empty_message }}"
+         data-duplicate-message="{{ duplicate_message }}"
+         data-validation-message="{{ validation_message }}"
+         data-qty-validation-message="{{ qty_validation_message }}">
+    </div>
+</div>
