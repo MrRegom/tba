@@ -122,7 +122,11 @@
                                                 -
                                             {% endif %}
                                         </td>
-                                        <td>{{ solicitud.solicitante.get_full_name|default:solicitud.solicitante.username }}</td>
+                                        <td>
+                                            <span data-bs-toggle="tooltip" data-bs-placement="top" title="{{ solicitud.solicitante.get_full_name|default:'-' }}">
+                                                {{ solicitud.solicitante.username }}
+                                            </span>
+                                        </td>
                                         <td>
                                             {{ solicitud.area.nombre|default:"-" }}
                                         </td>
@@ -181,4 +185,7 @@
     {% block extra_js %}
     <script src="{% static 'js/solicitudes/crear-solicitud.js' %}"></script>
     <script src="{% static 'js/solicitudes_modal.js' %}"></script>
+    <script>
+        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
+    </script>
     {% endblock %}
