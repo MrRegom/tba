@@ -1,5 +1,5 @@
 {# Tabla de articulos/bienes del detalle de solicitud #}
-{# Requiere: solicitud, detalles, perms #}
+{# Requiere: solicitud, detalles, perms, es_mis_solicitudes #}
 <div class="row mt-3">
     <div class="col-lg-12">
         <div class="card">
@@ -26,10 +26,14 @@
                                     {% endif %}
                                 </th>
                                 <th>Cant. Solicitada</th>
-                                {% if perms.solicitudes.despachar_solicitudes %}
+                                {# Mostrar Stock Actual solo si es Administrador (no es mis solicitudes) #}
+                                {% if perms.solicitudes.despachar_solicitudes and not es_mis_solicitudes %}
                                 <th>Stock Actual</th>
                                 {% endif %}
+                                {# Mostrar Cant. Aprobada si el estado es "PARA DESPACHAR" o si es admin #}
+                                {% if solicitud.estado.codigo == 'DESPACHAR' or not es_mis_solicitudes %}
                                 <th>Cant. Aprobada</th>
+                                {% endif %}
                                 <th>Cant. Despachada</th>
                                 <th>Observaciones</th>
                             </tr>
@@ -40,7 +44,8 @@
                                 <td>{{ detalle.producto_codigo }}</td>
                                 <td>{{ detalle.producto_nombre }}</td>
                                 <td>{{ detalle.cantidad_solicitada }}</td>
-                                {% if perms.solicitudes.despachar_solicitudes %}
+                                {# Stock Actual: solo para Admin #}
+                                {% if perms.solicitudes.despachar_solicitudes and not es_mis_solicitudes %}
                                 <td>
                                     {% if detalle.articulo %}
                                     {{ detalle.articulo.stock|default:"-" }}
@@ -51,6 +56,8 @@
                                     {% endif %}
                                 </td>
                                 {% endif %}
+                                {# Cant. Aprobada: mostrar si estado es "PARA DESPACHAR" o es admin #}
+                                {% if solicitud.estado.codigo == 'DESPACHAR' or not es_mis_solicitudes %}
                                 <td>
                                     {% if detalle.cantidad_aprobada > 0 %}
                                     <span class="badge bg-success">{{ detalle.cantidad_aprobada }}</span>
@@ -58,6 +65,7 @@
                                     -
                                     {% endif %}
                                 </td>
+                                {% endif %}
                                 <td>
                                     {% if detalle.cantidad_despachada > 0 %}
                                     <span class="badge bg-info">{{ detalle.cantidad_despachada }}</span>
@@ -69,7 +77,9 @@
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="{% if perms.solicitudes.despachar_solicitudes %}7{% else %}6{% endif %}" class="text-center text-muted">
+                                {# Calcular colspan dinámicamente según qué columnas se muestran #}
+                                {% widthratio 1 1 1 as col_count %}
+                                <td colspan="6" class="text-center text-muted">
                                     {% if solicitud.tipo == 'ARTICULO' %}
                                     No hay art&iacute;culos en esta solicitud.
                                     {% else %}

@@ -225,6 +225,9 @@ class SolicitudDetailView(BaseAuditedViewMixin, DetailView):
             'estado_anterior', 'estado_nuevo', 'usuario'
         )
 
+        # Indicar si es "Mis Solicitudes" del usuario actual
+        context['es_mis_solicitudes'] = self.object.solicitante == self.request.user
+
         return context
 
     def get_template_names(self):
