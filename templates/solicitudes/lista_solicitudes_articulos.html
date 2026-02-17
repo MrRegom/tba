@@ -96,11 +96,7 @@
                                         <td>{{ solicitud.tipo_solicitud.nombre }}</td>
                                         <td>{{ solicitud.solicitante.get_full_name|default:solicitud.solicitante.username }}</td>
                                         <td>
-                                            {% if solicitud.area %}
-                                                {{ solicitud.area.nombre }}
-                                            {% else %}
-                                                {{ solicitud.departamento.nombre|default:"-" }}
-                                            {% endif %}
+                                            {{ solicitud.area.nombre|default:"-" }}
                                         </td>
                                         <td>{{ solicitud.bodega_origen.nombre|default:"-" }}</td>
                                         <td>
