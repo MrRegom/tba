@@ -82,7 +82,6 @@
                                         <th>Fecha</th>
                                         <th>Tipo</th>
                                         <th>Solicitante</th>
-                                        <th>Área</th>
                                         <th>Bodega</th>
                                         <th>Estado</th>
                                         <th>Acciones</th>
@@ -93,48 +92,32 @@
                                     <tr>
                                         <td><strong>{{ solicitud.numero }}</strong></td>
                                         <td>{{ solicitud.fecha_solicitud|date:"d/m/Y H:i" }}</td>
-                                        <td>{{ solicitud.tipo_solicitud.nombre }}</td>
+                                        <td>{{ solicitud.tipo_solicitud.nombre|default:"-" }}</td>
                                         <td>
                                             <span data-bs-toggle="tooltip" data-bs-placement="top" title="{{ solicitud.solicitante.get_full_name|default:'-' }}">
                                                 {{ solicitud.solicitante.username }}
                                             </span>
                                         </td>
-                                        <td>
-                                            {{ solicitud.area.nombre|default:"-" }}
-                                        </td>
                                         <td>{{ solicitud.bodega_origen.nombre|default:"-" }}</td>
+                                        <td>{{ solicitud.estado.nombre|default:"Sin estado" }}</td>
                                         <td>
-                                            <span class="badge" style="background-color: {{ solicitud.estado.color }}">
-                                                {{ solicitud.estado.nombre }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm btn-soft-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                                    <i class="ri-more-fill"></i>
-                                                </button>
-                                                <ul class="dropdown-menu dropdown-menu-end">
-                                                    <li>
-                                                        <a class="dropdown-item solicitudes-modal-link" href="{% url 'solicitudes:detalle_solicitud' solicitud.pk %}" data-modal-title="Detalle Solicitud {{ solicitud.numero }}">
-                                                            <i class="ri-eye-line align-bottom me-2"></i> Ver Detalle
-                                                        </a>
-                                                    </li>
-                                                    {% if perms.solicitudes.change_solicitud and not solicitud.estado.es_final %}
-                                                        {% if solicitud.estado.codigo == 'PENDIENTE' or solicitud.estado.nombre|lower == 'pendiente' %}
-                                                        <li>
-                                                            <a class="dropdown-item solicitudes-modal-link" href="{% url 'solicitudes:editar_solicitud_articulos' solicitud.pk %}" data-modal-title="Editar Solicitud {{ solicitud.numero }}">
-                                                                <i class="ri-edit-line align-bottom me-2"></i> Editar
-                                                            </a>
-                                                        </li>
-                                                        {% endif %}
+                                            <div class="d-flex gap-1">
+                                                <a href="{% url 'solicitudes:detalle_solicitud' solicitud.pk %}?origen=admin" class="btn btn-sm btn-soft-primary solicitudes-modal-link" title="Ver Detalle" data-modal-title="Detalle Solicitud {{ solicitud.numero }}">
+                                                    <i class="ri-eye-line align-bottom me-1"></i> Ver
+                                                </a>
+                                                {% if perms.solicitudes.change_solicitud and not solicitud.estado.es_final %}
+                                                    {% if solicitud.estado.codigo == 'PENDIENTE' or solicitud.estado.nombre|lower == 'pendiente' %}
+                                                    <a href="{% url 'solicitudes:editar_solicitud_articulos' solicitud.pk %}" class="btn btn-sm btn-soft-secondary solicitudes-modal-link" title="Editar" data-modal-title="Editar Solicitud {{ solicitud.numero }}">
+                                                        <i class="ri-edit-line align-bottom me-1"></i> Editar
+                                                    </a>
                                                     {% endif %}
-                                                </ul>
+                                                {% endif %}
                                             </div>
                                         </td>
                                     </tr>
                                     {% empty %}
                                     <tr>
-                                        <td colspan="8" class="text-center py-4">
+                                        <td colspan="7" class="text-center py-4">
                                             <p class="text-muted mb-0">No se encontraron solicitudes de artículos.</p>
                                         </td>
                                     </tr>
