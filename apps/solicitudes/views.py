@@ -211,12 +211,10 @@ class SolicitudDetailView(BaseAuditedViewMixin, DetailView):
         context['titulo'] = f'Solicitud {self.object.numero}'
 
         # Detalles de la solicitud
-        # No usamos select_related porque DetalleSolicitud puede tener articulo O activo
-        # Django hará queries lazy loading según corresponda
         context['detalles'] = self.object.detalles.filter(eliminado=False).select_related(
-            'articulo',  # Para artículos de bodega
+            'articulo',
             'articulo__categoria',
-            'activo',  # Para activos/bienes de inventario
+            'activo',
             'activo__categoria'
         ).order_by('id')
 
@@ -225,20 +223,24 @@ class SolicitudDetailView(BaseAuditedViewMixin, DetailView):
             'estado_anterior', 'estado_nuevo', 'usuario'
         )
 
-        # Indicar si es "Mis Solicitudes" del usuario actual
-        context['es_mis_solicitudes'] = self.object.solicitante == self.request.user
+        # Es vista admin si el usuario tiene permisos de gestión (independiente de si es solicitante)
+        context['es_vista_admin'] = self.request.user.has_perm('solicitudes.gestionar_solicitudes') or \
+                                    self.request.user.has_perm('solicitudes.despachar_solicitudes')
 
         return context
 
+    def _es_vista_admin(self):
+        """Retorna True si el usuario tiene permisos administrativos sobre solicitudes."""
+        return self.request.user.has_perm('solicitudes.gestionar_solicitudes') or \
+               self.request.user.has_perm('solicitudes.despachar_solicitudes')
+
     def get_template_names(self):
-        # Si la petición es AJAX o se solicita modal, devolver plantilla parcial
+        # Si la petición es AJAX o se solicita modal, devolver la plantilla parcial correcta
         if self.request.headers.get('x-requested-with') == 'XMLHttpRequest' or self.request.GET.get('modal') == '1':
-            # Usar modal diferente según si es mis solicitudes o admin
-            es_mis_solicitudes = self.object.solicitante == self.request.user
-            if es_mis_solicitudes:
-                return ['solicitudes/partials/modal_detalle_mis_solicitudes.html']
-            else:
+            if self._es_vista_admin():
                 return ['solicitudes/partials/modal_detalle_admin.html']
+            else:
+                return ['solicitudes/partials/modal_detalle_mis_solicitudes.html']
         return [self.template_name]
 
 

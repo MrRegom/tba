@@ -47,10 +47,10 @@
         </div>
 
         <!-- Detalles de Articulos/Bienes -->
-        {% if es_mis_solicitudes %}
-            {% include 'solicitudes/partials/_detalle_items_table_mis_solicitudes.html' %}
-        {% else %}
+        {% if es_vista_admin %}
             {% include 'solicitudes/partials/_detalle_items_table_admin.html' %}
+        {% else %}
+            {% include 'solicitudes/partials/_detalle_items_table_mis_solicitudes.html' %}
         {% endif %}
 
         <!-- Historial de Cambios -->
