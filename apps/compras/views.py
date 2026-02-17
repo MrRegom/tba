@@ -54,7 +54,7 @@ class MenuComprasView(BaseAuditedViewMixin, TemplateView):
     permission_required = 'compras.view_ordencompra'
 
     def get_context_data(self, **kwargs) -> dict:
-        """Agrega estadísticas y permisos al contexto usando repositories."""
+        """Agrega estadísticas, órdenes y permisos al contexto usando repositories."""
         context = super().get_context_data(**kwargs)
         user = self.request.user
 
@@ -75,7 +75,6 @@ class MenuComprasView(BaseAuditedViewMixin, TemplateView):
         estado_comprar = estado_solicitud_repo.get_by_codigo('COMPRAR')
         solicitudes_pendientes_count = 0
         if estado_comprar:
-            # Obtener solicitudes para comprar que no tienen órdenes de compra asociadas
             solicitudes_comprar = solicitud_repo.filter_by_estado(estado_comprar)
             solicitudes_pendientes_count = solicitudes_comprar.filter(ordenes_compra__isnull=True).count()
 
@@ -92,7 +91,55 @@ class MenuComprasView(BaseAuditedViewMixin, TemplateView):
             'puede_gestionar': user.has_perm('compras.change_ordencompra'),
         }
 
-        context['titulo'] = 'Módulo de Compras'
+        # Tabla de órdenes con filtros
+        queryset = orden_repo.get_all()
+        q = self.request.GET.get('q', '').strip()
+        estado_id = self.request.GET.get('estado', '')
+        proveedor_id = self.request.GET.get('proveedor', '')
+
+        if q:
+            queryset = orden_repo.search(q)
+        if estado_id:
+            queryset = queryset.filter(estado_id=estado_id)
+        if proveedor_id:
+            queryset = queryset.filter(proveedor_id=proveedor_id)
+
+        context['ordenes'] = queryset
+        context['estados'] = EstadoOrdenCompra.objects.filter(eliminado=False)
+        context['proveedores'] = proveedor_repo.get_all()
+        context['query'] = q
+        context['estado_id'] = estado_id
+        context['proveedor_id'] = proveedor_id
+
+        context['titulo'] = 'Compras'
+        return context
+
+
+# ==================== VISTA GESTORES ====================
+
+class GestoresComprasView(BaseAuditedViewMixin, TemplateView):
+    """
+    Vista de gestores del módulo de compras con tabs.
+
+    Muestra Estados de Orden de Compra y Proveedores en pestañas.
+    Permisos: compras.view_estadoordencompra
+    """
+    template_name = 'compras/gestores_compras.html'
+    permission_required = 'compras.view_estadoordencompra'
+
+    def get_context_data(self, **kwargs) -> dict:
+        context = super().get_context_data(**kwargs)
+        proveedor_repo = ProveedorRepository()
+
+        context['estados'] = EstadoOrdenCompra.objects.filter(eliminado=False).order_by('codigo')
+        context['proveedores'] = proveedor_repo.get_all()
+        context['titulo'] = 'Gestores - Compras'
+        context['puede_crear_estado'] = self.request.user.has_perm('compras.add_estadoordencompra')
+        context['puede_editar_estado'] = self.request.user.has_perm('compras.change_estadoordencompra')
+        context['puede_eliminar_estado'] = self.request.user.has_perm('compras.delete_estadoordencompra')
+        context['puede_crear_proveedor'] = self.request.user.has_perm('compras.add_proveedor')
+        context['puede_editar_proveedor'] = self.request.user.has_perm('compras.change_proveedor')
+        context['puede_eliminar_proveedor'] = self.request.user.has_perm('compras.delete_proveedor')
         return context
 
 
