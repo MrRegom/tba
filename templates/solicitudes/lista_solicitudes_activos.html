@@ -36,7 +36,7 @@
                         <h5 class="card-title mb-0 flex-grow-1">Solicitudes de Activos/Bienes</h5>
                         {% if perms.solicitudes.add_solicitud %}
                         <div>
-                            <a href="{% url 'solicitudes:crear_solicitud_bienes' %}" class="btn btn-primary">
+                            <a href="{% url 'solicitudes:crear_solicitud_bienes' %}" class="btn btn-primary solicitudes-modal-link" data-modal-title="Crear Solicitud de Bienes">
                                 <i class="ri-add-line align-bottom me-1"></i> Nueva Solicitud de Bienes
                             </a>
                         </div>
@@ -107,14 +107,14 @@
                                                 </button>
                                                 <ul class="dropdown-menu dropdown-menu-end">
                                                     <li>
-                                                        <a class="dropdown-item" href="{% url 'solicitudes:detalle_solicitud' solicitud.pk %}">
+                                                        <a class="dropdown-item solicitudes-modal-link" href="{% url 'solicitudes:detalle_solicitud' solicitud.pk %}" data-modal-title="Detalle Solicitud {{ solicitud.numero }}">
                                                             <i class="ri-eye-line align-bottom me-2"></i> Ver Detalle
                                                         </a>
                                                     </li>
                                                     {% if perms.solicitudes.change_solicitud and not solicitud.estado.es_final %}
                                                         {% if solicitud.estado.codigo == 'PENDIENTE' or solicitud.estado.nombre|lower == 'pendiente' %}
                                                         <li>
-                                                            <a class="dropdown-item" href="{% url 'solicitudes:editar_solicitud_bienes' solicitud.pk %}">
+                                                            <a class="dropdown-item solicitudes-modal-link" href="{% url 'solicitudes:editar_solicitud_bienes' solicitud.pk %}" data-modal-title="Editar Solicitud {{ solicitud.numero }}">
                                                                 <i class="ri-edit-line align-bottom me-2"></i> Editar
                                                             </a>
                                                         </li>
@@ -141,4 +141,11 @@
 
     </div>
 </div>
+
+{% include 'solicitudes/partials/modal_container.html' %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/solicitudes/crear-solicitud.js' %}"></script>
+<script src="{% static 'js/solicitudes_modal.js' %}"></script>
 {% endblock %}
