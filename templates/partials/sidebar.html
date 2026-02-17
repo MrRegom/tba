@@ -62,9 +62,24 @@
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="{% url 'compras:menu_compras' %}">
+                    <a class="nav-link menu-link" href="#sidebarCompras" data-bs-toggle="collapse" role="button"
+                        aria-expanded="false" aria-controls="sidebarCompras">
                         <i class="ri-shopping-cart-line"></i> <span data-key="t-compras">Compras</span>
                     </a>
+                    <div class="collapse menu-dropdown" id="sidebarCompras">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{% url 'compras:menu_compras' %}" class="nav-link" data-key="t-ordenes-compra">
+                                    Órdenes de Compra
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'compras:gestores_compras' %}" class="nav-link" data-key="t-gestores-compras">
+                                    Gestores
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </li>
 
                 <li class="nav-item">
@@ -129,7 +144,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{% url 'compras:menu_compras' %}" class="nav-link" data-key="t-gestores-compras">
+                                <a href="{% url 'compras:gestores_compras' %}" class="nav-link" data-key="t-gestores-compras">
                                     Compras
                                 </a>
                             </li>
