@@ -40,9 +40,7 @@
                                 <td>{{ detalle.cantidad_solicitada }}</td>
                                 <td>
                                     {% if detalle.articulo %}
-                                    {{ detalle.articulo.stock|default:"-" }}
-                                    {% elif detalle.activo %}
-                                    {{ detalle.activo.stock|default:"-" }}
+                                    {{ detalle.articulo.stock_actual|default:"-" }}
                                     {% else %}
                                     -
                                     {% endif %}
