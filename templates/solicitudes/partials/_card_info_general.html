@@ -1,0 +1,18 @@
+{# Card "Informacion General" para formularios de solicitud #}
+{# Requiere: form, show_bodega (bool) #}
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="ri-file-list-3-line align-middle me-1"></i> Informaci&oacute;n General
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            {% include 'solicitudes/partials/_field.html' with field=form.tipo_solicitud required=True %}
+            {% include 'solicitudes/partials/_field.html' with field=form.fecha_requerida required=True %}
+            {% if show_bodega %}
+                {% include 'solicitudes/partials/_field.html' with field=form.bodega_origen required=True %}
+            {% endif %}
+        </div>
+    </div>
+</div>

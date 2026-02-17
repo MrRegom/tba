@@ -36,8 +36,8 @@
                         <h5 class="card-title mb-0 flex-grow-1">Solicitudes de Activos/Bienes</h5>
                         {% if perms.solicitudes.add_solicitud %}
                         <div>
-                            <a href="{% url 'solicitudes:crear_solicitud_activos' %}" class="btn btn-primary">
-                                <i class="ri-add-line align-bottom me-1"></i> Nueva Solicitud de Activos
+                            <a href="{% url 'solicitudes:crear_solicitud_bienes' %}" class="btn btn-primary">
+                                <i class="ri-add-line align-bottom me-1"></i> Nueva Solicitud de Bienes
                             </a>
                         </div>
                         {% endif %}
@@ -67,7 +67,7 @@
                                 {{ form.buscar }}
                             </div>
                             <div class="col-md-2 d-flex align-items-end">
-                                <a href="{% url 'solicitudes:lista_solicitudes_activos' %}" class="btn btn-light w-100">
+                                <a href="{% url 'solicitudes:lista_solicitudes_bienes' %}" class="btn btn-light w-100">
                                     <i class="ri-refresh-line"></i> Limpiar
                                 </a>
                             </div>
@@ -94,7 +94,7 @@
                                         <td>{{ solicitud.fecha_solicitud|date:"d/m/Y H:i" }}</td>
                                         <td>{{ solicitud.tipo_solicitud.nombre }}</td>
                                         <td>{{ solicitud.solicitante.get_full_name|default:solicitud.solicitante.username }}</td>
-                                        <td>{{ solicitud.area.nombre|default:solicitud.departamento.nombre|default:"-" }}</td>
+                                        <td>{% if solicitud.area %}{{ solicitud.area.nombre }}{% elif solicitud.departamento %}{{ solicitud.departamento.nombre }}{% else %}-{% endif %}</td>
                                         <td>
                                             <span class="badge" style="background-color: {{ solicitud.estado.color }}">
                                                 {{ solicitud.estado.nombre }}
@@ -114,7 +114,7 @@
                                                     {% if perms.solicitudes.change_solicitud and not solicitud.estado.es_final %}
                                                         {% if solicitud.estado.codigo == 'PENDIENTE' or solicitud.estado.nombre|lower == 'pendiente' %}
                                                         <li>
-                                                            <a class="dropdown-item" href="{% url 'solicitudes:editar_solicitud_activos' solicitud.pk %}">
+                                                            <a class="dropdown-item" href="{% url 'solicitudes:editar_solicitud_bienes' solicitud.pk %}">
                                                                 <i class="ri-edit-line align-bottom me-2"></i> Editar
                                                             </a>
                                                         </li>
