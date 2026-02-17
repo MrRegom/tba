@@ -210,7 +210,6 @@ class SolicitudDetailView(BaseAuditedViewMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context['titulo'] = f'Solicitud {self.object.numero}'
 
-        # Detalles de la solicitud
         context['detalles'] = self.object.detalles.filter(eliminado=False).select_related(
             'articulo',
             'articulo__categoria',
@@ -218,26 +217,19 @@ class SolicitudDetailView(BaseAuditedViewMixin, DetailView):
             'activo__categoria'
         ).order_by('id')
 
-        # Historial de cambios
         context['historial'] = self.object.historial.select_related(
             'estado_anterior', 'estado_nuevo', 'usuario'
         )
 
-        # Es vista admin si el usuario tiene permisos de gestión (independiente de si es solicitante)
-        context['es_vista_admin'] = self.request.user.has_perm('solicitudes.gestionar_solicitudes') or \
-                                    self.request.user.has_perm('solicitudes.despachar_solicitudes')
+        # Pasar el origen al contexto para que el template de página completa sepa cuál tabla usar
+        context['origen'] = self.request.GET.get('origen', 'mis')
 
         return context
 
-    def _es_vista_admin(self):
-        """Retorna True si el usuario tiene permisos administrativos sobre solicitudes."""
-        return self.request.user.has_perm('solicitudes.gestionar_solicitudes') or \
-               self.request.user.has_perm('solicitudes.despachar_solicitudes')
-
     def get_template_names(self):
-        # Si la petición es AJAX o se solicita modal, devolver la plantilla parcial correcta
+        # Si la petición es AJAX o se solicita modal, devolver el modal según el origen
         if self.request.headers.get('x-requested-with') == 'XMLHttpRequest' or self.request.GET.get('modal') == '1':
-            if self._es_vista_admin():
+            if self.request.GET.get('origen') == 'admin':
                 return ['solicitudes/partials/modal_detalle_admin.html']
             else:
                 return ['solicitudes/partials/modal_detalle_mis_solicitudes.html']
