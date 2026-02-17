@@ -41,12 +41,12 @@
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li>
-                                    <a class="dropdown-item" href="{% url 'solicitudes:crear_solicitud_articulos' %}">
+                                    <a class="dropdown-item solicitudes-modal-link" href="{% url 'solicitudes:crear_solicitud_articulos' %}" data-modal-title="Crear Solicitud de Artículos">
                                         <i class="ri-box-3-line align-bottom me-2"></i> Solicitud de Artículos
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" href="{% url 'solicitudes:crear_solicitud_bienes' %}">
+                                    <a class="dropdown-item solicitudes-modal-link" href="{% url 'solicitudes:crear_solicitud_bienes' %}" data-modal-title="Crear Solicitud de Bienes">
                                         <i class="ri-building-line align-bottom me-2"></i> Solicitud de Bienes
                                     </a>
                                 </li>
@@ -185,5 +185,6 @@
     {% include 'solicitudes/partials/modal_container.html' %}
 
     {% block extra_js %}
+    <script src="{% static 'js/solicitudes/crear-solicitud.js' %}"></script>
     <script src="{% static 'js/solicitudes_modal.js' %}"></script>
     {% endblock %}
