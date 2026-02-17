@@ -1,0 +1,14 @@
+<!-- Modal detalle para ADMINISTRADOR DE SOLICITUDES -->
+<div class="container-fluid">
+    <!-- Informacion General -->
+    <div class="card-body">
+        {% include 'solicitudes/partials/_detalle_info.html' %}
+        {% include 'solicitudes/partials/_detalle_acciones.html' %}
+    </div>
+
+    <!-- Detalles de Articulos/Bienes (con stock) -->
+    {% include 'solicitudes/partials/_detalle_items_table_admin.html' %}
+
+    <!-- Historial de Cambios -->
+    {% include 'solicitudes/partials/_detalle_historial.html' %}
+</div>

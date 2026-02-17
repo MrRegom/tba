@@ -233,7 +233,12 @@ class SolicitudDetailView(BaseAuditedViewMixin, DetailView):
     def get_template_names(self):
         # Si la petición es AJAX o se solicita modal, devolver plantilla parcial
         if self.request.headers.get('x-requested-with') == 'XMLHttpRequest' or self.request.GET.get('modal') == '1':
-            return ['solicitudes/partials/modal_detalle.html']
+            # Usar modal diferente según si es mis solicitudes o admin
+            es_mis_solicitudes = self.object.solicitante == self.request.user
+            if es_mis_solicitudes:
+                return ['solicitudes/partials/modal_detalle_mis_solicitudes.html']
+            else:
+                return ['solicitudes/partials/modal_detalle_admin.html']
         return [self.template_name]
 
 
@@ -422,7 +427,10 @@ class SolicitudUpdateView(EditarMisSolicitudesPermissionMixin, BaseAuditedViewMi
                 detalle_view.request = self.request
                 detalle_view.object = self.object
                 detalle_context = detalle_view.get_context_data()
-                return render(self.request, 'solicitudes/partials/modal_detalle.html', detalle_context)
+                # Usar modal diferente según si es mis solicitudes o admin
+                es_mis_solicitudes = self.object.solicitante == self.request.user
+                modal_template = 'solicitudes/partials/modal_detalle_mis_solicitudes.html' if es_mis_solicitudes else 'solicitudes/partials/modal_detalle_admin.html'
+                return render(self.request, modal_template, detalle_context)
 
             return super().form_valid(form)
         else:
@@ -629,7 +637,10 @@ class SolicitudRechazarView(RechazarSolicitudesPermissionMixin, BaseAuditedViewM
                 ).order_by('id'),
                 'historial': historial_repo.filter_by_solicitud(solicitud)
             }
-            return render(request, 'solicitudes/partials/modal_detalle.html', context)
+            # Usar modal diferente según si es mis solicitudes o admin
+            es_mis_solicitudes = solicitud.solicitante == request.user
+            modal_template = 'solicitudes/partials/modal_detalle_mis_solicitudes.html' if es_mis_solicitudes else 'solicitudes/partials/modal_detalle_admin.html'
+            return render(request, modal_template, context)
 
         return redirect('solicitudes:detalle_solicitud', pk=solicitud.pk)
 
@@ -696,7 +707,10 @@ class SolicitudDespacharView(DespacharSolicitudesPermissionMixin, BaseAuditedVie
                 ).order_by('id'),
                 'historial': historial_repo.filter_by_solicitud(solicitud)
             }
-            return render(request, 'solicitudes/partials/modal_detalle.html', context)
+            # Usar modal diferente según si es mis solicitudes o admin
+            es_mis_solicitudes = solicitud.solicitante == request.user
+            modal_template = 'solicitudes/partials/modal_detalle_mis_solicitudes.html' if es_mis_solicitudes else 'solicitudes/partials/modal_detalle_admin.html'
+            return render(request, modal_template, context)
 
         return redirect('solicitudes:detalle_solicitud', pk=solicitud.pk)
 
@@ -757,7 +771,10 @@ class SolicitudComprarView(DespacharSolicitudesPermissionMixin, BaseAuditedViewM
                 ).order_by('id'),
                 'historial': historial_repo.filter_by_solicitud(solicitud)
             }
-            return render(request, 'solicitudes/partials/modal_detalle.html', context)
+            # Usar modal diferente según si es mis solicitudes o admin
+            es_mis_solicitudes = solicitud.solicitante == request.user
+            modal_template = 'solicitudes/partials/modal_detalle_mis_solicitudes.html' if es_mis_solicitudes else 'solicitudes/partials/modal_detalle_admin.html'
+            return render(request, modal_template, context)
 
         return redirect('solicitudes:detalle_solicitud', pk=solicitud.pk)
 
@@ -902,7 +919,10 @@ class SolicitudActivoCreateView(CrearSolicitudBienesPermissionMixin, SolicitudCr
                 'estado_anterior', 'estado_nuevo', 'usuario'
             )
         }
-        return render(self.request, 'solicitudes/partials/modal_detalle.html', context)
+        # Usar modal diferente según si es mis solicitudes o admin
+        # Las solicitudes creadas siempre son "mis solicitudes" para el usuario actual
+        modal_template = 'solicitudes/partials/modal_detalle_mis_solicitudes.html'
+        return render(self.request, modal_template, context)
 
     def _extraer_detalles_post(self, post_data):
         """
@@ -1117,7 +1137,10 @@ class SolicitudArticuloCreateView(CrearSolicitudArticulosPermissionMixin, Solici
                 'estado_anterior', 'estado_nuevo', 'usuario'
             )
         }
-        return render(self.request, 'solicitudes/partials/modal_detalle.html', context)
+        # Usar modal diferente según si es mis solicitudes o admin
+        # Las solicitudes creadas siempre son "mis solicitudes" para el usuario actual
+        modal_template = 'solicitudes/partials/modal_detalle_mis_solicitudes.html'
+        return render(self.request, modal_template, context)
 
     def _extraer_detalles_post(self, post_data):
         """
