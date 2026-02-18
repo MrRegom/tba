@@ -1284,7 +1284,7 @@ class TipoSolicitudCreateView(BaseAuditedViewMixin, CreateView):
 
 class TipoSolicitudUpdateView(BaseAuditedViewMixin, UpdateView):
     """
-    Vista para editar un tipo de solicitud existente.
+    Vista para editar un tipo de solicitud existente. Soporta modo modal (AJAX).
 
     Permisos: solicitudes.change_tiposolicitud
     Auditoría: Registra acción EDITAR automáticamente
@@ -1293,7 +1293,7 @@ class TipoSolicitudUpdateView(BaseAuditedViewMixin, UpdateView):
     form_class = TipoSolicitudForm
     template_name = 'solicitudes/mantenedores/tipo_solicitud/form.html'
     permission_required = 'solicitudes.change_tiposolicitud'
-    success_url = reverse_lazy('solicitudes:tipo_solicitud_lista')
+    success_url = reverse_lazy('solicitudes:menu_solicitudes')
 
     # Configuración de auditoría
     audit_action = 'EDITAR'
@@ -1305,6 +1305,11 @@ class TipoSolicitudUpdateView(BaseAuditedViewMixin, UpdateView):
     def get_queryset(self) -> QuerySet:
         """Solo permite editar tipos no eliminados."""
         return super().get_queryset().filter(eliminado=False)
+
+    def get_template_names(self):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return ['solicitudes/mantenedores/tipo_solicitud/modal_editar.html']
+        return [self.template_name]
 
     def get_context_data(self, **kwargs) -> dict:
         """Agrega datos al contexto."""
@@ -1319,7 +1324,20 @@ class TipoSolicitudUpdateView(BaseAuditedViewMixin, UpdateView):
         response = super().form_valid(form)
         messages.success(self.request, self.get_success_message(self.object))
         self.log_action(self.object, self.request)
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            from django.http import JsonResponse
+            return JsonResponse({'success': True})
         return response
+
+    def form_invalid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            from django.shortcuts import render as django_render
+            return django_render(
+                self.request,
+                'solicitudes/mantenedores/tipo_solicitud/modal_editar.html',
+                self.get_context_data(form=form)
+            )
+        return super().form_invalid(form)
 
 
 class TipoSolicitudDeleteView(BaseAuditedViewMixin, DeleteView):
@@ -1461,7 +1479,7 @@ class EstadoSolicitudCreateView(BaseAuditedViewMixin, CreateView):
 
 class EstadoSolicitudUpdateView(BaseAuditedViewMixin, UpdateView):
     """
-    Vista para editar un estado de solicitud existente.
+    Vista para editar un estado de solicitud existente. Soporta modo modal (AJAX).
 
     Permisos: solicitudes.change_estadosolicitud
     Auditoría: Registra acción EDITAR automáticamente
@@ -1470,7 +1488,7 @@ class EstadoSolicitudUpdateView(BaseAuditedViewMixin, UpdateView):
     form_class = EstadoSolicitudForm
     template_name = 'solicitudes/mantenedores/estado_solicitud/form.html'
     permission_required = 'solicitudes.change_estadosolicitud'
-    success_url = reverse_lazy('solicitudes:estado_solicitud_lista')
+    success_url = reverse_lazy('solicitudes:menu_solicitudes')
 
     # Configuración de auditoría
     audit_action = 'EDITAR'
@@ -1482,6 +1500,11 @@ class EstadoSolicitudUpdateView(BaseAuditedViewMixin, UpdateView):
     def get_queryset(self) -> QuerySet:
         """Solo permite editar estados no eliminados."""
         return super().get_queryset().filter(eliminado=False)
+
+    def get_template_names(self):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return ['solicitudes/mantenedores/estado_solicitud/modal_editar.html']
+        return [self.template_name]
 
     def get_context_data(self, **kwargs) -> dict:
         """Agrega datos al contexto."""
@@ -1496,7 +1519,20 @@ class EstadoSolicitudUpdateView(BaseAuditedViewMixin, UpdateView):
         response = super().form_valid(form)
         messages.success(self.request, self.get_success_message(self.object))
         self.log_action(self.object, self.request)
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            from django.http import JsonResponse
+            return JsonResponse({'success': True})
         return response
+
+    def form_invalid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            from django.shortcuts import render as django_render
+            return django_render(
+                self.request,
+                'solicitudes/mantenedores/estado_solicitud/modal_editar.html',
+                self.get_context_data(form=form)
+            )
+        return super().form_invalid(form)
 
 
 class EstadoSolicitudDeleteView(BaseAuditedViewMixin, DeleteView):
