@@ -1,0 +1,462 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}Gestores - Inventario{% endblock %}
+
+{% block content %}
+<!-- Page Title -->
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0"><i class="ri-clipboard-line me-2"></i>Gestores - Inventario</h4>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'inventario:menu_gestores' %}">Gestores</a></li>
+                    <li class="breadcrumb-item active">Inventario</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<!-- Tabs Navigation -->
+<div class="row">
+    <div class="col-lg-12">
+        <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="categorias-tab" data-bs-toggle="pill"
+                    data-bs-target="#categorias" type="button" role="tab"
+                    aria-controls="categorias" aria-selected="true">
+                    <i class="ri-price-tag-3-line me-1"></i>Categorías
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="estados-tab" data-bs-toggle="pill"
+                    data-bs-target="#estados" type="button" role="tab"
+                    aria-controls="estados" aria-selected="false">
+                    <i class="ri-toggle-line me-1"></i>Estado
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="marcas-tab" data-bs-toggle="pill"
+                    data-bs-target="#marcas" type="button" role="tab"
+                    aria-controls="marcas" aria-selected="false">
+                    <i class="ri-medal-line me-1"></i>Marca/Modelo
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tipos-tab" data-bs-toggle="pill"
+                    data-bs-target="#tipos" type="button" role="tab"
+                    aria-controls="tipos" aria-selected="false">
+                    <i class="ri-exchange-line me-1"></i>Tipos de Movimiento
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="activos-tab" data-bs-toggle="pill"
+                    data-bs-target="#activos" type="button" role="tab"
+                    aria-controls="activos" aria-selected="false">
+                    <i class="ri-computer-line me-1"></i>Activos/Bienes
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="pills-tabContent">
+
+            <!-- ============ CATEGORÍAS TAB ============ -->
+            <div class="tab-pane fade show active" id="categorias" role="tabpanel" aria-labelledby="categorias-tab">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4 class="card-title flex-grow-1 mb-0">Gestión de Categorías</h4>
+                        {% if perms.activos.add_categoriaactivo %}
+                        <a href="{% url 'activos:crear_categoria' %}" class="btn btn-primary">
+                            <i class="ri-add-line me-1"></i>Nueva Categoría
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nombre</th>
+                                        <th>Sigla</th>
+                                        <th>Descripción</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cat in categorias %}
+                                    <tr>
+                                        <td><code>{{ cat.codigo }}</code></td>
+                                        <td>{{ cat.nombre }}</td>
+                                        <td>{{ cat.sigla|default:"-" }}</td>
+                                        <td>{{ cat.descripcion|default:"-"|truncatechars:50 }}</td>
+                                        <td>
+                                            {% if cat.activo %}
+                                                <span class="badge bg-success">Activo</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Inactivo</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if perms.activos.change_categoriaactivo %}
+                                            <button type="button" class="btn btn-sm btn-soft-primary btn-modal-inv"
+                                                data-url="{% url 'activos:editar_categoria' cat.pk %}"
+                                                title="Editar">
+                                                <i class="ri-pencil-line"></i>
+                                            </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-4">No hay categorías registradas</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ ESTADOS TAB ============ -->
+            <div class="tab-pane fade" id="estados" role="tabpanel" aria-labelledby="estados-tab">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4 class="card-title flex-grow-1 mb-0">Gestión de Estados</h4>
+                        {% if perms.activos.add_estadoactivo %}
+                        <a href="{% url 'activos:crear_estado' %}" class="btn btn-primary">
+                            <i class="ri-add-line me-1"></i>Nuevo Estado
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nombre</th>
+                                        <th>Color</th>
+                                        <th>Inicial</th>
+                                        <th>Permite Movimiento</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for estado in estados %}
+                                    <tr>
+                                        <td><code>{{ estado.codigo }}</code></td>
+                                        <td>{{ estado.nombre }}</td>
+                                        <td>
+                                            {% if estado.color %}
+                                            <span class="badge" style="background-color:{{ estado.color }}">{{ estado.color }}</span>
+                                            {% else %}-{% endif %}
+                                        </td>
+                                        <td>
+                                            {% if estado.es_inicial %}
+                                                <span class="badge bg-info">Sí</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">No</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if estado.permite_movimiento %}
+                                                <span class="badge bg-success">Sí</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">No</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if estado.activo %}
+                                                <span class="badge bg-success">Activo</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Inactivo</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if perms.activos.change_estadoactivo %}
+                                            <button type="button" class="btn btn-sm btn-soft-primary btn-modal-inv"
+                                                data-url="{% url 'activos:editar_estado' estado.pk %}"
+                                                title="Editar">
+                                                <i class="ri-pencil-line"></i>
+                                            </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted py-4">No hay estados registrados</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ MARCAS TAB ============ -->
+            <div class="tab-pane fade" id="marcas" role="tabpanel" aria-labelledby="marcas-tab">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4 class="card-title flex-grow-1 mb-0">Gestión de Marcas/Modelos</h4>
+                        {% if perms.activos.add_marca %}
+                        <a href="{% url 'activos:crear_marca' %}" class="btn btn-primary">
+                            <i class="ri-add-line me-1"></i>Nueva Marca
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nombre</th>
+                                        <th>Descripción</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for marca in marcas %}
+                                    <tr>
+                                        <td><code>{{ marca.codigo }}</code></td>
+                                        <td>{{ marca.nombre }}</td>
+                                        <td>{{ marca.descripcion|default:"-"|truncatechars:50 }}</td>
+                                        <td>
+                                            {% if marca.activo %}
+                                                <span class="badge bg-success">Activo</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Inactivo</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if perms.activos.change_marca %}
+                                            <button type="button" class="btn btn-sm btn-soft-primary btn-modal-inv"
+                                                data-url="{% url 'activos:editar_marca' marca.pk %}"
+                                                title="Editar">
+                                                <i class="ri-pencil-line"></i>
+                                            </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-4">No hay marcas registradas</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ TIPOS DE MOVIMIENTO TAB ============ -->
+            <div class="tab-pane fade" id="tipos" role="tabpanel" aria-labelledby="tipos-tab">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4 class="card-title flex-grow-1 mb-0">Gestión de Tipos de Movimiento</h4>
+                        {% if perms.activos.add_tipomovimientoactivo %}
+                        <a href="{% url 'activos:crear_tipo_movimiento' %}" class="btn btn-primary">
+                            <i class="ri-add-line me-1"></i>Nuevo Tipo
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nombre</th>
+                                        <th>Descripción</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for tipo in tipos_movimiento %}
+                                    <tr>
+                                        <td><code>{{ tipo.codigo }}</code></td>
+                                        <td>{{ tipo.nombre }}</td>
+                                        <td>{{ tipo.descripcion|default:"-"|truncatechars:50 }}</td>
+                                        <td>
+                                            {% if tipo.activo %}
+                                                <span class="badge bg-success">Activo</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Inactivo</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if perms.activos.change_tipomovimientoactivo %}
+                                            <button type="button" class="btn btn-sm btn-soft-primary btn-modal-inv"
+                                                data-url="{% url 'activos:editar_tipo_movimiento' tipo.pk %}"
+                                                title="Editar">
+                                                <i class="ri-pencil-line"></i>
+                                            </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-4">No hay tipos de movimiento registrados</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ ACTIVOS/BIENES TAB ============ -->
+            <div class="tab-pane fade" id="activos" role="tabpanel" aria-labelledby="activos-tab">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4 class="card-title flex-grow-1 mb-0">Activos/Bienes</h4>
+                        {% if perms.activos.add_activo %}
+                        <a href="{% url 'activos:crear_activo' %}" class="btn btn-primary">
+                            <i class="ri-add-line me-1"></i>Nuevo Activo
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nombre</th>
+                                        <th>Categoría</th>
+                                        <th>Marca</th>
+                                        <th>Estado</th>
+                                        <th>N° Serie</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for activo in activos %}
+                                    <tr>
+                                        <td><code>{{ activo.codigo }}</code></td>
+                                        <td>{{ activo.nombre }}</td>
+                                        <td>{{ activo.categoria.nombre|default:"-" }}</td>
+                                        <td>{{ activo.marca.nombre|default:"-" }}</td>
+                                        <td>
+                                            {% if activo.estado %}
+                                                {% if activo.estado.color %}
+                                                    <span class="badge" style="background-color:{{ activo.estado.color }}">{{ activo.estado.nombre }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">{{ activo.estado.nombre }}</span>
+                                                {% endif %}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ activo.numero_serie|default:"-" }}</td>
+                                        <td>
+                                            {% if perms.activos.change_activo %}
+                                            <a href="{% url 'activos:editar_activo' activo.pk %}" class="btn btn-sm btn-soft-primary" title="Editar">
+                                                <i class="ri-pencil-line"></i>
+                                            </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted py-4">No hay activos registrados</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal genérico para gestores de inventario -->
+<div class="modal fade" id="invModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content" id="invModalContent">
+            <div class="modal-body text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modalEl = document.getElementById('invModal');
+    const modalContent = document.getElementById('invModalContent');
+    const modal = new bootstrap.Modal(modalEl);
+
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.btn-modal-inv');
+        if (!btn) return;
+
+        const url = btn.dataset.url;
+
+        modalContent.innerHTML = '<div class="modal-body text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div></div>';
+        modal.show();
+
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(response => response.text())
+            .then(html => {
+                modalContent.innerHTML = html;
+                const form = modalContent.querySelector('form');
+                if (form) {
+                    form.addEventListener('submit', function(ev) {
+                        ev.preventDefault();
+                        const formData = new FormData(form);
+                        fetch(form.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        })
+                        .then(resp => {
+                            if (resp.headers.get('content-type')?.includes('application/json')) {
+                                return resp.json().then(data => {
+                                    if (data.success) {
+                                        modal.hide();
+                                        location.reload();
+                                    }
+                                });
+                            } else {
+                                return resp.text().then(html => {
+                                    modalContent.innerHTML = html;
+                                });
+                            }
+                        });
+                    });
+                }
+            });
+    });
+});
+</script>
+{% endblock %}
