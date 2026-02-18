@@ -38,7 +38,7 @@ urlpatterns = [
     path('gestores/', include('apps.inventario.urls')),
 
     # Gestión de usuarios y permisos
-    path('usuarios/', include('apps.accounts.urls')),
+    path('administracion/', include('apps.accounts.urls')),
 
     path(
         "account/password/change/",
