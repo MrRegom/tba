@@ -987,7 +987,7 @@ from core.mixins import (
     BaseAuditedViewMixin, AtomicTransactionMixin, SoftDeleteMixin,
     PaginatedListMixin
 )
-from .forms import UbicacionForm, TallerForm, AreaForm, DepartamentoForm
+from .forms import UbicacionForm, TallerForm, AreaForm, DepartamentoForm, BodegaForm
 
 
 # ==================== VISTAS DE UBICACIÓN ====================
@@ -1032,10 +1032,27 @@ class UbicacionCreateView(BaseAuditedViewMixin, AtomicTransactionMixin, CreateVi
     form_class = UbicacionForm
     template_name = 'account/organizacion/ubicacion/form.html'
     permission_required = 'activos.add_ubicacion'
-    success_url = reverse_lazy('accounts:ubicacion_lista')
+    success_url = reverse_lazy('accounts:gestores_organizacion')
     audit_action = 'CREAR'
     audit_description_template = 'Ubicación creada: {obj.codigo} - {obj.nombre}'
     success_message = 'Ubicación "{obj.nombre}" creada exitosamente.'
+
+    def get_template_names(self):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return ['account/organizacion/ubicacion/modal_crear.html']
+        return super().get_template_names()
+
+    def form_valid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            self.object = form.save()
+            return JsonResponse({'success': True})
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            from django.shortcuts import render as django_render
+            return django_render(self.request, self.get_template_names()[0], self.get_context_data(form=form))
+        return super().form_invalid(form)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1145,10 +1162,27 @@ class TallerCreateView(BaseAuditedViewMixin, AtomicTransactionMixin, CreateView)
     form_class = TallerForm
     template_name = 'account/organizacion/taller/form.html'
     permission_required = 'activos.add_taller'
-    success_url = reverse_lazy('accounts:taller_lista')
+    success_url = reverse_lazy('accounts:gestores_organizacion')
     audit_action = 'CREAR'
     audit_description_template = 'Taller creado: {obj.codigo} - {obj.nombre}'
     success_message = 'Taller "{obj.nombre}" creado exitosamente.'
+
+    def get_template_names(self):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return ['account/organizacion/taller/modal_crear.html']
+        return super().get_template_names()
+
+    def form_valid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            self.object = form.save()
+            return JsonResponse({'success': True})
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            from django.shortcuts import render as django_render
+            return django_render(self.request, self.get_template_names()[0], self.get_context_data(form=form))
+        return super().form_invalid(form)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1265,10 +1299,27 @@ class AreaCreateView(BaseAuditedViewMixin, AtomicTransactionMixin, CreateView):
     form_class = AreaForm
     template_name = 'account/organizacion/area/form.html'
     permission_required = 'solicitudes.add_area'
-    success_url = reverse_lazy('accounts:area_lista')
+    success_url = reverse_lazy('accounts:gestores_organizacion')
     audit_action = 'CREAR'
     audit_description_template = 'Área creada: {obj.codigo} - {obj.nombre}'
     success_message = 'Área "{obj.nombre}" creada exitosamente.'
+
+    def get_template_names(self):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return ['account/organizacion/area/modal_crear.html']
+        return super().get_template_names()
+
+    def form_valid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            self.object = form.save()
+            return JsonResponse({'success': True})
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            from django.shortcuts import render as django_render
+            return django_render(self.request, self.get_template_names()[0], self.get_context_data(form=form))
+        return super().form_invalid(form)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1379,10 +1430,27 @@ class DepartamentoCreateView(BaseAuditedViewMixin, AtomicTransactionMixin, Creat
     form_class = DepartamentoForm
     template_name = 'account/organizacion/departamento/form.html'
     permission_required = 'solicitudes.add_departamento'
-    success_url = reverse_lazy('accounts:departamento_lista')
+    success_url = reverse_lazy('accounts:gestores_organizacion')
     audit_action = 'CREAR'
     audit_description_template = 'Departamento creado: {obj.codigo} - {obj.nombre}'
     success_message = 'Departamento "{obj.nombre}" creado exitosamente.'
+
+    def get_template_names(self):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return ['account/organizacion/departamento/modal_crear.html']
+        return super().get_template_names()
+
+    def form_valid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            self.object = form.save()
+            return JsonResponse({'success': True})
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            from django.shortcuts import render as django_render
+            return django_render(self.request, self.get_template_names()[0], self.get_context_data(form=form))
+        return super().form_invalid(form)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1587,6 +1655,42 @@ class GestoresUsuariosView(BaseAuditedViewMixin, TemplateView):
         context['roles'] = Group.objects.all().order_by('name')
         context['permisos'] = Permission.objects.select_related('content_type').order_by('content_type__app_label', 'codename')
 
+        return context
+
+
+class BodegaCreateView(BaseAuditedViewMixin, AtomicTransactionMixin, CreateView):
+    """Vista para crear una nueva bodega desde los gestores."""
+    from apps.bodega.models import Bodega
+    model = Bodega
+    form_class = BodegaForm
+    template_name = 'account/organizacion/bodega/form.html'
+    permission_required = 'bodega.add_bodega'
+    success_url = reverse_lazy('accounts:gestores_organizacion')
+    audit_action = 'CREAR'
+    audit_description_template = 'Bodega creada: {obj.codigo} - {obj.nombre}'
+    success_message = 'Bodega "{obj.nombre}" creada exitosamente.'
+
+    def get_template_names(self):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return ['account/organizacion/bodega/modal_crear.html']
+        return super().get_template_names()
+
+    def form_valid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            self.object = form.save()
+            return JsonResponse({'success': True})
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            from django.shortcuts import render as django_render
+            return django_render(self.request, self.get_template_names()[0], self.get_context_data(form=form))
+        return super().form_invalid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['titulo'] = 'Nueva Bodega'
+        context['action'] = 'Crear'
         return context
 
 
