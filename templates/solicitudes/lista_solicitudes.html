@@ -34,25 +34,6 @@
                 <div class="card">
                     <div class="card-header d-flex align-items-center">
                         <h5 class="card-title mb-0 flex-grow-1">Gestión de Solicitudes</h5>
-                        {% if perms.solicitudes.add_solicitud %}
-                        <div class="dropdown">
-                            <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                <i class="ri-add-line align-bottom me-1"></i> Nueva Solicitud
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li>
-                                    <a class="dropdown-item solicitudes-modal-link" href="{% url 'solicitudes:crear_solicitud_articulos' %}" data-modal-title="Crear Solicitud de Artículos">
-                                        <i class="ri-box-3-line align-bottom me-2"></i> Solicitud de Artículos
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item solicitudes-modal-link" href="{% url 'solicitudes:crear_solicitud_bienes' %}" data-modal-title="Crear Solicitud de Bienes">
-                                        <i class="ri-building-line align-bottom me-2"></i> Solicitud de Bienes
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                        {% endif %}
                     </div>
                     <div class="card-body">
                         <!-- Filtros -->

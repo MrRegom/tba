@@ -655,7 +655,10 @@ class EntregaArticuloService:
                     )
 
                     # Validar que la cantidad no exceda la pendiente
-                    cantidad_pendiente = detalle_solicitud.cantidad_aprobada - detalle_solicitud.cantidad_despachada
+                    # Si hay cantidad aprobada, usar esa; si no, usar solicitada (igual que en views.py)
+                    cant_base = detalle_solicitud.cantidad_aprobada if (detalle_solicitud.cantidad_aprobada and detalle_solicitud.cantidad_aprobada > 0) else detalle_solicitud.cantidad_solicitada
+                    cantidad_pendiente = cant_base - detalle_solicitud.cantidad_despachada
+                    
                     if cantidad > cantidad_pendiente:
                         raise ValidationError(
                             f'La cantidad a entregar ({cantidad}) excede la cantidad pendiente '

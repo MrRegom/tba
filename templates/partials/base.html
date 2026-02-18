@@ -49,6 +49,14 @@
 <body>
     {% endblock body %}
 
+    <!-- Notificaciones del sistema (Fuente única de verdad para mensajes) -->
+    <div id="system-messages" style="display: none;">
+        {% if messages %}
+        {% for message in messages %}
+        <div data-message="{{ message|escapejs }}" data-tags="{{ message.tags }}"></div>
+        {% endfor %}
+        {% endif %}
+    </div>
 
     <!-- Begin page -->
     <div id="layout-wrapper">
@@ -88,38 +96,21 @@
     </div>
     <!-- END layout-wrapper -->
 
-    <!-- Modal para Mensajes de Django -->
-    {% if messages %}
+    <!-- Modal para Mensajes de Django (Se llena vía JS si es necesario) -->
     <div class="modal fade" id="mensajesModal" tabindex="-1" aria-labelledby="mensajesModalLabel" aria-hidden="true"
         data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div
-                    class="modal-header {% for message in messages %}{% if message.tags == 'success' %}bg-success{% elif message.tags == 'error' or message.tags == 'danger' %}bg-danger{% elif message.tags == 'warning' %}bg-warning{% elif message.tags == 'info' %}bg-info{% else %}bg-primary{% endif %}{% endfor %} text-white">
+                <div id="mensajesModalHeader" class="modal-header text-white">
                     <h5 class="modal-title" id="mensajesModalLabel">
-                        {% for message in messages %}
-                        {% if message.tags == 'success' %}
-                        <i class="ri-checkbox-circle-line me-2"></i>Éxito
-                        {% elif message.tags == 'error' or message.tags == 'danger' %}
-                        <i class="ri-error-warning-line me-2"></i>Error
-                        {% elif message.tags == 'warning' %}
-                        <i class="ri-alert-line me-2"></i>Advertencia
-                        {% elif message.tags == 'info' %}
-                        <i class="ri-information-line me-2"></i>Información
-                        {% else %}
-                        <i class="ri-notification-line me-2"></i>Mensaje
-                        {% endif %}
-                        {% endfor %}
+                        <span id="mensajesModalIcon"></span>
+                        <span id="mensajesModalTitle">Mensaje</span>
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                         aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    {% for message in messages %}
-                    <div class="mb-2 {% if not forloop.last %}border-bottom pb-2{% endif %}">
-                        <p class="mb-0">{{ message }}</p>
-                    </div>
-                    {% endfor %}
+                <div class="modal-body" id="mensajesModalBody">
+                    <!-- Se llena vía JS -->
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
@@ -127,7 +118,6 @@
             </div>
         </div>
     </div>
-    {% endif %}
 
     {% block extra_content %}
     {% endblock extra_content %}
@@ -156,58 +146,8 @@
 
     {% endblock javascript %}
 
-
-    <script>
-        // Forzar recalculo de layout al cargar
-        window.dispatchEvent(new Event('resize'));
-
-        // Mostrar modal de mensajes automáticamente si existen mensajes
-        // EXCEPTO mensajes de login/logout
-        {% if messages %}
-        document.addEventListener('DOMContentLoaded', function () {
-            var modalElement = document.getElementById('mensajesModal');
-            if (!modalElement) return;
-
-            // Obtener todos los mensajes del modal
-            var mensajes = modalElement.querySelectorAll('.modal-body p');
-            var tieneMensajesValidos = false;
-
-            // Textos a filtrar (mensajes de login/logout)
-            var textosFiltrados = [
-                'inició sesión',
-                'cerró sesión',
-                'Ha iniciado sesión',
-                'Ha cerrado sesión',
-                'inicio sesion',
-                'cerro sesion'
-            ];
-
-            // Verificar si hay mensajes que NO sean de login/logout
-            mensajes.forEach(function (mensaje) {
-                var textoMensaje = mensaje.textContent.toLowerCase();
-                var esMensajeLoginLogout = textosFiltrados.some(function (texto) {
-                    return textoMensaje.includes(texto.toLowerCase());
-                });
-
-                if (!esMensajeLoginLogout) {
-                    tieneMensajesValidos = true;
-                } else {
-                    // Ocultar el mensaje de login/logout del modal
-                    mensaje.closest('.mb-2').style.display = 'none';
-                }
-            });
-
-            // Solo mostrar el modal si hay mensajes válidos
-            if (tieneMensajesValidos) {
-                var mensajesModal = new bootstrap.Modal(modalElement);
-                mensajesModal.show();
-            } else {
-                // Si solo hay mensajes de login/logout, ocultar todo el modal
-                modalElement.style.display = 'none';
-            }
-        });
-        {% endif %}
-    </script>
+    <!-- Script de notificaciones externo -->
+    <script src="{% static 'js/notifications.js' %}"></script>
 </body>
 
 </html>

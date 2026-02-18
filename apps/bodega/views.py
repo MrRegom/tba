@@ -969,9 +969,19 @@ class EntregaArticuloCreateView(BaseAuditedViewMixin, AtomicTransactionMixin, Cr
                     print("ERROR: No se encontró el estado 'DESPACHADA' para solicitudes")
 
             # Continuar con el flujo normal (mensaje y redirección)
-            response = super().form_valid(form)
+            # Continuar con el flujo normal (mensaje y redirección)
+            # NO llamar a super().form_valid(form) porque intenta guardar el formulario
+            # y falla por campos faltantes (entregado_por). El objeto ya fue creado por el servicio.
+            
+            # Agregar mensaje de éxito manualmente
+            msg = self.get_success_message(self.object)
+            if msg:
+                messages.success(self.request, msg)
+            
+            # Registrar auditoría
             self.log_action(self.object, self.request)
-            return response
+            
+            return redirect(self.get_success_url())
 
         except ValidationError as e:
             messages.error(self.request, str(e))
@@ -1156,9 +1166,19 @@ class EntregaBienCreateView(BaseAuditedViewMixin, AtomicTransactionMixin, Create
                     print("ERROR: No se encontró el estado 'DESPACHADA' para solicitudes")
 
             # Continuar con el flujo normal (mensaje y redirección)
-            response = super().form_valid(form)
+            # Continuar con el flujo normal (mensaje y redirección)
+            # NO llamar a super().form_valid(form) porque intenta guardar el formulario
+            # y falla por campos faltantes (entregado_por). El objeto ya fue creado por el servicio.
+            
+            # Agregar mensaje de éxito manualmente
+            msg = self.get_success_message(self.object)
+            if msg:
+                messages.success(self.request, msg)
+            
+            # Registrar auditoría
             self.log_action(self.object, self.request)
-            return response
+            
+            return redirect(self.get_success_url())
 
         except ValidationError as e:
             messages.error(self.request, str(e))

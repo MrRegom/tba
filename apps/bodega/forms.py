@@ -506,6 +506,12 @@ class EntregaArticuloForm(forms.ModelForm):
             activo=True, eliminado=False
         ).order_by('codigo')
 
+        # Establecer Bodega Central por defecto para nuevas entregas
+        if not self.instance.pk:
+            bodega_central = Bodega.objects.filter(codigo='BOD01', activo=True).first()
+            if bodega_central:
+                self.fields['bodega_origen'].initial = bodega_central
+
         self.fields['tipo'].queryset = TipoEntrega.objects.filter(
             activo=True, eliminado=False
         ).order_by('codigo')

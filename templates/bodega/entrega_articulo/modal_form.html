@@ -7,12 +7,12 @@
         <strong>Error:</strong> Por favor corrija los siguientes errores:
         <ul class="mb-0">
             {% for field in form %}
-                {% for error in field.errors %}
-                    <li>{{ field.label }}: {{ error }}</li>
-                {% endfor %}
+            {% for error in field.errors %}
+            <li>{{ field.label }}: {{ error }}</li>
+            {% endfor %}
             {% endfor %}
             {% for error in form.non_field_errors %}
-                <li>{{ error }}</li>
+            <li>{{ error }}</li>
             {% endfor %}
         </ul>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -36,15 +36,16 @@
                             </label>
                             {{ form.solicitud }}
                             {% if form.solicitud.errors %}
-                                <div class="invalid-feedback d-block">{{ form.solicitud.errors }}</div>
+                            <div class="invalid-feedback d-block">{{ form.solicitud.errors }}</div>
                             {% endif %}
                             <small class="text-muted">
-                                <i class="ri-information-line"></i> Si selecciona una solicitud, los art&iacute;culos se cargar&aacute;n autom&aacute;ticamente
+                                <i class="ri-information-line"></i> Si selecciona una solicitud, los artículos se
+                                cargarán automáticamente
                             </small>
                         </div>
                     </div>
                     <div id="infoSolicitud" class="alert alert-info border-0 mt-3 d-none" role="alert">
-                        <strong><i class="ri-information-line me-2"></i>Informaci&oacute;n de Solicitud:</strong>
+                        <strong><i class="ri-information-line me-2"></i>Información de Solicitud:</strong>
                         <div id="datosSolicitud" class="mt-2"></div>
                     </div>
                 </div>
@@ -67,7 +68,7 @@
                             </label>
                             {{ form.motivo }}
                             {% if form.motivo.errors %}
-                                <div class="invalid-feedback d-block">{{ form.motivo.errors }}</div>
+                            <div class="invalid-feedback d-block">{{ form.motivo.errors }}</div>
                             {% endif %}
                         </div>
                         <div class="col-md-12">
@@ -76,7 +77,7 @@
                             </label>
                             {{ form.observaciones }}
                             {% if form.observaciones.errors %}
-                                <div class="invalid-feedback d-block">{{ form.observaciones.errors }}</div>
+                            <div class="invalid-feedback d-block">{{ form.observaciones.errors }}</div>
                             {% endif %}
                         </div>
                     </div>
@@ -102,7 +103,7 @@
                             </label>
                             {{ form.bodega_origen }}
                             {% if form.bodega_origen.errors %}
-                                <div class="invalid-feedback d-block">{{ form.bodega_origen.errors }}</div>
+                            <div class="invalid-feedback d-block">{{ form.bodega_origen.errors }}</div>
                             {% endif %}
                         </div>
                         <div class="col-md-12">
@@ -111,7 +112,7 @@
                             </label>
                             {{ form.tipo }}
                             {% if form.tipo.errors %}
-                                <div class="invalid-feedback d-block">{{ form.tipo.errors }}</div>
+                            <div class="invalid-feedback d-block">{{ form.tipo.errors }}</div>
                             {% endif %}
                         </div>
                     </div>
@@ -119,12 +120,12 @@
             </div>
         </div>
 
-        <!-- Informaci&oacute;n de Destino -->
+        <!-- Información de Destino -->
         <div class="col-lg-6">
             <div class="card">
                 <div class="card-header">
                     <h5 class="card-title mb-0">
-                        <i class="ri-user-location-line align-middle me-1"></i> Informaci&oacute;n de Destino
+                        <i class="ri-user-location-line align-middle me-1"></i> Información de Destino
                     </h5>
                 </div>
                 <div class="card-body">
@@ -135,9 +136,9 @@
                             </label>
                             {{ form.recibido_por }}
                             {% if form.recibido_por.errors %}
-                                <div class="invalid-feedback d-block">{{ form.recibido_por.errors }}</div>
+                            <div class="invalid-feedback d-block">{{ form.recibido_por.errors }}</div>
                             {% endif %}
-                            <small class="text-muted">Usuario que recibir&aacute; los art&iacute;culos</small>
+                            <small class="text-muted">Usuario que recibirá los artículos</small>
                         </div>
                         <div class="col-md-12">
                             <label for="{{ form.departamento_destino.id_for_label }}" class="form-label">
@@ -145,9 +146,9 @@
                             </label>
                             {{ form.departamento_destino }}
                             {% if form.departamento_destino.errors %}
-                                <div class="invalid-feedback d-block">{{ form.departamento_destino.errors }}</div>
+                            <div class="invalid-feedback d-block">{{ form.departamento_destino.errors }}</div>
                             {% endif %}
-                            <small class="text-muted">Departamento o &aacute;rea destino</small>
+                            <small class="text-muted">Departamento o área destino</small>
                         </div>
                     </div>
                 </div>
@@ -155,17 +156,17 @@
         </div>
     </div>
 
-    <!-- Art&iacute;culos a Entregar -->
+    <!-- Artículos a Entregar -->
     <div class="row">
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">
-                            <i class="ri-inbox-line align-middle me-1"></i> Art&iacute;culos a Entregar
+                            <i class="ri-inbox-line align-middle me-1"></i> Artículos a Entregar
                         </h5>
                         <button type="button" class="btn btn-sm btn-primary" id="btn-agregar-articulo">
-                            <i class="ri-add-line"></i> Agregar Art&iacute;culo
+                            <i class="ri-add-line"></i> Agregar Artículo
                         </button>
                     </div>
                 </div>
@@ -174,13 +175,13 @@
                         <table class="table table-nowrap" id="tabla-articulos">
                             <thead class="table-light">
                                 <tr>
-                                    <th style="width: 25%">Art&iacute;culo <span class="text-danger">*</span></th>
+                                    <th style="width: 25%">Artículo <span class="text-danger">*</span></th>
                                     <th style="width: 12%">Stock Disponible</th>
                                     <th style="width: 12%">Cant. Solicitada</th>
                                     <th style="width: 12%">Cant. a Despachar <span class="text-danger">*</span></th>
-                                    <th style="width: 8%">Lote</th>
+                                    <th style="width: 8%; display: none;">Lote</th>
                                     <th style="width: 21%">Observaciones</th>
-                                    <th style="width: 10%" class="text-center">Acci&oacute;n</th>
+                                    <th style="width: 10%" class="text-center">Acción</th>
                                 </tr>
                             </thead>
                             <tbody id="tbody-articulos"></tbody>
@@ -188,7 +189,7 @@
                     </div>
                     <div id="sin-articulos" class="text-center text-muted py-4">
                         <i class="ri-inbox-line" style="font-size: 3rem;"></i>
-                        <p class="mb-0">No hay art&iacute;culos agregados. Haga clic en "Agregar Art&iacute;culo" para comenzar.</p>
+                        <p class="mb-0">No hay artículos agregados. Haga clic en "Agregar Artículo" para comenzar.</p>
                     </div>
                 </div>
             </div>
@@ -207,44 +208,46 @@
     </div>
 </form>
 
-<!-- Modal para seleccionar art&iacute;culo (se reubica a body via JS) -->
-<div class="modal fade bodega-nested-modal" id="modalArticulo" tabindex="-1" aria-labelledby="modalArticuloLabel" aria-hidden="true">
+<!-- Modal para seleccionar artículo (se reubica a body via JS) -->
+<div class="modal fade bodega-nested-modal" id="modalArticulo" tabindex="-1" aria-labelledby="modalArticuloLabel"
+    aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalArticuloLabel">Seleccionar Art&iacute;culo</h5>
+                <h5 class="modal-title" id="modalArticuloLabel">Seleccionar Artículo</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label class="form-label">Buscar Art&iacute;culo</label>
-                    <input type="text" class="form-control" id="buscar-articulo" placeholder="Buscar por c&oacute;digo o nombre...">
+                    <label class="form-label">Buscar Artículo</label>
+                    <input type="text" class="form-control" id="buscar-articulo"
+                        placeholder="Buscar por código o nombre...">
                 </div>
-                <div class="table-responsive" style="max-height: 400px;">
-                    <table class="table table-hover">
+                <div class="table-responsive" style="max-height: 440px;">
+                    <table class="table table-hover align-middle">
                         <thead class="table-light sticky-top">
                             <tr>
-                                <th>C&oacute;digo</th>
+                                <th>Código</th>
                                 <th>Nombre</th>
-                                <th>Categor&iacute;a</th>
+                                <th>Categoría</th>
                                 <th>Stock</th>
-                                <th>Acci&oacute;n</th>
+                                <th>Acción</th>
                             </tr>
                         </thead>
                         <tbody id="tbody-lista-articulos">
                             {% for articulo in articulos %}
-                            <tr data-articulo-id="{{ articulo.id }}"
-                                data-articulo-codigo="{{ articulo.codigo }}"
+                            <tr data-articulo-id="{{ articulo.id }}" data-articulo-codigo="{{ articulo.codigo }}"
                                 data-articulo-nombre="{{ articulo.nombre }}"
                                 data-articulo-stock="{{ articulo.stock_actual|default:0 }}"
-                                data-articulo-unidad="{{ articulo.unidad_medida.simbolo|default:"unidad" }}">
+                                data-articulo-unidad="{{ articulo.unidad_medida.simbolo|default:'unidad' }}">
                                 <td><code>{{ articulo.codigo }}</code></td>
                                 <td>{{ articulo.nombre }}</td>
-                                <td>{{ articulo.categoria.nombre }}</td>
+                                <td>{{ articulo.categoria.nombre|default:"-" }}</td>
                                 <td>
-                                    <span class="badge {% if articulo.stock_actual > articulo.stock_minimo %}bg-success{% elif articulo.stock_actual > 0 %}bg-warning{% else %}bg-danger{% endif %}">
-                                        {{ articulo.stock_actual|default:0 }} {{ articulo.unidad_medida.simbolo|default:"unidad" }}
-                                    </span>
+                                    <span
+                                        class="badge {% if articulo.stock_actual > articulo.stock_minimo %}bg-success{% elif articulo.stock_actual > 0 %}bg-warning{% else %}bg-danger{% endif %}">{{
+                                        articulo.stock_actual|default:0 }} {{ articulo.unidad_medida.simbolo|default:"u"
+                                        }}</span>
                                 </td>
                                 <td>
                                     <button type="button" class="btn btn-sm btn-success btn-seleccionar-articulo" {% if articulo.stock_actual <= 0 %}disabled{% endif %}>
@@ -261,22 +264,13 @@
     </div>
 </div>
 
-<script>
-const ARTICULOS_DISPONIBLES = [
-    {% for articulo in articulos %}
-    {
-        id: {{ articulo.id }},
-        codigo: "{{ articulo.codigo|escapejs }}",
-        nombre: "{{ articulo.nombre|escapejs }}",
-        stock: parseFloat("{{ articulo.stock_actual|default:0 }}"),
-        unidad: "{{ articulo.unidad_medida.simbolo|default:"unidad"|escapejs }}"
-    }{% if not forloop.last %},{% endif %}
-    {% endfor %}
-];
-document.addEventListener('DOMContentLoaded', function() {
-    if (typeof EntregaArticulos !== 'undefined') {
-        EntregaArticulos.init(ARTICULOS_DISPONIBLES);
-    }
-});
-</script>
 <script src="{% static 'js/bodega/entrega-articulos.js' %}"></script>
+<script>
+    (function () {
+        if (window.EntregaArticulos) {
+            window.EntregaArticulos.init();
+        } else {
+            console.error('EntregaArticulos no está definido');
+        }
+    })();
+</script>

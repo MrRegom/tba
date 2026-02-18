@@ -13,10 +13,45 @@ const EntregaArticulos = {
     /**
      * Inicializa el módulo
      */
-    init(articulos) {
-        this.articulosDisponibles = articulos;
+    init(articulos = []) {
+        if (!articulos || articulos.length === 0) {
+            this.articulosDisponibles = this.obtenerArticulosDesdeDOM();
+        } else {
+            this.articulosDisponibles = articulos;
+        }
+
         this.setupEventListeners();
+
+        // Cargar artículos automáticamente si ya hay una solicitud seleccionada
+        const selectSolicitud = document.getElementById('id_solicitud');
+        if (selectSolicitud && selectSolicitud.value) {
+            this.cargarArticulosSolicitud(selectSolicitud.value);
+        }
+
         console.log('EntregaArticulos inicializado correctamente');
+    },
+
+    /**
+     * Obtiene la lista de artículos desde la tabla en el DOM
+     */
+    obtenerArticulosDesdeDOM() {
+        const articulos = [];
+        const filas = document.querySelectorAll('#tbody-lista-articulos tr');
+
+        filas.forEach(fila => {
+            // Asegurar que tenemos todos los datos necesarios
+            if (fila.dataset.articuloId) {
+                articulos.push({
+                    id: parseInt(fila.dataset.articuloId),
+                    codigo: fila.dataset.articuloCodigo || '',
+                    nombre: fila.dataset.articuloNombre || '',
+                    stock: parseFloat(fila.dataset.articuloStock || 0),
+                    unidad: fila.dataset.articuloUnidad || 'unidad'
+                });
+            }
+        });
+
+        return articulos;
     },
 
     /**
@@ -63,10 +98,10 @@ const EntregaArticulos = {
                 this.mostrarColumnasSolicitud();
                 this.cargarArticulosEnTabla(data.articulos);
 
-                // Deshabilitar botón de agregar artículo manual
+                // Ocultar botón de agregar artículo manual
                 const btnAgregar = document.getElementById('btn-agregar-articulo');
                 if (btnAgregar) {
-                    btnAgregar.disabled = true;
+                    btnAgregar.style.display = 'none';
                 }
 
                 // Auto-seleccionar bodega origen si está disponible
@@ -99,7 +134,7 @@ const EntregaArticulos = {
 
         const btnAgregar = document.getElementById('btn-agregar-articulo');
         if (btnAgregar) {
-            btnAgregar.disabled = false;
+            btnAgregar.style.display = 'block';
         }
     },
 
@@ -202,8 +237,9 @@ const EntregaArticulos = {
         const inputCantidad = this.crearInputCantidad(this.contadorFilas, articulo);
         celdaCantidad.appendChild(inputCantidad);
 
-        // Celda de lote
+        // Celda de lote (OCULTO)
         const celdaLote = fila.insertCell(4);
+        celdaLote.style.display = 'none'; // Ocultar celda
         const inputLote = this.crearInputLote(this.contadorFilas);
         celdaLote.appendChild(inputLote);
 
@@ -259,8 +295,9 @@ const EntregaArticulos = {
         const inputCantidad = this.crearInputCantidad(idFila);
         celdaCantidad.appendChild(inputCantidad);
 
-        // Celda de lote
+        // Celda de lote (OCULTO)
         const celdaLote = fila.insertCell(4);
+        celdaLote.style.display = 'none'; // Ocultar celda
         const inputLote = this.crearInputLote(idFila);
         celdaLote.appendChild(inputLote);
 
@@ -427,13 +464,17 @@ const EntregaArticulos = {
      * Valida y envía el formulario
      */
     validarYEnviarFormulario(e) {
-        e.preventDefault();
+        // NOTA: No hacemos e.preventDefault() al principio para permitir que el evento
+        // burbujee hacia bodega_modal.js, quien manejará la subida AJAX.
+        // Solo prevenimos si la validación falla.
 
         const detalles = [];
         const tbody = document.getElementById('tbody-articulos');
 
         // Validar que haya artículos
         if (!tbody || tbody.children.length === 0) {
+            e.preventDefault();
+            e.stopPropagation();
             alert('Debe agregar al menos un artículo a la entrega.');
             return false;
         }
@@ -462,6 +503,8 @@ const EntregaArticulos = {
 
                 // Validaciones
                 if (!this.validarCantidadSolicitud(inputCantidad)) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     return false;
                 }
             } else {
@@ -469,6 +512,8 @@ const EntregaArticulos = {
                 const selectArticulo = document.getElementById(`articulo_${i}`);
 
                 if (!selectArticulo || !selectArticulo.value) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     alert('Seleccione un artículo en todas las filas.');
                     return false;
                 }
@@ -477,11 +522,15 @@ const EntregaArticulos = {
 
                 // Validar stock disponible
                 if (!this.validarStockDisponible(selectArticulo, inputCantidad)) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     return false;
                 }
             }
 
             if (!inputCantidad.value || parseFloat(inputCantidad.value) <= 0) {
+                e.preventDefault();
+                e.stopPropagation();
                 alert('Ingrese una cantidad válida en todas las filas.');
                 return false;
             }
@@ -505,8 +554,7 @@ const EntregaArticulos = {
             detallesInput.value = JSON.stringify(detalles);
         }
 
-        // Enviar formulario
-        e.target.submit();
+        // No hacer submit manual (e.target.submit()), dejar que bodega_modal.js lo capture.
         return true;
     },
 
