@@ -95,18 +95,13 @@
                                             {% endif %}
                                         </td>
                                         <td>
-                                            <div class="btn-group" role="group">
-                                                {% if perms.solicitudes.change_tiposolicitud %}
-                                                <a href="{% url 'solicitudes:tipo_solicitud_editar' tipo.pk %}" class="btn btn-sm btn-soft-primary" title="Editar">
-                                                    <i class="ri-pencil-line"></i>
-                                                </a>
-                                                {% endif %}
-                                                {% if perms.solicitudes.delete_tiposolicitud %}
-                                                <a href="{% url 'solicitudes:tipo_solicitud_eliminar' tipo.pk %}" class="btn btn-sm btn-soft-danger" title="Eliminar">
-                                                    <i class="ri-delete-bin-line"></i>
-                                                </a>
-                                                {% endif %}
-                                            </div>
+                                            {% if perms.solicitudes.change_tiposolicitud %}
+                                            <button type="button" class="btn btn-sm btn-soft-primary btn-modal-tipo-sol"
+                                                data-url="{% url 'solicitudes:tipo_solicitud_editar' tipo.pk %}"
+                                                title="Editar">
+                                                <i class="ri-pencil-line"></i>
+                                            </button>
+                                            {% endif %}
                                         </td>
                                     </tr>
                                     {% empty %}
@@ -172,18 +167,13 @@
                                             {% endif %}
                                         </td>
                                         <td>
-                                            <div class="btn-group" role="group">
-                                                {% if perms.solicitudes.change_estadosolicitud %}
-                                                <a href="{% url 'solicitudes:estado_solicitud_editar' estado.pk %}" class="btn btn-sm btn-soft-primary" title="Editar">
-                                                    <i class="ri-pencil-line"></i>
-                                                </a>
-                                                {% endif %}
-                                                {% if perms.solicitudes.delete_estadosolicitud %}
-                                                <a href="{% url 'solicitudes:estado_solicitud_eliminar' estado.pk %}" class="btn btn-sm btn-soft-danger" title="Eliminar">
-                                                    <i class="ri-delete-bin-line"></i>
-                                                </a>
-                                                {% endif %}
-                                            </div>
+                                            {% if perms.solicitudes.change_estadosolicitud %}
+                                            <button type="button" class="btn btn-sm btn-soft-primary btn-modal-estado-sol"
+                                                data-url="{% url 'solicitudes:estado_solicitud_editar' estado.pk %}"
+                                                title="Editar">
+                                                <i class="ri-pencil-line"></i>
+                                            </button>
+                                            {% endif %}
                                         </td>
                                     </tr>
                                     {% empty %}
@@ -201,4 +191,69 @@
         </div>
     </div>
 </div>
+
+<!-- Modal genérico para gestores -->
+<div class="modal fade" id="gestorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content" id="gestorModalContent">
+            <div class="modal-body text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modalEl = document.getElementById('gestorModal');
+    const modalContent = document.getElementById('gestorModalContent');
+    const modal = new bootstrap.Modal(modalEl);
+
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.btn-modal-tipo-sol, .btn-modal-estado-sol');
+        if (!btn) return;
+
+        const url = btn.dataset.url;
+
+        modalContent.innerHTML = '<div class="modal-body text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div></div>';
+        modal.show();
+
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(response => response.text())
+            .then(html => {
+                modalContent.innerHTML = html;
+                const form = modalContent.querySelector('form');
+                if (form) {
+                    form.addEventListener('submit', function(ev) {
+                        ev.preventDefault();
+                        const formData = new FormData(form);
+                        fetch(form.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        })
+                        .then(resp => {
+                            if (resp.headers.get('content-type')?.includes('application/json')) {
+                                return resp.json().then(data => {
+                                    if (data.success) {
+                                        modal.hide();
+                                        location.reload();
+                                    }
+                                });
+                            } else {
+                                return resp.text().then(html => {
+                                    modalContent.innerHTML = html;
+                                });
+                            }
+                        });
+                    });
+                }
+            });
+    });
+});
+</script>
 {% endblock %}
