@@ -1,0 +1,333 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}Gestores - Usuarios{% endblock %}
+
+{% block content %}
+<!-- Page Title -->
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0"><i class="ri-user-settings-line me-2"></i>Gestores - Usuarios</h4>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'inventario:menu_gestores' %}">Gestores</a></li>
+                    <li class="breadcrumb-item active">Usuarios</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<!-- Tabs Navigation -->
+<div class="row">
+    <div class="col-lg-12">
+        <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="usuarios-tab" data-bs-toggle="pill"
+                    data-bs-target="#usuarios" type="button" role="tab"
+                    aria-controls="usuarios" aria-selected="true">
+                    <i class="ri-user-line me-1"></i>Usuarios
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="cargos-tab" data-bs-toggle="pill"
+                    data-bs-target="#cargos" type="button" role="tab"
+                    aria-controls="cargos" aria-selected="false">
+                    <i class="ri-user-settings-line me-1"></i>Cargos
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="roles-tab" data-bs-toggle="pill"
+                    data-bs-target="#roles" type="button" role="tab"
+                    aria-controls="roles" aria-selected="false">
+                    <i class="ri-shield-user-line me-1"></i>Roles
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="permisos-tab" data-bs-toggle="pill"
+                    data-bs-target="#permisos" type="button" role="tab"
+                    aria-controls="permisos" aria-selected="false">
+                    <i class="ri-lock-line me-1"></i>Permisos
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="pills-tabContent">
+
+            <!-- ============ USUARIOS TAB ============ -->
+            <div class="tab-pane fade show active" id="usuarios" role="tabpanel" aria-labelledby="usuarios-tab">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4 class="card-title flex-grow-1 mb-0">Gestión de Usuarios</h4>
+                        {% if perms.auth.add_user %}
+                        <a href="{% url 'accounts:crear_usuario' %}" class="btn btn-primary">
+                            <i class="ri-add-line me-1"></i>Nuevo Usuario
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Usuario</th>
+                                        <th>Nombre</th>
+                                        <th>Email</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for usuario in usuarios %}
+                                    <tr>
+                                        <td><code>{{ usuario.username }}</code></td>
+                                        <td>{{ usuario.get_full_name|default:"-" }}</td>
+                                        <td>{{ usuario.email|default:"-" }}</td>
+                                        <td>
+                                            {% if usuario.is_active %}
+                                                <span class="badge bg-success">Activo</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Inactivo</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if perms.auth.change_user %}
+                                            <a href="{% url 'accounts:editar_usuario' usuario.pk %}" class="btn btn-sm btn-soft-primary" title="Editar">
+                                                <i class="ri-pencil-line"></i>
+                                            </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-4">No hay usuarios registrados</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ CARGOS TAB ============ -->
+            <div class="tab-pane fade" id="cargos" role="tabpanel" aria-labelledby="cargos-tab">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4 class="card-title flex-grow-1 mb-0">Gestión de Cargos</h4>
+                        {% if perms.accounts.add_cargo %}
+                        <a href="{% url 'accounts:cargo_crear' %}" class="btn btn-primary">
+                            <i class="ri-add-line me-1"></i>Nuevo Cargo
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nombre</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cargo in cargos %}
+                                    <tr>
+                                        <td><code>{{ cargo.codigo }}</code></td>
+                                        <td>{{ cargo.nombre }}</td>
+                                        <td>
+                                            {% if cargo.activo %}
+                                                <span class="badge bg-success">Activo</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Inactivo</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if perms.accounts.change_cargo %}
+                                            <button type="button" class="btn btn-sm btn-soft-primary btn-modal-cargo"
+                                                data-url="{% url 'accounts:cargo_editar' cargo.pk %}"
+                                                title="Editar">
+                                                <i class="ri-pencil-line"></i>
+                                            </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">No hay cargos registrados</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ ROLES TAB ============ -->
+            <div class="tab-pane fade" id="roles" role="tabpanel" aria-labelledby="roles-tab">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4 class="card-title flex-grow-1 mb-0">Gestión de Roles</h4>
+                        {% if perms.auth.add_group %}
+                        <a href="{% url 'accounts:crear_grupo' %}" class="btn btn-primary">
+                            <i class="ri-add-line me-1"></i>Nuevo Rol
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Permisos Asignados</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for rol in roles %}
+                                    <tr>
+                                        <td>{{ rol.name }}</td>
+                                        <td><span class="badge bg-info">{{ rol.permissions.count }}</span></td>
+                                        <td>
+                                            {% if perms.auth.change_group %}
+                                            <a href="{% url 'accounts:editar_grupo' rol.pk %}" class="btn btn-sm btn-soft-primary" title="Editar">
+                                                <i class="ri-pencil-line"></i>
+                                            </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted py-4">No hay roles registrados</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ PERMISOS TAB ============ -->
+            <div class="tab-pane fade" id="permisos" role="tabpanel" aria-labelledby="permisos-tab">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4 class="card-title flex-grow-1 mb-0">Gestión de Permisos</h4>
+                        <a href="{% url 'accounts:lista_permisos' %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="ri-external-link-line me-1"></i>Ver listado completo
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Módulo</th>
+                                        <th>Código</th>
+                                        <th>Nombre</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for permiso in permisos %}
+                                    <tr>
+                                        <td><span class="badge bg-secondary">{{ permiso.content_type.app_label }}</span></td>
+                                        <td><code>{{ permiso.codename }}</code></td>
+                                        <td>{{ permiso.name }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted py-4">No hay permisos registrados</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal genérico para cargos -->
+<div class="modal fade" id="usuariosModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content" id="usuariosModalContent">
+            <div class="modal-body text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modalEl = document.getElementById('usuariosModal');
+    const modalContent = document.getElementById('usuariosModalContent');
+    const modal = new bootstrap.Modal(modalEl);
+
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.btn-modal-cargo');
+        if (!btn) return;
+
+        const url = btn.dataset.url;
+
+        modalContent.innerHTML = '<div class="modal-body text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div></div>';
+        modal.show();
+
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(response => response.text())
+            .then(html => {
+                modalContent.innerHTML = html;
+                const form = modalContent.querySelector('form');
+                if (form) {
+                    form.addEventListener('submit', function(ev) {
+                        ev.preventDefault();
+                        const formData = new FormData(form);
+                        fetch(form.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        })
+                        .then(resp => {
+                            if (resp.headers.get('content-type')?.includes('application/json')) {
+                                return resp.json().then(data => {
+                                    if (data.success) {
+                                        modal.hide();
+                                        location.reload();
+                                    }
+                                });
+                            } else {
+                                return resp.text().then(html => {
+                                    modalContent.innerHTML = html;
+                                });
+                            }
+                        });
+                    });
+                }
+            });
+    });
+});
+</script>
+{% endblock %}
