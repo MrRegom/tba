@@ -1,0 +1,46 @@
+<form method="post" action="{% url 'activos:editar_categoria' object.pk %}">
+    {% csrf_token %}
+    <div class="modal-header">
+        <h5 class="modal-title">Editar Categoría</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+        {% if form.errors %}
+        <div class="alert alert-danger">
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}<div>{{ error }}</div>{% endfor %}
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Código</label>
+                <input type="text" class="form-control" value="{{ object.codigo }}" readonly>
+                <input type="hidden" name="codigo" value="{{ object.codigo }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Sigla</label>
+                <input type="text" name="sigla" class="form-control" value="{{ form.sigla.value|default:'' }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Estado</label>
+                <select name="activo" class="form-select">
+                    <option value="True" {% if object.activo %}selected{% endif %}>Activo</option>
+                    <option value="False" {% if not object.activo %}selected{% endif %}>Inactivo</option>
+                </select>
+            </div>
+            <div class="col-12">
+                <label class="form-label">Nombre</label>
+                <input type="text" name="nombre" class="form-control" value="{{ form.nombre.value|default:'' }}" required>
+            </div>
+            <div class="col-12">
+                <label class="form-label">Descripción</label>
+                <textarea name="descripcion" class="form-control" rows="2">{{ form.descripcion.value|default:'' }}</textarea>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+    </div>
+</form>

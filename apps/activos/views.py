@@ -754,7 +754,7 @@ class CategoriaUpdateView(BaseAuditedViewMixin, UpdateView):
     form_class = CategoriaActivoForm
     template_name = 'activos/form_categoria.html'
     permission_required = 'activos.change_categoriaactivo'
-    success_url = reverse_lazy('activos:lista_categorias')
+    success_url = reverse_lazy('activos:gestores_inventario')
 
     # Configuración de auditoría
     audit_action = 'EDITAR'
@@ -764,6 +764,11 @@ class CategoriaUpdateView(BaseAuditedViewMixin, UpdateView):
     def get_queryset(self) -> QuerySet[CategoriaActivo]:
         """Solo permite editar categorías no eliminadas."""
         return CategoriaActivo.objects.filter(eliminado=False)
+
+    def get_template_names(self):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return ['activos/modal_editar_categoria.html']
+        return super().get_template_names()
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """Agrega datos al contexto."""
@@ -776,18 +781,24 @@ class CategoriaUpdateView(BaseAuditedViewMixin, UpdateView):
     def form_valid(self, form: CategoriaActivoForm) -> HttpResponse:
         """
         Procesa el formulario válido con log de auditoría.
-        
+
         Asigna el usuario de actualización antes de guardar.
         """
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            try:
+                self.object = form.save()
+                return JsonResponse({'success': True})
+            except Exception:
+                return self.form_invalid(form)
         try:
             # Asignar usuario de actualización antes de guardar
             categoria = form.save(commit=False)
             categoria.save()
             self.object = categoria
-            
+
             # Registrar log de auditoría
             self.log_action(self.object, self.request)
-            
+
             # Mostrar mensaje de éxito y redirigir
             messages.success(self.request, self.get_success_message(self.object))
             return HttpResponseRedirect(self.get_success_url())
@@ -801,15 +812,24 @@ class CategoriaUpdateView(BaseAuditedViewMixin, UpdateView):
                 f'Error al actualizar la categoría: {str(e)}'
             )
             return self.form_invalid(form)
-    
+
     def form_invalid(self, form: CategoriaActivoForm) -> HttpResponse:
         """
         Maneja el caso cuando el formulario no es válido.
-        
+
         Renderiza el template de edición con los errores, manteniendo el contexto correcto.
         """
         from django.shortcuts import render
-        
+
+        # Asegurar que el objeto esté disponible en el contexto
+        if not hasattr(self, 'object') or self.object is None:
+            pk = self.kwargs.get('pk')
+            if pk:
+                self.object = self.get_object()
+
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return render(self.request, self.get_template_names()[0], self.get_context_data(form=form))
+
         # Mostrar errores de validación
         if form.errors:
             for field, errors in form.errors.items():
@@ -817,14 +837,7 @@ class CategoriaUpdateView(BaseAuditedViewMixin, UpdateView):
                     messages.error(self.request, f'{field}: {error}')
         else:
             messages.error(self.request, 'Por favor, corrija los errores en el formulario.')
-        
-        # Asegurar que el objeto esté disponible en el contexto
-        # Si no está disponible, obtenerlo del pk de la URL
-        if not hasattr(self, 'object') or self.object is None:
-            pk = self.kwargs.get('pk')
-            if pk:
-                self.object = self.get_object()
-        
+
         # Renderizar el template con el contexto correcto
         context = self.get_context_data(form=form)
         return render(self.request, self.template_name, context)
@@ -956,7 +969,7 @@ class EstadoActivoUpdateView(BaseAuditedViewMixin, UpdateView):
     form_class = EstadoActivoForm
     template_name = 'activos/form_estado.html'
     permission_required = 'activos.change_estadoactivo'
-    success_url = reverse_lazy('activos:lista_estados')
+    success_url = reverse_lazy('activos:gestores_inventario')
 
     audit_action = 'EDITAR'
     audit_description_template = 'Editó estado {obj.codigo} - {obj.nombre}'
@@ -965,6 +978,11 @@ class EstadoActivoUpdateView(BaseAuditedViewMixin, UpdateView):
     def get_queryset(self) -> QuerySet[EstadoActivo]:
         """Solo permite editar estados no eliminados."""
         return EstadoActivo.objects.filter(eliminado=False)
+
+    def get_template_names(self):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return ['activos/modal_editar_estado.html']
+        return super().get_template_names()
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """Agrega datos al contexto."""
@@ -977,18 +995,24 @@ class EstadoActivoUpdateView(BaseAuditedViewMixin, UpdateView):
     def form_valid(self, form: EstadoActivoForm) -> HttpResponse:
         """
         Procesa el formulario válido con log de auditoría.
-        
+
         Asigna el usuario de actualización antes de guardar.
         """
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            try:
+                self.object = form.save()
+                return JsonResponse({'success': True})
+            except Exception:
+                return self.form_invalid(form)
         try:
             # Asignar usuario de actualización antes de guardar
             estado = form.save(commit=False)
             estado.save()
             self.object = estado
-            
+
             # Registrar log de auditoría
             self.log_action(self.object, self.request)
-            
+
             # Mostrar mensaje de éxito y redirigir
             messages.success(self.request, self.get_success_message(self.object))
             return HttpResponseRedirect(self.get_success_url())
@@ -1002,27 +1026,28 @@ class EstadoActivoUpdateView(BaseAuditedViewMixin, UpdateView):
                 f'Error al actualizar el estado: {str(e)}'
             )
             return self.form_invalid(form)
-    
+
     def form_invalid(self, form: EstadoActivoForm) -> HttpResponse:
         """
         Maneja el caso cuando el formulario no es válido.
-        
+
         Renderiza el template de edición con los errores, manteniendo el contexto correcto.
         """
         from django.shortcuts import render
-        
+
         # Asegurar que el objeto esté disponible en el contexto
-        # Si no está disponible, obtenerlo del pk de la URL
         if not hasattr(self, 'object') or self.object is None:
             pk = self.kwargs.get('pk')
             if pk:
                 try:
                     self.object = self.get_object()
                 except Exception:
-                    # Si no se puede obtener el objeto, redirigir a la lista
                     messages.error(self.request, 'No se pudo encontrar el estado a editar.')
-                    return HttpResponseRedirect(reverse_lazy('activos:lista_estados'))
-        
+                    return HttpResponseRedirect(reverse_lazy('activos:gestores_inventario'))
+
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return render(self.request, self.get_template_names()[0], self.get_context_data(form=form))
+
         # Mostrar errores de validación
         if form.errors:
             for field, errors in form.errors.items():
@@ -1030,9 +1055,7 @@ class EstadoActivoUpdateView(BaseAuditedViewMixin, UpdateView):
                     messages.error(self.request, f'{field}: {error}')
         else:
             messages.error(self.request, 'Por favor, corrija los errores en el formulario.')
-        
-        # Renderizar el template con el contexto correcto
-        # Pasar el formulario al contexto explícitamente
+
         context = self.get_context_data()
         context['form'] = form
         return render(self.request, self.template_name, context)
@@ -1311,7 +1334,7 @@ class TipoMovimientoUpdateView(BaseAuditedViewMixin, UpdateView):
     form_class = TipoMovimientoActivoForm
     template_name = 'activos/form_tipo_movimiento.html'
     permission_required = 'activos.change_tipomovimientoactivo'
-    success_url = reverse_lazy('activos:lista_tipos_movimiento')
+    success_url = reverse_lazy('activos:gestores_inventario')
 
     audit_action = 'EDITAR'
     audit_description_template = 'Editó tipo de movimiento {obj.codigo} - {obj.nombre}'
@@ -1320,6 +1343,11 @@ class TipoMovimientoUpdateView(BaseAuditedViewMixin, UpdateView):
     def get_queryset(self) -> QuerySet[TipoMovimientoActivo]:
         """Solo permite editar tipos de movimiento no eliminados."""
         return TipoMovimientoActivo.objects.filter(eliminado=False)
+
+    def get_template_names(self):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return ['activos/modal_editar_tipo_movimiento.html']
+        return super().get_template_names()
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """Agrega datos al contexto."""
@@ -1332,17 +1360,23 @@ class TipoMovimientoUpdateView(BaseAuditedViewMixin, UpdateView):
     def form_valid(self, form: TipoMovimientoActivoForm) -> HttpResponse:
         """
         Procesa el formulario válido con log de auditoría.
-        
+
         Asigna el usuario de actualización antes de guardar.
         """
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            try:
+                self.object = form.save()
+                return JsonResponse({'success': True})
+            except Exception:
+                return self.form_invalid(form)
         try:
             # Asignar usuario de actualización antes de guardar
             self.object = form.save(commit=False)
             self.object.save()
-            
+
             # Registrar log de auditoría
             self.log_action(self.object, self.request)
-            
+
             # Mostrar mensaje de éxito y redirigir
             messages.success(self.request, self.get_success_message(self.object))
             return HttpResponseRedirect(self.get_success_url())
@@ -1356,15 +1390,23 @@ class TipoMovimientoUpdateView(BaseAuditedViewMixin, UpdateView):
                 f'Error al actualizar el tipo de movimiento: {str(e)}'
             )
             return self.form_invalid(form)
-    
+
     def form_invalid(self, form: TipoMovimientoActivoForm) -> HttpResponse:
         """
         Maneja el caso cuando el formulario no es válido.
-        
+
         Renderiza el template de edición con los errores, manteniendo el contexto correcto.
         """
         from django.shortcuts import render
-        
+
+        if not hasattr(self, 'object') or self.object is None:
+            pk = self.kwargs.get('pk')
+            if pk:
+                self.object = self.get_object()
+
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return render(self.request, self.get_template_names()[0], self.get_context_data(form=form))
+
         # Mostrar errores de validación
         if form.errors:
             for field, errors in form.errors.items():
@@ -1372,8 +1414,7 @@ class TipoMovimientoUpdateView(BaseAuditedViewMixin, UpdateView):
                     messages.error(self.request, f'{field}: {error}')
         else:
             messages.error(self.request, 'Por favor, corrija los errores en el formulario.')
-        
-        # Renderizar el template con el formulario y errores
+
         context = self.get_context_data(form=form)
         return render(self.request, self.template_name, context)
 
@@ -1481,7 +1522,7 @@ class MarcaUpdateView(BaseAuditedViewMixin, UpdateView):
     form_class = MarcaForm
     template_name = 'activos/form_marca.html'
     permission_required = 'activos.change_marca'
-    success_url = reverse_lazy('activos:lista_marcas')
+    success_url = reverse_lazy('activos:gestores_inventario')
 
     audit_action = 'EDITAR'
     audit_description_template = 'Editó marca {obj.codigo} - {obj.nombre}'
@@ -1490,6 +1531,11 @@ class MarcaUpdateView(BaseAuditedViewMixin, UpdateView):
     def get_queryset(self) -> QuerySet[Marca]:
         """Solo permite editar marcas no eliminadas."""
         return Marca.objects.filter(eliminado=False)
+
+    def get_template_names(self):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return ['activos/modal_editar_marca.html']
+        return super().get_template_names()
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """Agrega datos al contexto."""
@@ -1502,17 +1548,25 @@ class MarcaUpdateView(BaseAuditedViewMixin, UpdateView):
     def form_valid(self, form: MarcaForm) -> HttpResponse:
         """
         Procesa el formulario válido con log de auditoría.
-        
+
         Asigna el usuario de actualización antes de guardar.
         """
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            try:
+                self.object = form.save(commit=False)
+                self.object.save()
+                self.log_action(self.object, self.request)
+                return JsonResponse({'success': True})
+            except Exception:
+                return self.form_invalid(form)
         try:
             # Asignar usuario de actualización antes de guardar
             self.object = form.save(commit=False)
             self.object.save()
-            
+
             # Registrar log de auditoría
             self.log_action(self.object, self.request)
-            
+
             # Mostrar mensaje de éxito y redirigir
             messages.success(self.request, self.get_success_message(self.object))
             return HttpResponseRedirect(self.get_success_url())
@@ -1526,15 +1580,21 @@ class MarcaUpdateView(BaseAuditedViewMixin, UpdateView):
                 f'Error al actualizar la marca: {str(e)}'
             )
             return self.form_invalid(form)
-    
+
     def form_invalid(self, form: MarcaForm) -> HttpResponse:
         """
         Maneja el caso cuando el formulario no es válido.
-        
+
         Renderiza el template de edición con los errores, manteniendo el contexto correcto.
         """
         from django.shortcuts import render
-        
+        if not hasattr(self, 'object') or self.object is None:
+            pk = self.kwargs.get('pk')
+            if pk:
+                self.object = self.get_object()
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return render(self.request, self.get_template_names()[0], self.get_context_data(form=form))
+
         # Mostrar errores de validación
         if form.errors:
             for field, errors in form.errors.items():
@@ -1542,7 +1602,7 @@ class MarcaUpdateView(BaseAuditedViewMixin, UpdateView):
                     messages.error(self.request, f'{field}: {error}')
         else:
             messages.error(self.request, 'Por favor, corrija los errores en el formulario.')
-        
+
         # Renderizar el template con el formulario y errores
         context = self.get_context_data(form=form)
         return render(self.request, self.template_name, context)
@@ -2144,3 +2204,22 @@ def buscar_activos_similares(request):
         'tiene_anterior': pagina_obj.has_previous(),
         'tiene_siguiente': pagina_obj.has_next()
     })
+
+
+# ==================== GESTORES DE INVENTARIO ====================
+
+class GestoresInventarioView(BaseAuditedViewMixin, TemplateView):
+    """Vista de gestores de inventario con tabs para cada entidad."""
+    template_name = 'activos/gestores_inventario.html'
+    permission_required = 'activos.view_activo'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['categorias'] = CategoriaActivo.objects.filter(eliminado=False).order_by('codigo')
+        context['estados'] = EstadoActivo.objects.filter(eliminado=False).order_by('codigo')
+        context['marcas'] = Marca.objects.filter(eliminado=False).order_by('codigo')
+        context['tipos_movimiento'] = TipoMovimientoActivo.objects.filter(eliminado=False).order_by('codigo')
+        context['activos'] = Activo.objects.filter(eliminado=False).select_related(
+            'categoria', 'estado', 'marca'
+        ).order_by('codigo')
+        return context

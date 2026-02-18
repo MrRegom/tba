@@ -12,6 +12,9 @@ urlpatterns = [
     # ==================== MENÚ PRINCIPAL ====================
     path('', views.MenuInventarioView.as_view(), name='menu_inventario'),
 
+    # ==================== GESTORES ====================
+    path('gestores/', views.GestoresInventarioView.as_view(), name='gestores_inventario'),
+
     # ==================== ACTIVOS ====================
     path('listado/', views.ActivoListView.as_view(), name='lista_activos'),
     path('<int:pk>/', views.ActivoDetailView.as_view(), name='detalle_activo'),
