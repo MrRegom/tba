@@ -86,18 +86,13 @@
                                             {% endif %}
                                         </td>
                                         <td>
-                                            <div class="btn-group" role="group">
-                                                {% if puede_editar_estado %}
-                                                <a href="{% url 'compras:estado_orden_compra_editar' estado.pk %}" class="btn btn-sm btn-soft-primary" title="Editar">
-                                                    <i class="ri-pencil-line"></i>
-                                                </a>
-                                                {% endif %}
-                                                {% if puede_eliminar_estado %}
-                                                <a href="{% url 'compras:estado_orden_compra_eliminar' estado.pk %}" class="btn btn-sm btn-soft-danger" title="Eliminar">
-                                                    <i class="ri-delete-bin-line"></i>
-                                                </a>
-                                                {% endif %}
-                                            </div>
+                                            {% if puede_editar_estado %}
+                                            <button type="button" class="btn btn-sm btn-soft-primary btn-modal-estado-oc"
+                                                data-url="{% url 'compras:estado_orden_compra_editar' estado.pk %}"
+                                                title="Editar">
+                                                <i class="ri-pencil-line"></i>
+                                            </button>
+                                            {% endif %}
                                         </td>
                                     </tr>
                                     {% empty %}
@@ -182,4 +177,69 @@
         </div>
     </div>
 </div>
+
+<!-- Modal genérico para estados OC -->
+<div class="modal fade" id="estadoOcModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content" id="estadoOcModalContent">
+            <div class="modal-body text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modalEl = document.getElementById('estadoOcModal');
+    const modalContent = document.getElementById('estadoOcModalContent');
+    const modal = new bootstrap.Modal(modalEl);
+
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.btn-modal-estado-oc');
+        if (!btn) return;
+
+        const url = btn.dataset.url;
+
+        modalContent.innerHTML = '<div class="modal-body text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div></div>';
+        modal.show();
+
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(response => response.text())
+            .then(html => {
+                modalContent.innerHTML = html;
+                const form = modalContent.querySelector('form');
+                if (form) {
+                    form.addEventListener('submit', function(ev) {
+                        ev.preventDefault();
+                        const formData = new FormData(form);
+                        fetch(form.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        })
+                        .then(resp => {
+                            if (resp.headers.get('content-type')?.includes('application/json')) {
+                                return resp.json().then(data => {
+                                    if (data.success) {
+                                        modal.hide();
+                                        location.reload();
+                                    }
+                                });
+                            } else {
+                                return resp.text().then(html => {
+                                    modalContent.innerHTML = html;
+                                });
+                            }
+                        });
+                    });
+                }
+            });
+    });
+});
+</script>
 {% endblock %}
