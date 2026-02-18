@@ -744,6 +744,38 @@ class DepartamentoForm(forms.ModelForm):
         self.fields['responsable'].required = False
 
 
+# ========== FORMULARIO DE BODEGA ==========
+
+class BodegaForm(forms.ModelForm):
+    """Formulario para crear y editar bodegas."""
+
+    class Meta:
+        from apps.bodega.models import Bodega
+        model = Bodega
+        fields = ['codigo', 'nombre', 'descripcion', 'responsable']
+        widgets = {
+            'codigo': forms.TextInput(
+                attrs={'class': 'form-control', 'placeholder': 'Ej: BOD001'}
+            ),
+            'nombre': forms.TextInput(
+                attrs={'class': 'form-control', 'placeholder': 'Ej: Bodega Central'}
+            ),
+            'descripcion': forms.Textarea(
+                attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Descripción de la bodega...'}
+            ),
+            'responsable': forms.Select(
+                attrs={'class': 'form-select'}
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['responsable'].queryset = User.objects.filter(
+            is_active=True
+        ).order_by('username')
+        self.fields['descripcion'].required = False
+
+
 # ========== FORMULARIOS DE CARGOS ==========
 
 class CargoForm(forms.ModelForm):
