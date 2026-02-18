@@ -93,3 +93,4 @@ backups/
 migrate_output.txt
 *.backup
 *.sql.gz
+prod_data.json
