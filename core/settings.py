@@ -7,39 +7,18 @@ import os
 import environ
 from django.contrib.messages import constants as messages
 
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env()
 environ.Env.read_env(BASE_DIR / ".env")   
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('DJANGO_SECRET_KEY')
+SECRET_KEY = env('DJANGO_SECRET_KEY', default='django-insecure-safe-default-for-dev-only-12345')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool('DJANGO_DEBUG')
+DEBUG = env.bool('DJANGO_DEBUG', default=True)
 
-# En producción, cambia DEBUG a False y asegúrate de tener configurados tus ALLOWED_HOSTS
-# DEBUG = False
-
-# Permitir todos los hosts (útil para desarrollo, pero especificar hosts específicos en producción)
 ALLOWED_HOSTS = env.list('DJANGO_ALLOWED_HOSTS', default=['*'])
-
-# Configuración de Orígenes de Confianza para CSRF (CRITICO para producción)
-CSRF_TRUSTED_ORIGINS = env.list('DJANGO_CSRF_TRUSTED_ORIGINS', default=[
-    'https://capacitacion.logisticatba.cloud',
-    'https://*.logisticatba.cloud'
-])
-
-# Configuración para Proxy SSL (Nginx/Cloudflare/etc)
-# Necesario para que Django sepa que está corriendo bajo HTTPS
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
 
 # Asegurar que el dominio de capacitación siempre esté permitido
 if 'capacitacion.logisticatba.cloud' not in ALLOWED_HOSTS:
@@ -52,8 +31,17 @@ CSRF_TRUSTED_ORIGINS = env.list('DJANGO_CSRF_TRUSTED_ORIGINS', default=[
     'https://*.logisticatba.cloud'
 ])
 
-# Application definition
+# SSL/Secure Headers Configuration based on DEBUG
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+else:
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+    SECURE_PROXY_SSL_HEADER = None
 
+# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -64,29 +52,25 @@ INSTALLED_APPS = [
     'django.contrib.sites',
 
     # Apps del proyecto
-    'apps.accounts',  # Gestión de usuarios y permisos
-    'apps.pages',    # Páginas del sistema
-    'apps.auditoria',  # Sistema de auditoría automática
+    'apps.accounts',
+    'apps.pages',
+    'apps.auditoria',
 
     # Apps de inventario
-    'apps.bodega',    # Gestión de bodegas
-    'apps.activos',   # Gestión de activos e inventario
-    'apps.compras',   # Gestión de compras y proveedores
-    'apps.solicitudes',  # Gestión de solicitudes de materiales
-    'apps.reportes',  # Gestión de reportes
-    'apps.notificaciones',  # Sistema de notificaciones
-    'apps.bajas_inventario',  # Gestión de bajas de inventario
-    'apps.inventario',  # Gestión completa de inventario (CRUD catálogos)
+    'apps.bodega',
+    'apps.activos',
+    'apps.compras',
+    'apps.solicitudes',
+    'apps.reportes',
+    'apps.notificaciones',
+    'apps.bajas_inventario',
+    'apps.inventario',
     
-    # Crispy Forms
+    # Forms & Auth
     "crispy_forms",
     "crispy_bootstrap5",
-    
-    # All Auth (restaurado)
     'allauth',
     'allauth.account',
-    
-    
 ]
 
 MIDDLEWARE = [
@@ -99,7 +83,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "allauth.account.middleware.AccountMiddleware",
-    'apps.auditoria.middleware.AuditoriaMiddleware',  # Auditoría automática
+    'apps.auditoria.middleware.AuditoriaMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -124,72 +108,51 @@ TEMPLATES = [
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
-
 WSGI_APPLICATION = 'core.wsgi.application'
 
-DATABASES = {
-    "default": {
-        'ENGINE': env('POSTGRES_ENGINE'),
-        'NAME': env('POSTGRES_NAME'),
-        'USER': env('POSTGRES_USER'),
-        'PASSWORD': env('POSTGRES_PASSWORD'),
-        'HOST': env('POSTGRES_HOST'),
-        'PORT': env('POSTGRES_PORT'),
-        'OPTIONS': {
-            'client_encoding': 'UTF8',
-        },
-    },
-    'sqlite': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    },
+# Database configuration logic - Multi-environment & Fallback
+if env('POSTGRES_ENGINE', default='').endswith('postgresql'):
+    DATABASES = {
+        'default': {
+            'ENGINE': env('POSTGRES_ENGINE'),
+            'NAME': env('POSTGRES_NAME'),
+            'USER': env('POSTGRES_USER'),
+            'PASSWORD': env('POSTGRES_PASSWORD'),
+            'HOST': env('POSTGRES_HOST'),
+            'PORT': env('POSTGRES_PORT'),
+            'OPTIONS': {'client_encoding': 'UTF8'},
+        }
+    }
+else:
+    DATABASES = {
+        "default": {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
 }
 
 # Password validation
-# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/4.2/topics/i18n/
-
 LANGUAGE_CODE = 'es-cl'
 TIME_ZONE = 'America/Santiago'
 USE_I18N = True
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.2/howto/static-files/
-
+# Static files
 STATIC_URL = '/static/'
-
 STATICFILES_DIRS = [BASE_DIR / 'static']
-
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-
-
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Usando el modelo User estándar de Django con extensión en AuthUsuariosAcceso
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
-
 ACCOUNT_FORMS = {
     "login": "apps.accounts.forms.UserLoginForm",
     "signup": "apps.accounts.forms.UserRegistrationForm",
@@ -200,14 +163,11 @@ ACCOUNT_FORMS = {
 }
 
 AUTHENTICATION_BACKENDS = [
-    # Needed to login by username in Django admin, regardless of `allauth`
     'django.contrib.auth.backends.ModelBackend',
-
-    # `allauth` specific authentication methods, such as login by e-mail
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
-#  Messages customize
+# Messages customize
 MESSAGE_TAGS = {
     messages.DEBUG: "alert-info",
     messages.INFO: "alert-info",
@@ -216,8 +176,7 @@ MESSAGE_TAGS = {
     messages.ERROR: "alert-danger",
 }
 
-#  All Auth Configurations
-# Forzar redirecciones correctas bajo /informatica/
+# All Auth Configurations
 LOGIN_URL = "account_login"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/account/login/"
@@ -225,24 +184,58 @@ ACCOUNT_LOGOUT_REDIRECT_URL = "/account/login/"
 ACCOUNT_LOGOUT_ON_GET = False
 ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = True
-ACCOUNT_RATE_LIMITS = {}
 ACCOUNT_ADAPTER = 'apps.accounts.adapters.CustomAccountAdapter'
-
 SITE_ID = 1
 
-#SESSION_COOKIE_PATH = '/proyectotic/'
-#CSRF_COOKIE_PATH = '/proyectotic/'
+# SMTP Configuration
+EMAIL_BACKEND = env('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = env('EMAIL_HOST', default='localhost')
+EMAIL_PORT = env('EMAIL_PORT', default=25)
+EMAIL_USE_TLS = env('EMAIL_USE_TLS', default=False)
+EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='webmaster@localhost')
 
-
-# SMTP Configure
-EMAIL_BACKEND = env('EMAIL_BACKEND')
-EMAIL_HOST = env('EMAIL_HOST')
-EMAIL_PORT = env('EMAIL_PORT')
-EMAIL_USE_TLS = env('EMAIL_USE_TLS')
-EMAIL_HOST_USER = env('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')
-
-# Media files (uploaded files)
+# Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Logging configuration
+if not DEBUG:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+                'style': '{',
+            },
+        },
+        'handlers': {
+            'file': {
+                'level': 'ERROR',
+                'class': 'logging.FileHandler',
+                'filename': BASE_DIR / 'logs/django.log',
+                'formatter': 'verbose',
+            },
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['file'],
+                'level': 'ERROR',
+                'propagate': True,
+            },
+        },
+    }
+else:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'console': {'class': 'logging.StreamHandler'},
+        },
+        'root': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+    }

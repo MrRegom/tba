@@ -87,3 +87,9 @@ docColegio/
 
 # Archivos con tokens de API (seguridad)
 static/js/pages/leaflet-map.init.js
+
+# Local environment extras
+backups/
+migrate_output.txt
+*.backup
+*.sql.gz

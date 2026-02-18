@@ -7,43 +7,62 @@ def add_missing_columns(apps, schema_editor):
     """
     Agrega las columnas departamento_id y area_id si no existen.
     """
+    table_name = 'tba_solicitudes_solicitud'
+
     with schema_editor.connection.cursor() as cursor:
+        # Check logic
+        existing_columns = []
+        if schema_editor.connection.vendor == 'sqlite':
+            cursor.execute(f"PRAGMA table_info({table_name})")
+            existing_columns = [row[1] for row in cursor.fetchall()]
+        else:
+            cursor.execute("""
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_name=%s
+            """, [table_name])
+            existing_columns = [row[0] for row in cursor.fetchall()]
+
         # Verificar y agregar departamento_id
-        cursor.execute("""
-            SELECT column_name
-            FROM information_schema.columns
-            WHERE table_name='tba_solicitudes_solicitud'
-            AND column_name='departamento_id'
-        """)
-        if cursor.fetchone() is None:
-            cursor.execute("""
-                ALTER TABLE tba_solicitudes_solicitud
-                ADD COLUMN departamento_id BIGINT NULL
-                REFERENCES tba_solicitudes_conf_departamento(id)
-                DEFERRABLE INITIALLY DEFERRED
-            """)
-            cursor.execute("""
+        if 'departamento_id' not in existing_columns:
+            if schema_editor.connection.vendor == 'sqlite':
+                 cursor.execute(f"""
+                    ALTER TABLE {table_name}
+                    ADD COLUMN departamento_id BIGINT NULL
+                    REFERENCES tba_solicitudes_conf_departamento(id)
+                """)
+            else:
+                cursor.execute(f"""
+                    ALTER TABLE {table_name}
+                    ADD COLUMN departamento_id BIGINT NULL
+                    REFERENCES tba_solicitudes_conf_departamento(id)
+                    DEFERRABLE INITIALLY DEFERRED
+                """)
+            
+            cursor.execute(f"""
                 CREATE INDEX tba_solicitudes_solicitud_departamento_id_idx
-                ON tba_solicitudes_solicitud(departamento_id)
+                ON {table_name}(departamento_id)
             """)
 
         # Verificar y agregar area_id
-        cursor.execute("""
-            SELECT column_name
-            FROM information_schema.columns
-            WHERE table_name='tba_solicitudes_solicitud'
-            AND column_name='area_id'
-        """)
-        if cursor.fetchone() is None:
-            cursor.execute("""
-                ALTER TABLE tba_solicitudes_solicitud
-                ADD COLUMN area_id BIGINT NULL
-                REFERENCES tba_solicitudes_conf_area(id)
-                DEFERRABLE INITIALLY DEFERRED
-            """)
-            cursor.execute("""
+        if 'area_id' not in existing_columns:
+            if schema_editor.connection.vendor == 'sqlite':
+                 cursor.execute(f"""
+                    ALTER TABLE {table_name}
+                    ADD COLUMN area_id BIGINT NULL
+                    REFERENCES tba_solicitudes_conf_area(id)
+                """)
+            else:
+                cursor.execute(f"""
+                    ALTER TABLE {table_name}
+                    ADD COLUMN area_id BIGINT NULL
+                    REFERENCES tba_solicitudes_conf_area(id)
+                    DEFERRABLE INITIALLY DEFERRED
+                """)
+
+            cursor.execute(f"""
                 CREATE INDEX tba_solicitudes_solicitud_area_id_idx
-                ON tba_solicitudes_solicitud(area_id)
+                ON {table_name}(area_id)
             """)
 
 
@@ -51,19 +70,33 @@ def remove_columns(apps, schema_editor):
     """
     Elimina las columnas departamento_id y area_id.
     """
+    table_name = 'tba_solicitudes_solicitud'
+    
     with schema_editor.connection.cursor() as cursor:
-        for column in ['departamento_id', 'area_id']:
-            cursor.execute(f"""
+        existing_columns = []
+        if schema_editor.connection.vendor == 'sqlite':
+            cursor.execute(f"PRAGMA table_info({table_name})")
+            existing_columns = [row[1] for row in cursor.fetchall()]
+        else:
+            cursor.execute("""
                 SELECT column_name
                 FROM information_schema.columns
-                WHERE table_name='tba_solicitudes_solicitud'
-                AND column_name='{column}'
-            """)
-            if cursor.fetchone() is not None:
-                cursor.execute(f"""
-                    ALTER TABLE tba_solicitudes_solicitud
-                    DROP COLUMN {column}
-                """)
+                WHERE table_name=%s
+            """, [table_name])
+            existing_columns = [row[0] for row in cursor.fetchall()]
+
+        for column in ['departamento_id', 'area_id']:
+            if column in existing_columns:
+                if schema_editor.connection.vendor == 'sqlite':
+                     # SQLite doesn't support DROP COLUMN in older versions easily, but recent ones do.
+                     # Django 3.2+ requires SQLite 3.9+ which supports DROP COLUMN but maybe limited.
+                     # We try standard DROP COLUMN.
+                     try:
+                        cursor.execute(f"ALTER TABLE {table_name} DROP COLUMN {column}")
+                     except Exception:
+                        pass # Ignore drop failure on sqlite for local dev reverse
+                else:
+                    cursor.execute(f"ALTER TABLE {table_name} DROP COLUMN {column}")
 
 
 class Migration(migrations.Migration):
