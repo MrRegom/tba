@@ -9,6 +9,10 @@ urlpatterns = [
     # Alias para compatibilidad
     path('menu-usuarios/', views.MenuAdministracionView.as_view(), name='menu_usuarios'),
 
+    # Gestores de Organización y Usuarios
+    path('organizacion/', views.GestoresOrganizacionView.as_view(), name='gestores_organizacion'),
+    path('personal/', views.GestoresUsuariosView.as_view(), name='gestores_usuarios'),
+
     # Gestión de Usuarios
     path('usuarios/', views.lista_usuarios, name='lista_usuarios'),
     path('usuarios/<int:pk>/', views.detalle_usuario, name='detalle_usuario'),
