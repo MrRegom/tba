@@ -1051,13 +1051,30 @@ class UbicacionUpdateView(BaseAuditedViewMixin, AtomicTransactionMixin, UpdateVi
     form_class = UbicacionForm
     template_name = 'account/organizacion/ubicacion/form.html'
     permission_required = 'activos.change_ubicacion'
-    success_url = reverse_lazy('accounts:ubicacion_lista')
+    success_url = reverse_lazy('accounts:gestores_organizacion')
     audit_action = 'ACTUALIZAR'
     audit_description_template = 'Ubicación actualizada: {obj.codigo} - {obj.nombre}'
     success_message = 'Ubicación "{obj.nombre}" actualizada exitosamente.'
 
     def get_queryset(self):
         return super().get_queryset().filter(eliminado=False)
+
+    def get_template_names(self):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return ['account/organizacion/ubicacion/modal_editar.html']
+        return super().get_template_names()
+
+    def form_valid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            self.object = form.save()
+            return JsonResponse({'success': True})
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            from django.shortcuts import render as django_render
+            return django_render(self.request, self.get_template_names()[0], self.get_context_data(form=form))
+        return super().form_invalid(form)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1147,13 +1164,30 @@ class TallerUpdateView(BaseAuditedViewMixin, AtomicTransactionMixin, UpdateView)
     form_class = TallerForm
     template_name = 'account/organizacion/taller/form.html'
     permission_required = 'activos.change_taller'
-    success_url = reverse_lazy('accounts:taller_lista')
+    success_url = reverse_lazy('accounts:gestores_organizacion')
     audit_action = 'ACTUALIZAR'
     audit_description_template = 'Taller actualizado: {obj.codigo} - {obj.nombre}'
     success_message = 'Taller "{obj.nombre}" actualizado exitosamente.'
 
     def get_queryset(self):
         return super().get_queryset().filter(eliminado=False)
+
+    def get_template_names(self):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return ['account/organizacion/taller/modal_editar.html']
+        return super().get_template_names()
+
+    def form_valid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            self.object = form.save()
+            return JsonResponse({'success': True})
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            from django.shortcuts import render as django_render
+            return django_render(self.request, self.get_template_names()[0], self.get_context_data(form=form))
+        return super().form_invalid(form)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1250,13 +1284,30 @@ class AreaUpdateView(BaseAuditedViewMixin, AtomicTransactionMixin, UpdateView):
     form_class = AreaForm
     template_name = 'account/organizacion/area/form.html'
     permission_required = 'solicitudes.change_area'
-    success_url = reverse_lazy('accounts:area_lista')
+    success_url = reverse_lazy('accounts:gestores_organizacion')
     audit_action = 'ACTUALIZAR'
     audit_description_template = 'Área actualizada: {obj.codigo} - {obj.nombre}'
     success_message = 'Área "{obj.nombre}" actualizada exitosamente.'
 
     def get_queryset(self):
         return super().get_queryset().filter(eliminado=False)
+
+    def get_template_names(self):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return ['account/organizacion/area/modal_editar.html']
+        return super().get_template_names()
+
+    def form_valid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            self.object = form.save()
+            return JsonResponse({'success': True})
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            from django.shortcuts import render as django_render
+            return django_render(self.request, self.get_template_names()[0], self.get_context_data(form=form))
+        return super().form_invalid(form)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1347,13 +1398,30 @@ class DepartamentoUpdateView(BaseAuditedViewMixin, AtomicTransactionMixin, Updat
     form_class = DepartamentoForm
     template_name = 'account/organizacion/departamento/form.html'
     permission_required = 'solicitudes.change_departamento'
-    success_url = reverse_lazy('accounts:departamento_lista')
+    success_url = reverse_lazy('accounts:gestores_organizacion')
     audit_action = 'ACTUALIZAR'
     audit_description_template = 'Departamento actualizado: {obj.codigo} - {obj.nombre}'
     success_message = 'Departamento "{obj.nombre}" actualizado exitosamente.'
 
     def get_queryset(self):
         return super().get_queryset().filter(eliminado=False)
+
+    def get_template_names(self):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return ['account/organizacion/departamento/modal_editar.html']
+        return super().get_template_names()
+
+    def form_valid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            self.object = form.save()
+            return JsonResponse({'success': True})
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            from django.shortcuts import render as django_render
+            return django_render(self.request, self.get_template_names()[0], self.get_context_data(form=form))
+        return super().form_invalid(form)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1442,13 +1510,30 @@ class CargoUpdateView(BaseAuditedViewMixin, AtomicTransactionMixin, UpdateView):
     form_class = CargoForm
     template_name = 'account/cargos/form.html'
     permission_required = 'accounts.change_cargo'
-    success_url = reverse_lazy('accounts:cargo_lista')
+    success_url = reverse_lazy('accounts:gestores_usuarios')
     audit_action = 'ACTUALIZAR'
     audit_description_template = 'Cargo actualizado: {obj.codigo} - {obj.nombre}'
     success_message = 'Cargo "{obj.nombre}" actualizado exitosamente.'
 
     def get_queryset(self):
         return super().get_queryset().filter(eliminado=False)
+
+    def get_template_names(self):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return ['account/cargos/modal_editar.html']
+        return super().get_template_names()
+
+    def form_valid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            self.object = form.save()
+            return JsonResponse({'success': True})
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            from django.shortcuts import render as django_render
+            return django_render(self.request, self.get_template_names()[0], self.get_context_data(form=form))
+        return super().form_invalid(form)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1483,6 +1568,46 @@ class CargoDeleteView(BaseAuditedViewMixin, SoftDeleteMixin, DeleteView):
             cargo=self.object,
             eliminado=False
         ).count()
+        return context
+
+
+# ========== GESTORES DE ORGANIZACIÓN ==========
+
+class GestoresUsuariosView(BaseAuditedViewMixin, TemplateView):
+    """Vista del gestor unificado de usuarios con tabs: Usuarios, Cargos, Roles, Permisos."""
+    template_name = 'account/gestores_usuarios.html'
+    permission_required = 'auth.view_user'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from .models import Cargo
+
+        context['usuarios'] = User.objects.all().order_by('username')
+        context['cargos'] = Cargo.objects.filter(eliminado=False).order_by('codigo')
+        context['roles'] = Group.objects.all().order_by('name')
+        context['permisos'] = Permission.objects.select_related('content_type').order_by('content_type__app_label', 'codename')
+
+        return context
+
+
+class GestoresOrganizacionView(BaseAuditedViewMixin, TemplateView):
+    """Vista del gestor unificado de organización con tabs."""
+    template_name = 'account/gestores_organizacion.html'
+    permission_required = 'activos.view_ubicacion'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from apps.activos.models import Ubicacion, Taller
+        from apps.solicitudes.models import Area, Departamento
+        from apps.bodega.models import Bodega
+        from .models import Cargo
+
+        context['ubicaciones'] = Ubicacion.objects.filter(eliminado=False).order_by('codigo')
+        context['talleres'] = Taller.objects.filter(eliminado=False).select_related('responsable').order_by('codigo')
+        context['bodegas'] = Bodega.objects.filter(eliminado=False).select_related('responsable').order_by('codigo')
+        context['departamentos'] = Departamento.objects.filter(eliminado=False).select_related('responsable').order_by('codigo')
+        context['areas'] = Area.objects.filter(eliminado=False).select_related('departamento', 'responsable').order_by('codigo')
+
         return context
 
 
