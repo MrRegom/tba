@@ -79,9 +79,10 @@
                     <div class="card-header d-flex align-items-center">
                         <h4 class="card-title flex-grow-1 mb-0">Gestión de Ubicaciones</h4>
                         {% if perms.activos.add_ubicacion %}
-                        <a href="{% url 'accounts:ubicacion_crear' %}" class="btn btn-primary">
+                        <button type="button" class="btn btn-primary btn-modal-org"
+                            data-url="{% url 'accounts:ubicacion_crear' %}">
                             <i class="ri-add-line me-1"></i>Nueva Ubicación
-                        </a>
+                        </button>
                         {% endif %}
                     </div>
                     <div class="card-body">
@@ -111,7 +112,7 @@
                                         </td>
                                         <td>
                                             {% if perms.activos.change_ubicacion %}
-                                            <button type="button" class="btn btn-sm btn-soft-primary btn-modal-ubicacion"
+                                            <button type="button" class="btn btn-sm btn-soft-primary btn-modal-org"
                                                 data-url="{% url 'accounts:ubicacion_editar' ub.pk %}"
                                                 title="Editar">
                                                 <i class="ri-pencil-line"></i>
@@ -137,9 +138,10 @@
                     <div class="card-header d-flex align-items-center">
                         <h4 class="card-title flex-grow-1 mb-0">Gestión de Talleres</h4>
                         {% if perms.activos.add_taller %}
-                        <a href="{% url 'accounts:taller_crear' %}" class="btn btn-primary">
+                        <button type="button" class="btn btn-primary btn-modal-org"
+                            data-url="{% url 'accounts:taller_crear' %}">
                             <i class="ri-add-line me-1"></i>Nuevo Taller
-                        </a>
+                        </button>
                         {% endif %}
                     </div>
                     <div class="card-body">
@@ -171,7 +173,7 @@
                                         </td>
                                         <td>
                                             {% if perms.activos.change_taller %}
-                                            <button type="button" class="btn btn-sm btn-soft-primary btn-modal-taller"
+                                            <button type="button" class="btn btn-sm btn-soft-primary btn-modal-org"
                                                 data-url="{% url 'accounts:taller_editar' taller.pk %}"
                                                 title="Editar">
                                                 <i class="ri-pencil-line"></i>
@@ -196,6 +198,12 @@
                 <div class="card">
                     <div class="card-header d-flex align-items-center">
                         <h4 class="card-title flex-grow-1 mb-0">Gestión de Bodegas</h4>
+                        {% if perms.bodega.add_bodega %}
+                        <button type="button" class="btn btn-primary btn-modal-org"
+                            data-url="{% url 'accounts:bodega_crear' %}">
+                            <i class="ri-add-line me-1"></i>Nueva Bodega
+                        </button>
+                        {% endif %}
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -234,9 +242,10 @@
                     <div class="card-header d-flex align-items-center">
                         <h4 class="card-title flex-grow-1 mb-0">Gestión de Departamentos</h4>
                         {% if perms.solicitudes.add_departamento %}
-                        <a href="{% url 'accounts:departamento_crear' %}" class="btn btn-primary">
+                        <button type="button" class="btn btn-primary btn-modal-org"
+                            data-url="{% url 'accounts:departamento_crear' %}">
                             <i class="ri-add-line me-1"></i>Nuevo Departamento
-                        </a>
+                        </button>
                         {% endif %}
                     </div>
                     <div class="card-body">
@@ -266,7 +275,7 @@
                                         </td>
                                         <td>
                                             {% if perms.solicitudes.change_departamento %}
-                                            <button type="button" class="btn btn-sm btn-soft-primary btn-modal-departamento"
+                                            <button type="button" class="btn btn-sm btn-soft-primary btn-modal-org"
                                                 data-url="{% url 'accounts:departamento_editar' dep.pk %}"
                                                 title="Editar">
                                                 <i class="ri-pencil-line"></i>
@@ -292,9 +301,10 @@
                     <div class="card-header d-flex align-items-center">
                         <h4 class="card-title flex-grow-1 mb-0">Gestión de Áreas</h4>
                         {% if perms.solicitudes.add_area %}
-                        <a href="{% url 'accounts:area_crear' %}" class="btn btn-primary">
+                        <button type="button" class="btn btn-primary btn-modal-org"
+                            data-url="{% url 'accounts:area_crear' %}">
                             <i class="ri-add-line me-1"></i>Nueva Área
-                        </a>
+                        </button>
                         {% endif %}
                     </div>
                     <div class="card-body">
@@ -326,7 +336,7 @@
                                         </td>
                                         <td>
                                             {% if perms.solicitudes.change_area %}
-                                            <button type="button" class="btn btn-sm btn-soft-primary btn-modal-area"
+                                            <button type="button" class="btn btn-sm btn-soft-primary btn-modal-org"
                                                 data-url="{% url 'accounts:area_editar' area.pk %}"
                                                 title="Editar">
                                                 <i class="ri-pencil-line"></i>
@@ -372,7 +382,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const modal = new bootstrap.Modal(modalEl);
 
     document.addEventListener('click', function(e) {
-        const btn = e.target.closest('.btn-modal-ubicacion, .btn-modal-taller, .btn-modal-departamento, .btn-modal-area');
+        const btn = e.target.closest('.btn-modal-org');
         if (!btn) return;
 
         const url = btn.dataset.url;
@@ -384,34 +394,38 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.text())
             .then(html => {
                 modalContent.innerHTML = html;
-                const form = modalContent.querySelector('form');
-                if (form) {
-                    form.addEventListener('submit', function(ev) {
-                        ev.preventDefault();
-                        const formData = new FormData(form);
-                        fetch(form.action, {
-                            method: 'POST',
-                            body: formData,
-                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                        })
-                        .then(resp => {
-                            if (resp.headers.get('content-type')?.includes('application/json')) {
-                                return resp.json().then(data => {
-                                    if (data.success) {
-                                        modal.hide();
-                                        location.reload();
-                                    }
-                                });
-                            } else {
-                                return resp.text().then(html => {
-                                    modalContent.innerHTML = html;
-                                });
-                            }
-                        });
+                attachFormHandler();
+            });
+    });
+
+    function attachFormHandler() {
+        const form = modalContent.querySelector('form');
+        if (!form) return;
+        form.addEventListener('submit', function(ev) {
+            ev.preventDefault();
+            const formData = new FormData(form);
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(resp => {
+                if (resp.headers.get('content-type')?.includes('application/json')) {
+                    return resp.json().then(data => {
+                        if (data.success) {
+                            modal.hide();
+                            location.reload();
+                        }
+                    });
+                } else {
+                    return resp.text().then(html => {
+                        modalContent.innerHTML = html;
+                        attachFormHandler();
                     });
                 }
             });
-    });
+        });
+    }
 });
 </script>
 {% endblock %}
