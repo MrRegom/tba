@@ -898,7 +898,7 @@ class EstadoOrdenCompraCreateView(BaseAuditedViewMixin, CreateView):
     form_class = EstadoOrdenCompraForm
     template_name = 'compras/mantenedores/estado_orden_compra/form.html'
     permission_required = 'compras.add_estadoordencompra'
-    success_url = reverse_lazy('compras:estado_orden_compra_lista')
+    success_url = reverse_lazy('compras:gestores_compras')
 
     audit_action = 'CREAR'
     audit_description_template = 'Creó estado de orden de compra {obj.codigo} - {obj.nombre}'
@@ -918,12 +918,12 @@ class EstadoOrdenCompraCreateView(BaseAuditedViewMixin, CreateView):
 
 
 class EstadoOrdenCompraUpdateView(BaseAuditedViewMixin, UpdateView):
-    """Vista para editar un estado de orden de compra."""
+    """Vista para editar un estado de orden de compra. Soporta modo modal (AJAX)."""
     model = EstadoOrdenCompra
     form_class = EstadoOrdenCompraForm
     template_name = 'compras/mantenedores/estado_orden_compra/form.html'
     permission_required = 'compras.change_estadoordencompra'
-    success_url = reverse_lazy('compras:estado_orden_compra_lista')
+    success_url = reverse_lazy('compras:gestores_compras')
 
     audit_action = 'EDITAR'
     audit_description_template = 'Editó estado de orden de compra {obj.codigo} - {obj.nombre}'
@@ -931,6 +931,11 @@ class EstadoOrdenCompraUpdateView(BaseAuditedViewMixin, UpdateView):
 
     def get_queryset(self) -> QuerySet:
         return super().get_queryset().filter(eliminado=False)
+
+    def get_template_names(self):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return ['compras/mantenedores/estado_orden_compra/modal_editar.html']
+        return [self.template_name]
 
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
@@ -943,7 +948,20 @@ class EstadoOrdenCompraUpdateView(BaseAuditedViewMixin, UpdateView):
         response = super().form_valid(form)
         messages.success(self.request, self.get_success_message(self.object))
         self.log_action(self.object, self.request)
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            from django.http import JsonResponse
+            return JsonResponse({'success': True})
         return response
+
+    def form_invalid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            from django.shortcuts import render as django_render
+            return django_render(
+                self.request,
+                'compras/mantenedores/estado_orden_compra/modal_editar.html',
+                self.get_context_data(form=form)
+            )
+        return super().form_invalid(form)
 
 
 class EstadoOrdenCompraDeleteView(BaseAuditedViewMixin, DeleteView):
