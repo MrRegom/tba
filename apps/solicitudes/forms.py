@@ -78,6 +78,13 @@ class SolicitudForm(forms.ModelForm):
         self.fields['tipo_solicitud'].queryset = TipoSolicitud.objects.filter(activo=True)
         # Filtrar solo bodegas activas
         self.fields['bodega_origen'].queryset = Bodega.objects.filter(activo=True)
+        
+        # Establecer Bodega Central por defecto para nuevas solicitudes
+        if not self.instance.pk:
+            bodega_central = Bodega.objects.filter(codigo='BOD01', activo=True).first()
+            if bodega_central:
+                self.fields['bodega_origen'].initial = bodega_central
+
         # Filtrar solo departamentos activos
         self.fields['departamento'].queryset = Departamento.objects.filter(activo=True, eliminado=False)
         # Filtrar solo áreas activas
