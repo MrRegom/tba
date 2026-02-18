@@ -275,15 +275,10 @@
                                 <td>{{ articulo.nombre }}</td>
                                 <td>{{ articulo.categoria.nombre }}</td>
                                 <td>
-                                    <span
-                                        class="badge {% if articulo.stock_actual > articulo.stock_minimo %}bg-success{% elif articulo.stock_actual > 0 %}bg-warning{% else %}bg-danger{% endif %}">
-                                        {{ articulo.stock_actual|default:0 }} {{
-                                        articulo.unidad_medida.simbolo|default:"unidad" }}
-                                    </span>
+                                    <span class="badge {% if articulo.stock_actual > articulo.stock_minimo %}bg-success{% elif articulo.stock_actual > 0 %}bg-warning{% else %}bg-danger{% endif %}">{{ articulo.stock_actual|default:0 }} {{ articulo.unidad_medida.simbolo|default:"unidad" }}</span>
                                 </td>
                                 <td>
-                                    <button type="button" class="btn btn-sm btn-success btn-seleccionar-articulo" {% if
-                                        articulo.stock_actual <=0 %}disabled{% endif %}>
+                                    <button type="button" class="btn btn-sm btn-success btn-seleccionar-articulo" {% if articulo.stock_actual <= 0 %}disabled{% endif %}>
                                         <i class="ri-check-line"></i> Seleccionar
                                     </button>
                                 </td>
@@ -301,32 +296,12 @@
 {% block extra_js %}
 <script src="{% static 'js/bodega/entrega-articulos.js' %}"></script>
 <script>
-    (function () {
-        const articulos = [
-            {% for articulo in articulos %}
-        {
-        id: { { articulo.id } },
-        codigo: "{{ articulo.codigo|escapejs }}",
-            nombre: "{{ articulo.nombre|escapejs }}",
-                stock: parseFloat("{{ articulo.stock_actual|default:0 }}"),
-                    unidad: "{{ articulo.unidad_medida.simbolo|default:"unidad"|escapejs }}"
-    } {% if not forloop.last %}, {% endif %}
-    {% endfor %}
-    ];
-
-    function init() {
+    (function() {
         if (window.EntregaArticulos) {
-            EntregaArticulos.init(articulos);
+            window.EntregaArticulos.init();
         } else {
             console.error('EntregaArticulos no está definido');
         }
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
-}) ();
+    })();
 </script>
 {% endblock %}
