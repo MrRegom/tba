@@ -1,0 +1,417 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}Gestores - Organización{% endblock %}
+
+{% block content %}
+<!-- Page Title -->
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0"><i class="ri-organization-chart me-2"></i>Gestores - Organización</h4>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'inventario:menu_gestores' %}">Gestores</a></li>
+                    <li class="breadcrumb-item active">Organización</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<!-- Tabs Navigation -->
+<div class="row">
+    <div class="col-lg-12">
+        <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="ubicaciones-tab" data-bs-toggle="pill"
+                    data-bs-target="#ubicaciones" type="button" role="tab"
+                    aria-controls="ubicaciones" aria-selected="true">
+                    <i class="ri-map-pin-line me-1"></i>Ubicaciones
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="talleres-tab" data-bs-toggle="pill"
+                    data-bs-target="#talleres" type="button" role="tab"
+                    aria-controls="talleres" aria-selected="false">
+                    <i class="ri-tools-line me-1"></i>Talleres
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="bodegas-tab" data-bs-toggle="pill"
+                    data-bs-target="#bodegas" type="button" role="tab"
+                    aria-controls="bodegas" aria-selected="false">
+                    <i class="ri-archive-line me-1"></i>Bodega
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="departamentos-tab" data-bs-toggle="pill"
+                    data-bs-target="#departamentos" type="button" role="tab"
+                    aria-controls="departamentos" aria-selected="false">
+                    <i class="ri-building-line me-1"></i>Departamento
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="areas-tab" data-bs-toggle="pill"
+                    data-bs-target="#areas" type="button" role="tab"
+                    aria-controls="areas" aria-selected="false">
+                    <i class="ri-layout-grid-line me-1"></i>Areas
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="pills-tabContent">
+
+            <!-- ============ UBICACIONES TAB ============ -->
+            <div class="tab-pane fade show active" id="ubicaciones" role="tabpanel" aria-labelledby="ubicaciones-tab">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4 class="card-title flex-grow-1 mb-0">Gestión de Ubicaciones</h4>
+                        {% if perms.activos.add_ubicacion %}
+                        <a href="{% url 'accounts:ubicacion_crear' %}" class="btn btn-primary">
+                            <i class="ri-add-line me-1"></i>Nueva Ubicación
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nombre</th>
+                                        <th>Descripción</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for ub in ubicaciones %}
+                                    <tr>
+                                        <td><code>{{ ub.codigo }}</code></td>
+                                        <td>{{ ub.nombre }}</td>
+                                        <td>{{ ub.descripcion|default:"-"|truncatechars:50 }}</td>
+                                        <td>
+                                            {% if ub.activo %}
+                                                <span class="badge bg-success">Activo</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Inactivo</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if perms.activos.change_ubicacion %}
+                                            <button type="button" class="btn btn-sm btn-soft-primary btn-modal-ubicacion"
+                                                data-url="{% url 'accounts:ubicacion_editar' ub.pk %}"
+                                                title="Editar">
+                                                <i class="ri-pencil-line"></i>
+                                            </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-4">No hay ubicaciones registradas</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ TALLERES TAB ============ -->
+            <div class="tab-pane fade" id="talleres" role="tabpanel" aria-labelledby="talleres-tab">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4 class="card-title flex-grow-1 mb-0">Gestión de Talleres</h4>
+                        {% if perms.activos.add_taller %}
+                        <a href="{% url 'accounts:taller_crear' %}" class="btn btn-primary">
+                            <i class="ri-add-line me-1"></i>Nuevo Taller
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nombre</th>
+                                        <th>Ubicación Física</th>
+                                        <th>Responsable</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for taller in talleres %}
+                                    <tr>
+                                        <td><code>{{ taller.codigo }}</code></td>
+                                        <td>{{ taller.nombre }}</td>
+                                        <td>{{ taller.ubicacion|default:"-" }}</td>
+                                        <td>{{ taller.responsable|default:"-" }}</td>
+                                        <td>
+                                            {% if taller.activo %}
+                                                <span class="badge bg-success">Activo</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Inactivo</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if perms.activos.change_taller %}
+                                            <button type="button" class="btn btn-sm btn-soft-primary btn-modal-taller"
+                                                data-url="{% url 'accounts:taller_editar' taller.pk %}"
+                                                title="Editar">
+                                                <i class="ri-pencil-line"></i>
+                                            </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-4">No hay talleres registrados</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ BODEGA TAB ============ -->
+            <div class="tab-pane fade" id="bodegas" role="tabpanel" aria-labelledby="bodegas-tab">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4 class="card-title flex-grow-1 mb-0">Gestión de Bodegas</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nombre</th>
+                                        <th>Descripción</th>
+                                        <th>Responsable</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for bodega in bodegas %}
+                                    <tr>
+                                        <td><code>{{ bodega.codigo }}</code></td>
+                                        <td>{{ bodega.nombre }}</td>
+                                        <td>{{ bodega.descripcion|default:"-"|truncatechars:50 }}</td>
+                                        <td>{{ bodega.responsable|default:"-" }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">No hay bodegas registradas</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ DEPARTAMENTOS TAB ============ -->
+            <div class="tab-pane fade" id="departamentos" role="tabpanel" aria-labelledby="departamentos-tab">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4 class="card-title flex-grow-1 mb-0">Gestión de Departamentos</h4>
+                        {% if perms.solicitudes.add_departamento %}
+                        <a href="{% url 'accounts:departamento_crear' %}" class="btn btn-primary">
+                            <i class="ri-add-line me-1"></i>Nuevo Departamento
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nombre</th>
+                                        <th>Responsable</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for dep in departamentos %}
+                                    <tr>
+                                        <td><code>{{ dep.codigo }}</code></td>
+                                        <td>{{ dep.nombre }}</td>
+                                        <td>{{ dep.responsable|default:"-" }}</td>
+                                        <td>
+                                            {% if dep.activo %}
+                                                <span class="badge bg-success">Activo</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Inactivo</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if perms.solicitudes.change_departamento %}
+                                            <button type="button" class="btn btn-sm btn-soft-primary btn-modal-departamento"
+                                                data-url="{% url 'accounts:departamento_editar' dep.pk %}"
+                                                title="Editar">
+                                                <i class="ri-pencil-line"></i>
+                                            </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-4">No hay departamentos registrados</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ AREAS TAB ============ -->
+            <div class="tab-pane fade" id="areas" role="tabpanel" aria-labelledby="areas-tab">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4 class="card-title flex-grow-1 mb-0">Gestión de Áreas</h4>
+                        {% if perms.solicitudes.add_area %}
+                        <a href="{% url 'accounts:area_crear' %}" class="btn btn-primary">
+                            <i class="ri-add-line me-1"></i>Nueva Área
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nombre</th>
+                                        <th>Departamento</th>
+                                        <th>Responsable</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for area in areas %}
+                                    <tr>
+                                        <td><code>{{ area.codigo }}</code></td>
+                                        <td>{{ area.nombre }}</td>
+                                        <td>{{ area.departamento.nombre|default:"-" }}</td>
+                                        <td>{{ area.responsable|default:"-" }}</td>
+                                        <td>
+                                            {% if area.activo %}
+                                                <span class="badge bg-success">Activo</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Inactivo</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if perms.solicitudes.change_area %}
+                                            <button type="button" class="btn btn-sm btn-soft-primary btn-modal-area"
+                                                data-url="{% url 'accounts:area_editar' area.pk %}"
+                                                title="Editar">
+                                                <i class="ri-pencil-line"></i>
+                                            </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-4">No hay áreas registradas</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal genérico para gestores de organización -->
+<div class="modal fade" id="orgModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content" id="orgModalContent">
+            <div class="modal-body text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modalEl = document.getElementById('orgModal');
+    const modalContent = document.getElementById('orgModalContent');
+    const modal = new bootstrap.Modal(modalEl);
+
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.btn-modal-ubicacion, .btn-modal-taller, .btn-modal-departamento, .btn-modal-area');
+        if (!btn) return;
+
+        const url = btn.dataset.url;
+
+        modalContent.innerHTML = '<div class="modal-body text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div></div>';
+        modal.show();
+
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(response => response.text())
+            .then(html => {
+                modalContent.innerHTML = html;
+                const form = modalContent.querySelector('form');
+                if (form) {
+                    form.addEventListener('submit', function(ev) {
+                        ev.preventDefault();
+                        const formData = new FormData(form);
+                        fetch(form.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        })
+                        .then(resp => {
+                            if (resp.headers.get('content-type')?.includes('application/json')) {
+                                return resp.json().then(data => {
+                                    if (data.success) {
+                                        modal.hide();
+                                        location.reload();
+                                    }
+                                });
+                            } else {
+                                return resp.text().then(html => {
+                                    modalContent.innerHTML = html;
+                                });
+                            }
+                        });
+                    });
+                }
+            });
+    });
+});
+</script>
+{% endblock %}
