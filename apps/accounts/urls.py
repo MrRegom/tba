@@ -79,6 +79,9 @@ urlpatterns = [
     path('organizacion/departamentos/<int:pk>/editar/', views.DepartamentoUpdateView.as_view(), name='departamento_editar'),
     path('organizacion/departamentos/<int:pk>/eliminar/', views.DepartamentoDeleteView.as_view(), name='departamento_eliminar'),
 
+    # Bodegas (gestores)
+    path('organizacion/bodegas/crear/', views.BodegaCreateView.as_view(), name='bodega_crear'),
+
     # Cargos
     path('cargos/', views.CargoListView.as_view(), name='cargo_lista'),
     path('cargos/crear/', views.CargoCreateView.as_view(), name='cargo_crear'),
