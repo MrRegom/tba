@@ -275,10 +275,14 @@
                                 <td>{{ articulo.nombre }}</td>
                                 <td>{{ articulo.categoria.nombre }}</td>
                                 <td>
-                                    <span class="badge {% if articulo.stock_actual > articulo.stock_minimo %}bg-success{% elif articulo.stock_actual > 0 %}bg-warning{% else %}bg-danger{% endif %}">{{ articulo.stock_actual|default:0 }} {{ articulo.unidad_medida.simbolo|default:"unidad" }}</span>
+                                    <span
+                                        class="badge {% if articulo.stock_actual > articulo.stock_minimo %}bg-success{% elif articulo.stock_actual > 0 %}bg-warning{% else %}bg-danger{% endif %}">{{
+                                        articulo.stock_actual|default:0 }} {{
+                                        articulo.unidad_medida.simbolo|default:"unidad" }}</span>
                                 </td>
                                 <td>
-                                    <button type="button" class="btn btn-sm btn-success btn-seleccionar-articulo" {% if articulo.stock_actual <= 0 %}disabled{% endif %}>
+                                    <button type="button" class="btn btn-sm btn-success btn-seleccionar-articulo" {% if
+                                        articulo.stock_actual <=0 %}disabled{% endif %}>
                                         <i class="ri-check-line"></i> Seleccionar
                                     </button>
                                 </td>
@@ -296,7 +300,7 @@
 {% block extra_js %}
 <script src="{% static 'js/bodega/entrega-articulos.js' %}"></script>
 <script>
-    (function() {
+    (function () {
         if (window.EntregaArticulos) {
             window.EntregaArticulos.init();
         } else {
