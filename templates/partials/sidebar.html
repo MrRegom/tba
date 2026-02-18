@@ -109,9 +109,19 @@
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="{% url 'activos:menu_inventario' %}">
+                    <a class="nav-link menu-link" href="#sidebarInventario" data-bs-toggle="collapse" role="button"
+                        aria-expanded="false" aria-controls="sidebarInventario">
                         <i class="ri-clipboard-line"></i> <span data-key="t-inventario">Inventario</span>
                     </a>
+                    <div class="collapse menu-dropdown" id="sidebarInventario">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{% url 'activos:lista_movimientos' %}" class="nav-link" data-key="t-movimientos-inventario">
+                                    Movimientos
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </li>
 
                 <li class="nav-item">
@@ -149,7 +159,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{% url 'activos:lista_activos' %}" class="nav-link" data-key="t-gestores-inventario">
+                                <a href="{% url 'activos:gestores_inventario' %}" class="nav-link" data-key="t-gestores-inventario">
                                     Inventario
                                 </a>
                             </li>
