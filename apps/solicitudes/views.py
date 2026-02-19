@@ -879,7 +879,7 @@ class SolicitudActivoCreateView(CrearSolicitudBienesPermissionMixin, SolicitudCr
         """Agrega datos adicionales al contexto y lista de activos disponibles."""
         from apps.activos.models import Activo
 
-        context = super(SolicitudCreateView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context['titulo'] = 'Crear Solicitud de Bienes'
         context['action'] = 'Crear'
         context['tipo'] = 'ACTIVO'
@@ -1038,7 +1038,7 @@ class SolicitudActivoUpdateView(SolicitudUpdateView):
 
     def get_context_data(self, **kwargs) -> dict:
         """Agrega datos adicionales al contexto y formset de BIENES."""
-        context = super(SolicitudUpdateView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context['titulo'] = f'Editar Solicitud de Bienes {self.object.numero}'
         context['action'] = 'Editar'
         context['tipo'] = 'ACTIVO'
@@ -1097,7 +1097,7 @@ class SolicitudArticuloCreateView(CrearSolicitudArticulosPermissionMixin, Solici
         """Agrega datos adicionales al contexto y lista de artículos disponibles."""
         from apps.bodega.models import Articulo
 
-        context = super(SolicitudCreateView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context['titulo'] = 'Crear Solicitud de Artículos'
         context['action'] = 'Crear'
         context['tipo'] = 'ARTICULO'
@@ -1256,7 +1256,7 @@ class SolicitudArticuloUpdateView(SolicitudUpdateView):
 
     def get_context_data(self, **kwargs) -> dict:
         """Agrega datos adicionales al contexto y formset de ARTÍCULOS."""
-        context = super(SolicitudUpdateView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context['titulo'] = f'Editar Solicitud de Artículos {self.object.numero}'
         context['action'] = 'Editar'
         context['tipo'] = 'ARTICULO'

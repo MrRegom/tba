@@ -1,8 +1,33 @@
 (function () {
     'use strict';
 
+    /**
+     * Obtiene el valor de una cookie por su nombre
+     */
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
     function ensureModalContainer() {
         if (document.getElementById('solicitudModal')) return;
+
+        // Fix focus trap for SweetAlert2 when opened from Bootstrap modal
+        document.addEventListener('focusin', (e) => {
+            if (e.target.closest(".swal2-container")) {
+                e.stopImmediatePropagation();
+            }
+        });
         const container = document.createElement('div');
         container.innerHTML = `
                 <div class="modal fade" id="solicitudModal" tabindex="-1" aria-hidden="true">
@@ -123,6 +148,116 @@
             window.toggleSeccionActividad();
         }
 
+        // Botón Comprar: Mueve la solicitud al estado COMPRAR
+        root.querySelectorAll('.solicitud-comprar-btn').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                const pk = this.dataset.pk;
+                handleComprarSolicitud(pk, root);
+            });
+        });
+    }
+
+    /**
+     * Gestiona el flujo de confirmación para enviar a compras
+     * @param {number} pk - ID de la solicitud
+     * @param {HTMLElement} root - Elemento raíz (modal)
+     */
+    function handleComprarSolicitud(pk, root) {
+        if (!window.Swal) {
+            if (confirm('¿Desea enviar esta solicitud al departamento de compras?')) {
+                const notes = prompt('Notas adicionales para compras (opcional):');
+                ejecutarAccionComprar(pk, notes, root);
+            }
+            return;
+        }
+
+        Swal.fire({
+            title: '¿Enviar a Compras?',
+            text: 'Se notificará al departamento de adquisiciones.',
+            icon: 'question',
+            input: 'textarea',
+            inputLabel: 'Notas / Observaciones (opcional)',
+            inputPlaceholder: 'Escriba aquí si hay algún detalle para compras...',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, enviar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#0ab39c',
+            cancelButtonColor: '#f06548',
+            didOpen: () => {
+                // Forzar foco al textarea para evitar que el modal de atrás lo robe
+                const input = Swal.getInput();
+                if (input) setTimeout(() => input.focus(), 100);
+            },
+            preConfirm: (notes) => {
+                return notes || '';
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                ejecutarAccionComprar(pk, result.value, root);
+            }
+        });
+    }
+
+    /**
+     * Ejecuta el POST definitivo hacia el backend para la acción comprar
+     */
+    function ejecutarAccionComprar(pk, notes, root) {
+        const url = `/solicitudes/${pk}/comprar/?modal=1`;
+        const formData = new FormData();
+        formData.append('notas_compra', notes || '');
+
+        // Obtener CSRF de la cookie (infalible para Django AJAX)
+        const csrftoken = getCookie('csrftoken');
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrftoken
+            },
+            body: formData
+        })
+            .then(resp => {
+                if (!resp.ok) {
+                    throw new Error('Error en la respuesta del servidor');
+                }
+                return resp.text();
+            })
+            .then(html => {
+                // Si la respuesta es el detalle actualizado
+                const modalBody = document.getElementById('solicitudModalBody');
+                if (modalBody) {
+                    modalBody.innerHTML = html;
+                    initModalBindings(modalBody);
+                }
+
+                if (window.Swal) {
+                    Swal.fire({
+                        title: '¡Operación Exitosa!',
+                        text: 'La solicitud ha sido enviada a compras correctamente.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        // Refrescar la página para que el estado cambie en la lista principal
+                        window.location.reload();
+                    });
+                } else {
+                    window.location.reload();
+                }
+            })
+            .catch(err => {
+                console.error('Error al enviar a compras:', err);
+                if (window.Swal) {
+                    Swal.fire({
+                        title: 'Error de Seguridad',
+                        text: 'No se pudo validar la sesión (CSRF). Por favor, refresque la página e intente de nuevo.',
+                        icon: 'error'
+                    });
+                } else {
+                    alert('Error al enviar a compras. Por favor refresque la página.');
+                }
+            });
     }
 
     function submitFormViaAjax(form, root) {

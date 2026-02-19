@@ -29,7 +29,8 @@ class SolicitudForm(forms.ModelForm):
                 attrs={
                     'type': 'date',
                     'class': 'form-control'
-                }
+                },
+                format='%Y-%m-%d'
             ),
             'tipo_solicitud': forms.Select(
                 attrs={'class': 'form-select'}
@@ -96,6 +97,14 @@ class SolicitudForm(forms.ModelForm):
         self.fields['area'].required = False
         self.fields['titulo_actividad'].required = False
         self.fields['objetivo_actividad'].required = False
+
+        # Asegurar formato ISO para fecha_requerida en edición para que los navegadores la muestren
+        if self.instance and self.instance.pk and self.instance.fecha_requerida:
+            if isinstance(self.instance.fecha_requerida, (str, bytes)):
+                # Si por alguna razón es string, dejarlo así (aunque debería ser Date)
+                pass
+            else:
+                self.fields['fecha_requerida'].initial = self.instance.fecha_requerida.strftime('%Y-%m-%d')
 
 
 class DetalleSolicitudArticuloForm(forms.ModelForm):
@@ -323,14 +332,16 @@ class FiltroSolicitudesForm(forms.Form):
     fecha_desde = forms.DateField(
         required=False,
         widget=forms.DateInput(
-            attrs={'type': 'date', 'class': 'form-control'}
+            attrs={'type': 'date', 'class': 'form-control'},
+            format='%Y-%m-%d'
         )
     )
 
     fecha_hasta = forms.DateField(
         required=False,
         widget=forms.DateInput(
-            attrs={'type': 'date', 'class': 'form-control'}
+            attrs={'type': 'date', 'class': 'form-control'},
+            format='%Y-%m-%d'
         )
     )
 

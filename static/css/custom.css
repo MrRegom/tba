@@ -1532,6 +1532,11 @@ form .form-control[readonly] {
   z-index: 2060 !important;
 }
 
+/* SweetAlert2 sobre los modales personalizados */
+.swal2-container {
+  z-index: 2500 !important;
+}
+
 #page-topbar .layout-width {
   max-width: none !important;
   width: 100% !important;
