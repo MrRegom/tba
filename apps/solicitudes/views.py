@@ -511,6 +511,12 @@ class SolicitudAprobarView(AprobarSolicitudesPermissionMixin, BaseAuditedViewMix
 
         return context
 
+    def get_template_names(self):
+        """Devuelve el partial si es modal."""
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest' or self.request.GET.get('modal') == '1':
+            return ['solicitudes/aprobar_solicitud.html']
+        return [self.template_name]
+
     def get(self, request, *args, **kwargs):
         """Verifica que la solicitud pueda ser aprobada."""
         self.object = self.get_object()
@@ -569,7 +575,7 @@ class SolicitudAprobarView(AprobarSolicitudesPermissionMixin, BaseAuditedViewMix
         return self.render_to_response(self.get_context_data(form=form))
 
 
-class SolicitudRechazarView(RechazarSolicitudesPermissionMixin, BaseAuditedViewMixin, AtomicTransactionMixin, View):
+class SolicitudRechazarView(RechazarSolicitudesPermissionMixin, BaseAuditedViewMixin, AtomicTransactionMixin, DetailView):
     """
     Vista para rechazar una solicitud (GESTIÓN).
 
@@ -577,69 +583,90 @@ class SolicitudRechazarView(RechazarSolicitudesPermissionMixin, BaseAuditedViewM
     Auditoría: Registra acción RECHAZAR automáticamente
     Transacción atómica: Garantiza consistencia del workflow
     """
+    model = Solicitud
+    template_name = 'solicitudes/rechazar_solicitud.html'
+    context_object_name = 'solicitud'
 
     # Configuración de auditoría
     audit_action = 'RECHAZAR'
     audit_description_template = 'Rechazó solicitud {obj.numero}'
 
-    def post(self, request, pk):
-        """Procesa el rechazo de la solicitud cambiando solo el estado."""
-        try:
-            solicitud = Solicitud.objects.get(pk=pk)
-        except Solicitud.DoesNotExist:
-            messages.error(request, 'Solicitud no encontrada.')
-            return redirect('solicitudes:lista_solicitudes')
+    def get_template_names(self):
+        """Devuelve el partial si es modal."""
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest' or self.request.GET.get('modal') == '1':
+            return ['solicitudes/rechazar_solicitud.html']
+        return [self.template_name]
+
+    def get_context_data(self, **kwargs) -> dict:
+        """Agrega formulario al contexto."""
+        context = super().get_context_data(**kwargs)
+        context['titulo'] = f'Rechazar Solicitud {self.object.numero}'
+        context['form'] = RechazarSolicitudForm()
+        return context
+
+    def get(self, request, *args, **kwargs):
+        """Verifica que la solicitud pueda ser rechazada."""
+        self.object = self.get_object()
 
         # Verificar que no esté finalizada
-        if solicitud.estado.es_final:
+        if self.object.estado.es_final:
             messages.warning(request, 'No se puede rechazar una solicitud finalizada.')
-            return redirect('solicitudes:detalle_solicitud', pk=solicitud.pk)
+            return redirect('solicitudes:detalle_solicitud', pk=self.object.pk)
 
-        try:
-            solicitud_service = SolicitudService()
+        return super().get(request, *args, **kwargs)
 
-            # Cambiar estado a RECHAZAR
-            estado_rechazado = solicitud_service.estado_repo.get_by_codigo('RECHAZAR')
-            if not estado_rechazado:
-                raise ValidationError('No existe el estado RECHAZAR en el sistema')
+    def post(self, request, *args, **kwargs):
+        """Procesa el rechazo de la solicitud."""
+        self.object = self.get_object()
+        form = RechazarSolicitudForm(request.POST)
 
-            # Cambiar estado usando el servicio genérico
-            solicitud = solicitud_service.cambiar_estado(
-                solicitud=solicitud,
-                nuevo_estado=estado_rechazado,
-                usuario=request.user,
-                observaciones=f'Rechazada por {request.user.get_full_name()}'
-            )
+        if form.is_valid():
+            try:
+                solicitud_service = SolicitudService()
+                
+                # Rechazar usando service
+                self.object = solicitud_service.rechazar_solicitud(
+                    solicitud=self.object,
+                    rechazador=request.user,
+                    motivo_rechazo=form.cleaned_data['motivo_rechazo']
+                )
 
-            # Log de auditoría
-            self.log_action(solicitud, request)
+                # Log de auditoría
+                self.log_action(self.object, request)
 
-            messages.success(request, f'Solicitud {solicitud.numero} rechazada exitosamente.')
+                messages.success(request, f'Solicitud {self.object.numero} rechazada exitosamente.')
+                
+                # Si es petición AJAX/modal, devolver el partial del detalle
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.GET.get('modal') == '1':
+                    return self._render_modal_detail_response(self.object)
 
-        except ValidationError as e:
-            error_msg = str(e.message_dict.get('__all__', [e])[0]) if hasattr(e, 'message_dict') else str(e)
-            messages.error(request, error_msg)
+                return redirect('solicitudes:detalle_solicitud', pk=self.object.pk)
 
-        # Si es petición AJAX/modal, devolver el partial actualizado
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.GET.get('modal') == '1':
-            from .repositories import HistorialSolicitudRepository
-            historial_repo = HistorialSolicitudRepository()
-            context = {
-                'solicitud': solicitud,
-                'detalles': solicitud.detalles.filter(eliminado=False).select_related(
-                    'articulo', 'articulo__categoria', 'activo', 'activo__categoria'
-                ).order_by('id'),
-                'historial': historial_repo.filter_by_solicitud(solicitud)
-            }
-            # Usar modal diferente según si es mis solicitudes o admin
-            es_mis_solicitudes = solicitud.solicitante == request.user
-            modal_template = 'solicitudes/partials/modal_detalle_mis_solicitudes.html' if es_mis_solicitudes else 'solicitudes/partials/modal_detalle_admin.html'
-            return render(request, modal_template, context)
+            except ValidationError as e:
+                error_msg = str(e.message_dict.get('__all__', [e])[0]) if hasattr(e, 'message_dict') else str(e)
+                messages.error(request, error_msg)
+                return self.render_to_response(self.get_context_data(form=form))
 
-        return redirect('solicitudes:detalle_solicitud', pk=solicitud.pk)
+        # Si el formulario no es válido, mostrar errores
+        return self.render_to_response(self.get_context_data(form=form))
+
+    def _render_modal_detail_response(self, solicitud):
+        """Helper para renderizar la respuesta del modal tras acción exitosa."""
+        from .repositories import HistorialSolicitudRepository
+        historial_repo = HistorialSolicitudRepository()
+        context = {
+            'solicitud': solicitud,
+            'detalles': solicitud.detalles.filter(eliminado=False).select_related(
+                'articulo', 'articulo__categoria', 'activo', 'activo__categoria'
+            ).order_by('id'),
+            'historial': historial_repo.filter_by_solicitud(solicitud)
+        }
+        es_mis_solicitudes = solicitud.solicitante == self.request.user
+        modal_template = 'solicitudes/partials/modal_detalle_mis_solicitudes.html' if es_mis_solicitudes else 'solicitudes/partials/modal_detalle_admin.html'
+        return render(self.request, modal_template, context)
 
 
-class SolicitudDespacharView(DespacharSolicitudesPermissionMixin, BaseAuditedViewMixin, AtomicTransactionMixin, View):
+class SolicitudDespacharView(DespacharSolicitudesPermissionMixin, BaseAuditedViewMixin, AtomicTransactionMixin, DetailView):
     """
     Vista para despachar una solicitud (GESTIÓN).
 
@@ -647,66 +674,106 @@ class SolicitudDespacharView(DespacharSolicitudesPermissionMixin, BaseAuditedVie
     Auditoría: Registra acción DESPACHAR automáticamente
     Transacción atómica: Garantiza consistencia del workflow
     """
+    model = Solicitud
+    template_name = 'solicitudes/despachar_solicitud.html'
+    context_object_name = 'solicitud'
+
+    def get_queryset(self):
+        """Optimiza la consulta para incluir detalles y stock."""
+        from django.db.models import Prefetch
+        return super().get_queryset().prefetch_related(
+            Prefetch(
+                'detalles',
+                queryset=DetalleSolicitud.objects.select_related(
+                    'articulo', 
+                    'articulo__unidad_medida', 
+                    'activo',
+                    'activo__estado'
+                )
+            )
+        )
 
     # Configuración de auditoría
     audit_action = 'DESPACHAR'
     audit_description_template = 'Despachó solicitud {obj.numero}'
 
-    def post(self, request, pk):
-        """Procesa el despacho de la solicitud cambiando el estado a Para Despachar."""
-        try:
-            solicitud = Solicitud.objects.get(pk=pk)
-        except Solicitud.DoesNotExist:
-            messages.error(request, 'Solicitud no encontrada.')
-            return redirect('solicitudes:lista_solicitudes')
+    def get_template_names(self):
+        """Devuelve el partial si es modal."""
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest' or self.request.GET.get('modal') == '1':
+            return ['solicitudes/despachar_solicitud.html']
+        return [self.template_name]
+
+    def get_context_data(self, **kwargs) -> dict:
+        """Agrega formulario al contexto."""
+        context = super().get_context_data(**kwargs)
+        context['titulo'] = f'Despachar Solicitud {self.object.numero}'
+        
+        if self.request.POST:
+            context['form'] = DespacharSolicitudForm(self.request.POST, solicitud=self.object)
+        else:
+            context['form'] = DespacharSolicitudForm(solicitud=self.object)
+            
+        return context
+
+    def get(self, request, *args, **kwargs):
+        """Verifica que la solicitud pueda ser despachada."""
+        self.object = self.get_object()
 
         # Verificar que no esté finalizada
-        if solicitud.estado.es_final:
-            messages.warning(request, 'No se puede cambiar el estado de una solicitud finalizada.')
-            return redirect('solicitudes:detalle_solicitud', pk=solicitud.pk)
+        if self.object.estado.es_final:
+            messages.warning(request, 'No se puede despachar una solicitud finalizada.')
+            return redirect('solicitudes:detalle_solicitud', pk=self.object.pk)
 
-        try:
-            solicitud_service = SolicitudService()
+        return super().get(request, *args, **kwargs)
 
-            # Cambiar estado a DESPACHAR (Para Despachar)
-            estado_despachar = solicitud_service.estado_repo.get_by_codigo('DESPACHAR')
-            if not estado_despachar:
-                raise ValidationError('No existe el estado DESPACHAR en el sistema')
+    def post(self, request, *args, **kwargs):
+        """Procesa el despacho de la solicitud."""
+        self.object = self.get_object()
+        form = DespacharSolicitudForm(request.POST, solicitud=self.object)
 
-            # Cambiar estado usando el servicio genérico
-            solicitud = solicitud_service.cambiar_estado(
-                solicitud=solicitud,
-                nuevo_estado=estado_despachar,
-                usuario=request.user,
-                observaciones=f'Marcada para despachar por {request.user.get_full_name()}'
-            )
+        if form.is_valid():
+            try:
+                solicitud_service = SolicitudService()
 
-            # Log de auditoría
-            self.log_action(solicitud, request)
+                # Preparar detalles despachados
+                detalles_despachados = []
+                for detalle in self.object.detalles.all():
+                    field_name = f'cantidad_despachada_{detalle.id}'
+                    if field_name in form.cleaned_data:
+                        detalles_despachados.append({
+                            'detalle_id': detalle.id,
+                            'cantidad_despachada': form.cleaned_data[field_name]
+                        })
 
-            messages.success(request, f'Solicitud {solicitud.numero} marcada para despachar.')
+                # Despachar usando service
+                self.object = solicitud_service.despachar_solicitud(
+                    solicitud=self.object,
+                    despachador=request.user,
+                    detalles_despachados=detalles_despachados,
+                    notas_despacho=form.cleaned_data.get('notas_despacho', '')
+                )
 
-        except ValidationError as e:
-            error_msg = str(e.message_dict.get('__all__', [e])[0]) if hasattr(e, 'message_dict') else str(e)
-            messages.error(request, error_msg)
+                # Log de auditoría
+                self.log_action(self.object, request)
 
-        # Si es petición AJAX/modal, devolver el partial actualizado
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.GET.get('modal') == '1':
-            from .repositories import HistorialSolicitudRepository
-            historial_repo = HistorialSolicitudRepository()
-            context = {
-                'solicitud': solicitud,
-                'detalles': solicitud.detalles.filter(eliminado=False).select_related(
-                    'articulo', 'articulo__categoria', 'activo', 'activo__categoria'
-                ).order_by('id'),
-                'historial': historial_repo.filter_by_solicitud(solicitud)
-            }
-            # Usar modal diferente según si es mis solicitudes o admin
-            es_mis_solicitudes = solicitud.solicitante == request.user
-            modal_template = 'solicitudes/partials/modal_detalle_mis_solicitudes.html' if es_mis_solicitudes else 'solicitudes/partials/modal_detalle_admin.html'
-            return render(request, modal_template, context)
+                messages.success(request, f'Solicitud {self.object.numero} despachada exitosamente.')
+                
+                # Si es petición AJAX/modal, devolver parcial
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.GET.get('modal') == '1':
+                    # Reutilizar el helper de RechazarView
+                    rechazar_view = SolicitudRechazarView()
+                    rechazar_view.request = request
+                    return rechazar_view._render_modal_detail_response(self.object)
 
-        return redirect('solicitudes:detalle_solicitud', pk=solicitud.pk)
+                return redirect('solicitudes:detalle_solicitud', pk=self.object.pk)
+
+            except ValidationError as e:
+                error_msg = str(e.message_dict.get('__all__', [e])[0]) if hasattr(e, 'message_dict') else str(e)
+                messages.error(request, error_msg)
+                return self.render_to_response(self.get_context_data(form=form))
+
+        # Si el formulario no es válido
+        return self.render_to_response(self.get_context_data(form=form))
 
 
 class SolicitudComprarView(DespacharSolicitudesPermissionMixin, BaseAuditedViewMixin, AtomicTransactionMixin, View):

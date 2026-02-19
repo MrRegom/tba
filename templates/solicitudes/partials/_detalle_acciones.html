@@ -6,19 +6,25 @@
     <div class="col-12 text-end">
         <div class="d-flex justify-content-end gap-2">
             {% if perms.solicitudes.change_solicitud and not solicitud.estado.es_final %}
-            <a href="{% url 'solicitudes:editar_solicitud' solicitud.pk %}" class="btn btn-sm btn-secondary">
+            <a href="{% url 'solicitudes:editar_solicitud' solicitud.pk %}"
+                class="btn btn-sm btn-secondary solicitudes-modal-link"
+                data-modal-title="Editar Solicitud {{ solicitud.numero }}">
                 <i class="ri-edit-line"></i> Editar
             </a>
             {% endif %}
 
             {% if perms.solicitudes.despachar_solicitudes %}
-            <a href="{% url 'solicitudes:despachar_solicitud' solicitud.pk %}" class="btn btn-sm btn-info">
+            <a href="{% url 'solicitudes:despachar_solicitud' solicitud.pk %}"
+                class="btn btn-sm btn-info solicitudes-modal-link"
+                data-modal-title="Despachar Solicitud {{ solicitud.numero }}">
                 <i class="ri-truck-line"></i> Despachar
             </a>
             {% endif %}
 
             {% if perms.solicitudes.rechazar_solicitud and not solicitud.estado.es_final %}
-            <a href="{% url 'solicitudes:rechazar_solicitud' solicitud.pk %}" class="btn btn-sm btn-warning">
+            <a href="{% url 'solicitudes:rechazar_solicitud' solicitud.pk %}"
+                class="btn btn-sm btn-warning solicitudes-modal-link"
+                data-modal-title="Rechazar Solicitud {{ solicitud.numero }}">
                 <i class="ri-close-line"></i> Rechazar
             </a>
             {% endif %}

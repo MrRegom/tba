@@ -357,29 +357,37 @@ class SolicitudService:
                     )
 
                 detalle.cantidad_despachada = cantidad_despachada
+                # En flujo directo, la aprobada es igual a la despachada
+                if detalle.cantidad_aprobada == 0:
+                    detalle.cantidad_aprobada = cantidad_despachada
                 detalle.save()
 
         # Actualizar solicitud
         solicitud.despachador = despachador
         solicitud.fecha_despacho = timezone.now()
         solicitud.notas_despacho = notas_despacho
+        
+        # Si no hay aprobador, el despachador asume el rol de aprobador
+        if not solicitud.aprobador:
+            solicitud.aprobador = despachador
+            solicitud.fecha_aprobacion = solicitud.fecha_despacho
 
-        # Cambiar a estado despachado
-        estado_despachado = self.estado_repo.get_by_codigo('DESPACHADA')
-        if not estado_despachado:
-            raise ValidationError('No existe el estado DESPACHADA en el sistema')
+        # Cambiar a estado para despachar
+        estado_despachar = self.estado_repo.get_by_codigo('DESPACHAR')
+        if not estado_despachar:
+            raise ValidationError('No existe el estado DESPACHAR (Para despachar) en el sistema')
 
         estado_anterior = solicitud.estado
-        solicitud.estado = estado_despachado
+        solicitud.estado = estado_despachar
         solicitud.save()
 
         # Registrar en historial
         self.historial_repo.create(
             solicitud=solicitud,
             estado_anterior=estado_anterior,
-            estado_nuevo=estado_despachado,
+            estado_nuevo=estado_despachar,
             usuario=despachador,
-            observaciones=f'Despachada por {despachador.get_full_name()}. {notas_despacho}'
+            observaciones=f'Movido a Para Despachar por {despachador.get_full_name()}. {notas_despacho}'
         )
 
         return solicitud
