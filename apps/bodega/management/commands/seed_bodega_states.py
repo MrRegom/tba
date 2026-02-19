@@ -5,6 +5,25 @@ class Command(BaseCommand):
     help = 'Seeds mandatory states and types for the Bodega module'
 
     def handle(self, *args, **options):
+        self.stdout.write('Syncing database sequences...')
+        from django.core.management import call_command
+        from django.db import connection
+        
+        # Sincronizar secuencias para evitar errores de llave duplicada
+        with connection.cursor() as cursor:
+            # Esto es específico para PostgreSQL y ayuda a resetear los contadores de ID
+            commands = [
+                "SELECT setval(pg_get_serial_sequence('tba_bodega_estado_entrega', 'id'), coalesce(max(id), 1)) FROM tba_bodega_estado_entrega;",
+                "SELECT setval(pg_get_serial_sequence('tba_bodega_conf_tipoentrega', 'id'), coalesce(max(id), 1)) FROM tba_bodega_conf_tipoentrega;",
+                "SELECT setval(pg_get_serial_sequence('tba_bodega_operacion', 'id'), coalesce(max(id), 1)) FROM tba_bodega_operacion;",
+                "SELECT setval(pg_get_serial_sequence('tba_bodega_conf_tipomovimiento', 'id'), coalesce(max(id), 1)) FROM tba_bodega_conf_tipomovimiento;"
+            ]
+            for cmd in commands:
+                try:
+                    cursor.execute(cmd)
+                except Exception:
+                    pass
+
         self.stdout.write('Seeding Bodega states...')
 
         # 1. Estados de Entrega
@@ -12,7 +31,7 @@ class Command(BaseCommand):
             {
                 'codigo': 'PENDIENTE',
                 'nombre': 'Pendiente',
-                'color': '#ffc107', # Warning (Yellow)
+                'color': '#ffc107',
                 'es_inicial': True,
                 'es_final': False,
                 'descripcion': 'La entrega ha sido registrada pero no procesada.'
@@ -20,7 +39,7 @@ class Command(BaseCommand):
             {
                 'codigo': 'DESPACHADO',
                 'nombre': 'Despachado',
-                'color': '#198754', # Success (Green)
+                'color': '#198754',
                 'es_inicial': False,
                 'es_final': True,
                 'descripcion': 'La entrega se ha completado exitosamente.'
@@ -28,7 +47,7 @@ class Command(BaseCommand):
             {
                 'codigo': 'DESPACHO_PARCIAL',
                 'nombre': 'Despacho Parcial',
-                'color': '#0dcaf0', # Info (Cyan)
+                'color': '#0dcaf0',
                 'es_inicial': False,
                 'es_final': False,
                 'descripcion': 'Se ha entregado una parte de la solicitud.'
@@ -36,7 +55,7 @@ class Command(BaseCommand):
             {
                 'codigo': 'ANULADO',
                 'nombre': 'Anulado',
-                'color': '#dc3545', # Danger (Red)
+                'color': '#dc3545',
                 'es_inicial': False,
                 'es_final': True,
                 'descripcion': 'La entrega ha sido cancelada.'
@@ -44,12 +63,15 @@ class Command(BaseCommand):
         ]
 
         for est in estados:
-            obj, created = EstadoEntrega.objects.update_or_create(
-                codigo=est['codigo'],
-                defaults=est
-            )
-            status = 'created' if created else 'updated'
-            self.stdout.write(f'  State "{est["codigo"]}": {status}')
+            try:
+                obj, created = EstadoEntrega.objects.update_or_create(
+                    codigo=est['codigo'],
+                    defaults=est
+                )
+                status = 'created' if created else 'updated'
+                self.stdout.write(f'  State "{est["codigo"]}": {status}')
+            except Exception as e:
+                self.stdout.write(self.style.ERROR(f'  Error in State "{est["codigo"]}": {str(e)}'))
 
         # 2. Tipos de Entrega
         tipos = [
@@ -58,12 +80,15 @@ class Command(BaseCommand):
         ]
 
         for t in tipos:
-            obj, created = TipoEntrega.objects.update_or_create(
-                codigo=t['codigo'],
-                defaults=t
-            )
-            status = 'created' if created else 'updated'
-            self.stdout.write(f'  Type "{t["codigo"]}": {status}')
+            try:
+                obj, created = TipoEntrega.objects.update_or_create(
+                    codigo=t['codigo'],
+                    defaults=t
+                )
+                status = 'created' if created else 'updated'
+                self.stdout.write(f'  Type "{t["codigo"]}": {status}')
+            except Exception as e:
+                self.stdout.write(self.style.ERROR(f'  Error in Type "{t["codigo"]}": {str(e)}'))
 
         # 3. Operaciones
         operaciones = [
@@ -72,12 +97,15 @@ class Command(BaseCommand):
         ]
 
         for op in operaciones:
-            obj, created = Operacion.objects.update_or_create(
-                codigo=op['codigo'],
-                defaults=op
-            )
-            status = 'created' if created else 'updated'
-            self.stdout.write(f'  Operation "{op["codigo"]}": {status}')
+            try:
+                obj, created = Operacion.objects.update_or_create(
+                    codigo=op['codigo'],
+                    defaults=op
+                )
+                status = 'created' if created else 'updated'
+                self.stdout.write(f'  Operation "{op["codigo"]}": {status}')
+            except Exception as e:
+                self.stdout.write(self.style.ERROR(f'  Error in Operation "{op["codigo"]}": {str(e)}'))
 
         # 4. Tipos de Movimiento
         movs = [
@@ -87,11 +115,14 @@ class Command(BaseCommand):
         ]
 
         for m in movs:
-            obj, created = TipoMovimiento.objects.update_or_create(
-                codigo=m['codigo'],
-                defaults=m
-            )
-            status = 'created' if created else 'updated'
-            self.stdout.write(f'  Movement Type "{m["codigo"]}": {status}')
+            try:
+                obj, created = TipoMovimiento.objects.update_or_create(
+                    codigo=m['codigo'],
+                    defaults=m
+                )
+                status = 'created' if created else 'updated'
+                self.stdout.write(f'  Movement Type "{m["codigo"]}": {status}')
+            except Exception as e:
+                self.stdout.write(self.style.ERROR(f'  Error in Movement Type "{m["codigo"]}": {str(e)}'))
 
         self.stdout.write(self.style.SUCCESS('Successfully seeded Bodega module data.'))
