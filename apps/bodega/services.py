@@ -802,11 +802,16 @@ class EntregaArticuloService:
 
         # Verificar si todos los detalles están completamente despachados
         detalles = solicitud.detalles.filter(eliminado=False)
-        todos_despachados = all(
-            detalle.cantidad_despachada >= detalle.cantidad_aprobada
-            for detalle in detalles
-            if detalle.articulo  # Solo artículos
-        )
+        
+        # Una solicitud está completamente despachada si TODOS sus detalles 
+        # (tanto artículos como activos) han sido entregados en su totalidad.
+        # Consideramos la cantidad aprobada si existe (>0), de lo contrario la solicitada.
+        todos_despachados = True
+        for detalle in detalles:
+            cant_base = detalle.cantidad_aprobada if (detalle.cantidad_aprobada and detalle.cantidad_aprobada > 0) else detalle.cantidad_solicitada
+            if detalle.cantidad_despachada < cant_base:
+                todos_despachados = False
+                break
 
         if todos_despachados:
             # Buscar estado "Completado" o similar
@@ -924,13 +929,23 @@ class EntregaBienService:
             numero_serie = detalle_data.get('numero_serie')
             estado_fisico = detalle_data.get('estado_fisico')
             obs_detalle = detalle_data.get('observaciones')
+            detalle_solicitud_id = detalle_data.get('detalle_solicitud_id')
 
-            # Obtener activo - necesitamos importar el modelo
+            # Obtener activo
             from apps.activos.models import Activo
             try:
                 activo = Activo.objects.get(id=equipo_id, eliminado=False)
             except Activo.DoesNotExist:
                 raise ValidationError(f'No se encontró el activo/bien con ID {equipo_id}.')
+
+            # Buscar detalle de solicitud si aplica
+            detalle_solicitud = None
+            if detalle_solicitud_id:
+                from apps.solicitudes.models import DetalleSolicitud
+                try:
+                    detalle_solicitud = DetalleSolicitud.objects.get(id=detalle_solicitud_id)
+                except DetalleSolicitud.DoesNotExist:
+                    print(f"ADVERTENCIA: No se encontró DetalleSolicitud ID {detalle_solicitud_id}")
 
             # Crear detalle de entrega
             DetalleEntregaBien.objects.create(
@@ -939,8 +954,15 @@ class EntregaBienService:
                 cantidad=cantidad,
                 numero_serie=numero_serie,
                 estado_fisico=estado_fisico,
-                observaciones=obs_detalle
+                observaciones=obs_detalle,
+                detalle_solicitud=detalle_solicitud
             )
+
+            # Si hay detalle de solicitud, actualizar cantidad despachada
+            if detalle_solicitud:
+                detalle_solicitud.cantidad_despachada += cantidad
+                detalle_solicitud.save()
+                print(f"DEBUG: DetalleSolicitud {detalle_solicitud.id} actualizado: cant_desp={detalle_solicitud.cantidad_despachada}")
 
         # Determinar y actualizar el estado correcto de la entrega
         estado_correcto = self._determinar_estado_entrega(entrega, solicitud)

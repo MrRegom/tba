@@ -1051,7 +1051,7 @@ class EntregaBienListView(BaseAuditedViewMixin, PaginatedListMixin, ListView):
             eliminado=False
         ).select_related(
             'tipo', 'estado', 'entregado_por'
-        ).prefetch_related('detalles__equipo')
+        ).prefetch_related('detalles__activo')
 
         # Filtros opcionales
         q = self.request.GET.get('q', '').strip()
@@ -1101,6 +1101,25 @@ class EntregaBienCreateView(BaseAuditedViewMixin, AtomicTransactionMixin, Create
             return ['bodega/entrega_bien/modal_form.html']
         return [self.template_name]
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from apps.activos.models import Activo
+        import json
+        
+        activos = Activo.objects.filter(eliminado=False).select_related('categoria', 'estado')
+        activos_data = [
+            {
+                'id': a.id,
+                'codigo': a.codigo,
+                'nombre': a.nombre,
+                'categoria': a.categoria.nombre if a.categoria else '-'
+            } for a in activos
+        ]
+        
+        context['activos_json'] = json.dumps(activos_data)
+        context['titulo'] = 'Nueva Entrega de Bienes/Activos'
+        return context
+
     def form_valid(self, form):
         """
         Procesa el formulario válido usando EntregaBienService.
@@ -1118,8 +1137,20 @@ class EntregaBienCreateView(BaseAuditedViewMixin, AtomicTransactionMixin, Create
 
             # Obtener detalles del request (deben ser enviados vía POST)
             import json
-            detalles_json = self.request.POST.get('detalles', '[]')
-            detalles = json.loads(detalles_json)
+            detalles_json = self.request.POST.get('detalles', '')
+            
+            if not detalles_json or detalles_json == '[]':
+                messages.error(
+                    self.request,
+                    'Debe agregar al menos un bien a la entrega.'
+                )
+                return self.form_invalid(form)
+                
+            try:
+                detalles = json.loads(detalles_json)
+            except json.JSONDecodeError:
+                messages.error(self.request, 'Error al procesar los detalles de la entrega.')
+                return self.form_invalid(form)
 
             if not detalles:
                 messages.error(
@@ -1258,11 +1289,9 @@ def obtener_articulos_solicitud(request, solicitud_id):
                 cantidad_despachada = int(detalle.cantidad_despachada) if detalle.cantidad_despachada else 0
                 cantidad_solicitada = int(detalle.cantidad_solicitada) if detalle.cantidad_solicitada else 0
 
-                # Si hay cantidad aprobada, usar esa; si no, usar solicitada
-                if cantidad_aprobada > 0:
-                    cantidad_pendiente = cantidad_aprobada - cantidad_despachada
-                else:
-                    cantidad_pendiente = cantidad_solicitada - cantidad_despachada
+                # Determinar cantidad base (aprobada o solicitada)
+                cant_base = int(detalle.cantidad_aprobada) if (detalle.cantidad_aprobada and detalle.cantidad_aprobada > 0) else int(detalle.cantidad_solicitada)
+                cantidad_pendiente = max(0, cant_base - int(detalle.cantidad_despachada or 0))
 
                 # Obtener unidad de medida (ForeignKey)
                 unidad_medida = detalle.articulo.unidad_medida.simbolo if detalle.articulo.unidad_medida else 'unidad'
@@ -1310,57 +1339,208 @@ def obtener_articulos_solicitud(request, solicitud_id):
 def obtener_bienes_solicitud(request, solicitud_id):
     """
     Endpoint AJAX para obtener los bienes/activos de una solicitud.
-
-    Retorna los bienes con cantidades solicitadas, aprobadas y despachadas.
-    Permite al usuario ver qué bienes puede entregar y en qué cantidades.
     """
     try:
-        from apps.solicitudes.models import Solicitud, DetalleSolicitud
-
-        solicitud = Solicitud.objects.prefetch_related(
-            'detalles__activo__categoria'
-        ).get(id=solicitud_id, tipo='ACTIVO', eliminado=False)
+        from apps.solicitudes.models import Solicitud
+        
+        # Obtener solicitud sin prefetch complejo para evitar bugs con filtros posteriores
+        solicitud = Solicitud.objects.get(id=solicitud_id, tipo='ACTIVO', eliminado=False)
+        print(f"DEBUG: Cargando bienes para solicitud {solicitud.numero} (ID: {solicitud_id})")
 
         bienes_data = []
-        for detalle in solicitud.detalles.filter(eliminado=False):
-            if detalle.activo:  # Solo activos (no artículos)
-                # Calcular cantidad pendiente de despacho
-                cantidad_pendiente = int(detalle.cantidad_aprobada - detalle.cantidad_despachada)
+        # Iterar sobre todos los detalles no eliminados
+        for detalle in solicitud.detalles.all():
+            if detalle.eliminado:
+                continue
+                
+            # En solicitudes de tipo ACTIVO, debería haber un activo siempre
+            # pero validamos para evitar errores de atributo
+            if detalle.activo:
+                # Calcular cantidades asegurando tipo numérico
+                cant_aprobada = float(detalle.cantidad_aprobada or 0)
+                cant_despachada = float(detalle.cantidad_despachada or 0)
+                cant_solicitada = float(detalle.cantidad_solicitada or 0)
+                
+                # Cantidad pendiente:Priorizar aprobada sobre solicitada si aprobada > 0
+                cant_base = cant_aprobada if cant_aprobada > 0 else cant_solicitada
+                cantidad_pendiente = max(0, cant_base - cant_despachada)
 
-                # Mostrar TODOS los bienes, no solo los pendientes
                 bienes_data.append({
                     'detalle_solicitud_id': detalle.id,
                     'activo_id': detalle.activo.id,
-                    'activo_codigo': detalle.activo.codigo,
-                    'activo_nombre': detalle.activo.nombre,
-                    'categoria': detalle.activo.categoria.nombre if detalle.activo.categoria else '-',
-                    'cantidad_solicitada': int(detalle.cantidad_solicitada),
-                    'cantidad_aprobada': int(detalle.cantidad_aprobada),
-                    'cantidad_despachada': int(detalle.cantidad_despachada),
-                    'cantidad_pendiente': cantidad_pendiente,
-                    'observaciones': detalle.observaciones or ''
+                    'activo_codigo': str(detalle.activo.codigo),
+                    'activo_nombre': str(detalle.activo.nombre),
+                    'categoria': str(detalle.activo.categoria.nombre if detalle.activo.categoria else '-'),
+                    'cantidad_solicitada': int(cant_solicitada),
+                    'cantidad_aprobada': int(cant_aprobada),
+                    'cantidad_despachada': int(cant_despachada),
+                    'cantidad_pendiente': int(cantidad_pendiente),
+                    'observaciones': str(detalle.observaciones or '')
                 })
+
+        print(f"DEBUG: Se encontraron {len(bienes_data)} bienes para enviar.")
 
         return JsonResponse({
             'success': True,
             'solicitud': {
-                'numero': solicitud.numero,
-                'solicitante': solicitud.solicitante.get_full_name() or solicitud.solicitante.username,
-                'departamento': solicitud.departamento.nombre if solicitud.departamento else solicitud.area_solicitante,
-                'motivo': solicitud.motivo
+                'numero': str(solicitud.numero),
+                'solicitante': str(solicitud.solicitante.get_full_name() or solicitud.solicitante.username),
+                'departamento': str(solicitud.departamento.nombre if solicitud.departamento else (solicitud.area.nombre if solicitud.area else 'N/A')),
+                'motivo': str(solicitud.motivo or '')
             },
             'bienes': bienes_data
         })
 
     except Solicitud.DoesNotExist:
-        return JsonResponse({
-            'success': False,
-            'error': 'Solicitud no encontrada'
-        }, status=404)
+        return JsonResponse({'success': False, 'error': 'Solicitud no encontrada'}, status=404)
+@login_required
+def obtener_todos_activos(request):
+    """
+    Endpoint AJAX para obtener la lista de todos los activos disponibles.
+    """
+    try:
+        from apps.activos.models import Activo
+        activos = Activo.objects.filter(eliminado=False).select_related('categoria')
+        data = [
+            {
+                'id': a.id,
+                'codigo': a.codigo,
+                'nombre': a.nombre,
+                'categoria': a.categoria.nombre if a.categoria else '-'
+            } for a in activos
+        ]
+        return JsonResponse({'success': True, 'activos': data})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@require_http_methods(["POST"])
+def validar_pin_receptor(request):
+    """
+    Vista AJAX para validar el PIN del receptor antes de confirmar una entrega.
+    
+    Recibe:
+        - usuario_id: ID del usuario que recibe
+        - pin: PIN de 4 dígitos ingresado
+    
+    Retorna:
+        - success: True si el PIN es válido, False si no
+        - message: Mensaje descriptivo
+        - intentos_restantes: Número de intentos restantes (si aplica)
+        - bloqueado: True si el usuario quedó bloqueado
+    """
+    try:
+        # Leer datos desde request.POST
+        usuario_id = request.POST.get('usuario_id')
+        pin_ingresado = request.POST.get('pin', '').strip()
+        
+        if not usuario_id or not pin_ingresado:
+            return JsonResponse({
+                'success': False,
+                'message': 'Debe proporcionar el ID del receptor y el PIN.'
+            }, status=400)
+        
+        # Validar que el PIN sea de 4 dígitos numéricos
+        if not pin_ingresado.isdigit() or len(pin_ingresado) != 4:
+            return JsonResponse({
+                'success': False,
+                'message': 'El PIN debe ser de 4 dígitos numéricos.'
+            }, status=400)
+        
+        # Obtener el usuario
+        from django.contrib.auth.models import User
+        try:
+            receptor = User.objects.get(pk=usuario_id)
+        except (User.DoesNotExist, ValueError, TypeError):
+            return JsonResponse({
+                'success': False,
+                'message': 'Usuario receptor no encontrado.'
+            }, status=404)
+        
+        # Obtener la configuración de seguridad del usuario
+        from apps.accounts.models import UserSecure, AuditoriaPin
+        try:
+            user_secure = UserSecure.objects.get(user=receptor, activo=True, eliminado=False)
+        except UserSecure.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': f'El usuario {receptor.get_full_name() or receptor.username} no tiene un PIN configurado. Debe configurarlo en su perfil.'
+            }, status=400)
+        
+        # Verificar si el usuario está bloqueado
+        if user_secure.bloqueado:
+            # Registrar intento en auditoría
+            AuditoriaPin.objects.create(
+                usuario=receptor,
+                accion='INTENTO_BLOQUEADO',
+                exitoso=False,
+                ip_address=request.META.get('REMOTE_ADDR'),
+                user_agent=request.META.get('HTTP_USER_AGENT', ''),
+                detalles={'mensaje': 'Intento de uso con usuario bloqueado en entrega de bodega'},
+            )
+            
+            return JsonResponse({
+                'success': False,
+                'message': f'El usuario {receptor.get_full_name() or receptor.username} está bloqueado por demasiados intentos fallidos.',
+                'bloqueado': True
+            }, status=403)
+        
+        # Verificar el PIN
+        pin_valido = user_secure.verificar_pin(pin_ingresado)
+        
+        if pin_valido:
+            # PIN correcto - resetear intentos fallidos
+            user_secure.resetear_intentos()
+            
+            # Registrar en auditoría
+            AuditoriaPin.objects.create(
+                usuario=receptor,
+                accion='CONFIRMACION_ENTREGA',
+                exitoso=True,
+                ip_address=request.META.get('REMOTE_ADDR'),
+                user_agent=request.META.get('HTTP_USER_AGENT', ''),
+                detalles={'mensaje': 'PIN validado correctamente para entrega de bodega'},
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'PIN validado exitosamente.'
+            })
+        else:
+            # PIN incorrecto - registrar intento fallido
+            user_secure.registrar_intento_fallido()
+            
+            # Registrar en auditoría
+            AuditoriaPin.objects.create(
+                usuario=receptor,
+                accion='INTENTO_FALLIDO',
+                exitoso=False,
+                ip_address=request.META.get('REMOTE_ADDR'),
+                user_agent=request.META.get('HTTP_USER_AGENT', ''),
+                detalles={'mensaje': 'PIN incorrecto ingresado para entrega de bodega'},
+            )
+            
+            intentos_restantes = max(0, 3 - user_secure.intentos_fallidos)
+            
+            if user_secure.bloqueado:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'PIN incorrecto. El usuario ha sido bloqueado por seguridad.',
+                    'bloqueado': True,
+                    'intentos_restantes': 0
+                }, status=403)
+            
+            return JsonResponse({
+                'success': False,
+                'message': f'PIN incorrecto. Intentos restantes: {intentos_restantes}',
+                'intentos_restantes': intentos_restantes
+            }, status=401)
+
     except Exception as e:
         return JsonResponse({
             'success': False,
-            'error': str(e)
+            'message': f'Error al validar PIN: {str(e)}'
         }, status=500)
 
 

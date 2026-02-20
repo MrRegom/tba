@@ -1,0 +1,55 @@
+<!-- Modal de Confirmación de PIN para Entregas de Bodega -->
+<div class="modal fade" id="pinConfirmationModal" tabindex="-1" aria-labelledby="pinConfirmationModalLabel"
+    aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title text-white" id="pinConfirmationModalLabel">
+                    <i class="ri-lock-line me-2"></i>Confirmar Entrega con PIN
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"
+                    id="closePinModal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <div class="avatar-md mx-auto mb-3">
+                        <div class="avatar-title bg-light text-primary display-5 rounded-circle">
+                            <i class="ri-fingerprint-line"></i>
+                        </div>
+                    </div>
+                    <h4 class="mb-1">Validación de Identidad</h4>
+                    <p class="text-muted">El receptor debe ingresar su PIN personal para confirmar esta entrega.</p>
+                </div>
+
+                <div class="alert alert-info border-0 mb-4" role="alert">
+                    <i class="ri-user-follow-line me-2"></i> Receptor: <strong id="modal-receptor-nombre">---</strong>
+                </div>
+
+                <div class="mb-3">
+                    <label for="pinInput" class="form-label">Ingrese su PIN de 4 dígitos</label>
+                    <input type="password" class="form-control form-control-lg text-center letter-spacing-lg"
+                        id="pinInput" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" placeholder="••••" autofocus
+                        autocomplete="off">
+                    <div id="pinError" class="invalid-feedback d-block text-center mt-2"></div>
+                </div>
+
+                <div id="pinIntentos" class="text-center small text-muted d-none">
+                    Intentos restantes: <span id="intentos-count" class="fw-bold text-danger">3</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirmPinBtn">
+                    <i class="ri-check-line me-1"></i> Confirmar Entrega
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .letter-spacing-lg {
+        letter-spacing: 0.5rem;
+        font-size: 1.5rem;
+    }
+</style>

@@ -208,7 +208,9 @@
     </div>
 </form>
 
-<!-- Modal para seleccionar artículo (se reubica a body via JS) -->
+{% include 'bodega/partials/modal_pin_confirmacion.html' %}
+
+<!-- Modal para seleccionar artículo -->
 <div class="modal fade bodega-nested-modal" id="modalArticulo" tabindex="-1" aria-labelledby="modalArticuloLabel"
     aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -244,15 +246,25 @@
                                 <td>{{ articulo.nombre }}</td>
                                 <td>{{ articulo.categoria.nombre|default:"-" }}</td>
                                 <td>
-                                    <span
-                                        class="badge {% if articulo.stock_actual > articulo.stock_minimo %}bg-success{% elif articulo.stock_actual > 0 %}bg-warning{% else %}bg-danger{% endif %}">{{
-                                        articulo.stock_actual|default:0 }} {{ articulo.unidad_medida.simbolo|default:"u"
-                                        }}</span>
+                                    {% if articulo.stock_actual > articulo.stock_minimo %}
+                                    <span class="badge bg-success">
+                                        {% elif articulo.stock_actual > 0 %}
+                                        <span class="badge bg-warning">
+                                            {% else %}
+                                            <span class="badge bg-danger">
+                                                {% endif %}
+                                                {{ articulo.stock_actual|default:0 }} {{
+                                                articulo.unidad_medida.simbolo|default:"u" }}
+                                            </span>
                                 </td>
                                 <td>
-                                    <button type="button" class="btn btn-sm btn-success btn-seleccionar-articulo" {% if articulo.stock_actual <= 0 %}disabled{% endif %}>
-                                        <i class="ri-check-line"></i> Seleccionar
-                                    </button>
+                                    {% if articulo.stock_actual <= 0 %} <button type="button"
+                                        class="btn btn-sm btn-success btn-seleccionar-articulo" disabled>
+                                        {% else %}
+                                        <button type="button" class="btn btn-sm btn-success btn-seleccionar-articulo">
+                                            {% endif %}
+                                            <i class="ri-check-line"></i> Seleccionar
+                                        </button>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -264,6 +276,7 @@
     </div>
 </div>
 
+<script src="{% static 'js/bodega/entrega-pin.js' %}"></script>
 <script src="{% static 'js/bodega/entrega-articulos.js' %}"></script>
 <script>
     (function () {

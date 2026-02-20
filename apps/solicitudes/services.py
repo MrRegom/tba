@@ -356,8 +356,9 @@ class SolicitudService:
                         f'La cantidad despachada para {detalle.producto_nombre} no puede ser negativa'
                     )
 
-                detalle.cantidad_despachada = cantidad_despachada
-                # En flujo directo, la aprobada es igual a la despachada
+                # En este flujo, no marcamos como despachado aún, 
+                # solo aprobamos las cantidades si no lo estaban.
+                # El despacho real lo hace el módulo de Bodega.
                 if detalle.cantidad_aprobada == 0:
                     detalle.cantidad_aprobada = cantidad_despachada
                 detalle.save()

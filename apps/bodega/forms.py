@@ -486,11 +486,17 @@ class EntregaArticuloForm(forms.ModelForm):
             ).first()
 
             if estado_despachar:
+                from django.db.models import Q, F
                 self.fields['solicitud'].queryset = Solicitud.objects.filter(
                     tipo='ARTICULO',
                     estado=estado_despachar,
-                    eliminado=False
-                ).select_related('estado', 'solicitante').order_by('-numero')
+                    eliminado=False,
+                    detalles__eliminado=False,
+                    detalles__articulo__isnull=False
+                ).filter(
+                    Q(detalles__cantidad_aprobada__gt=F('detalles__cantidad_despachada')) |
+                    Q(detalles__cantidad_aprobada=0, detalles__cantidad_solicitada__gt=F('detalles__cantidad_despachada'))
+                ).distinct().select_related('estado', 'solicitante').order_by('-numero')
             else:
                 self.fields['solicitud'].queryset = Solicitud.objects.none()
 
@@ -564,32 +570,12 @@ class EntregaBienForm(forms.ModelForm):
             'departamento_destino', 'motivo', 'observaciones'
         ]
         widgets = {
-            'solicitud': forms.Select(attrs={
-                'class': 'form-select',
-                'id': 'id_solicitud'
-            }),
-            'tipo': forms.Select(attrs={
-                'class': 'form-select',
-                'required': True
-            }),
-            'recibido_por': forms.Select(attrs={
-                'class': 'form-select',
-                'required': True
-            }),
-            'departamento_destino': forms.Select(attrs={
-                'class': 'form-select'
-            }),
-            'motivo': forms.Textarea(attrs={
-                'class': 'form-control',
-                'placeholder': 'Describa el motivo de la entrega',
-                'rows': 3,
-                'required': True
-            }),
-            'observaciones': forms.Textarea(attrs={
-                'class': 'form-control',
-                'placeholder': 'Observaciones adicionales (opcional)',
-                'rows': 2
-            })
+            'solicitud': forms.Select(attrs={'class': 'form-select', 'id': 'id_solicitud'}),
+            'recibido_por': forms.Select(attrs={'class': 'form-select', 'id': 'id_recibido_por'}),
+            'tipo': forms.Select(attrs={'class': 'form-select'}),
+            'departamento_destino': forms.Select(attrs={'class': 'form-select'}),
+            'motivo': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+            'observaciones': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
         }
         labels = {
             'solicitud': 'Solicitud Asociada (Opcional)',
@@ -604,18 +590,34 @@ class EntregaBienForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # Filtrar TODAS las solicitudes de activos/bienes (sin importar el estado)
-        from apps.solicitudes.models import Solicitud
+        # que tengan items pendientes de entrega.
+        from apps.solicitudes.models import Solicitud, DetalleSolicitud
         try:
+            from django.db.models import Q, F
+            
+            # Obtener IDs de solicitudes con items pendientes
+            # Pendiente = (Aprobada > Despachada) O (Aprobada=0 Y Solicitada > Despachada)
+            solicitudes_pendientes_ids = DetalleSolicitud.objects.filter(
+                eliminado=False,
+                activo__isnull=False  # Solo detalles de activos
+            ).filter(
+                Q(cantidad_aprobada__gt=F('cantidad_despachada')) |
+                Q(cantidad_aprobada=0, cantidad_solicitada__gt=F('cantidad_despachada'))
+            ).values_list('solicitud_id', flat=True).distinct()
+
             self.fields['solicitud'].queryset = Solicitud.objects.filter(
+                id__in=solicitudes_pendientes_ids,
                 tipo='ACTIVO',
                 eliminado=False
             ).select_related('estado', 'solicitante').order_by('-numero')
+            
             self.fields['solicitud'].empty_label = 'Seleccione solicitud (opcional)'
             # Personalizar cómo se muestra cada solicitud en el dropdown
             self.fields['solicitud'].label_from_instance = lambda obj: f"{obj.numero} - {obj.estado.nombre} - {obj.solicitante.get_full_name() or obj.solicitante.username}"
-        except:
+        except Exception as e:
+            print(f"ERROR cargando solicitudes en EntregaBienForm: {e}")
             self.fields['solicitud'].queryset = Solicitud.objects.none()
-            self.fields['solicitud'].empty_label = 'No hay solicitudes disponibles'
+            self.fields['solicitud'].empty_label = 'Error cargando solicitudes'
 
         # Filtrar solo tipos activos
         self.fields['tipo'].queryset = TipoEntrega.objects.filter(

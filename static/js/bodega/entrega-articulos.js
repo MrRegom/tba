@@ -9,6 +9,7 @@ const EntregaArticulos = {
     detallesArticulos: [],
     contadorFilas: 0,
     esSolicitud: false,
+    pinVerificado: false,
 
     /**
      * Inicializa el módulo
@@ -227,10 +228,19 @@ const EntregaArticulos = {
         const colorStock = stockActual > 0 ? 'text-success' : 'text-danger';
         celdaStock.innerHTML = `<strong class="${colorStock}">${stockActual} ${this.escapeHtml(unidadMedida)}</strong>`;
 
-        // Celda de cantidad solicitada (mostrar cantidad_solicitada, no pendiente)
+        // Celda de cantidad solicitada y pendiente
         const celdaSolicitada = fila.insertCell(2);
         const cantidadSolicitada = Math.floor(articulo.cantidad_solicitada || 0);
-        celdaSolicitada.innerHTML = `<span class="badge bg-info">${cantidadSolicitada} ${this.escapeHtml(unidadMedida)}</span>`;
+        const cantidadPendiente = Math.floor(articulo.cantidad_pendiente || 0);
+
+        if (cantidadSolicitada !== cantidadPendiente) {
+            celdaSolicitada.innerHTML = `
+                <span class="badge bg-info" title="Solicitado">${cantidadSolicitada} ${this.escapeHtml(unidadMedida)}</span><br>
+                <span class="badge bg-warning text-dark" title="Pendiente">${cantidadPendiente} pendiente</span>
+            `;
+        } else {
+            celdaSolicitada.innerHTML = `<span class="badge bg-info">${cantidadSolicitada} ${this.escapeHtml(unidadMedida)}</span>`;
+        }
 
         // Celda de cantidad a despachar
         const celdaCantidad = fila.insertCell(3);
@@ -362,6 +372,19 @@ const EntregaArticulos = {
             input.setAttribute('data-pendiente', cantidadPendiente);
             input.setAttribute('data-stock', stockActual);
 
+            if (cantidadPendiente <= 0) {
+                input.value = 0;
+                input.disabled = true;
+                input.classList.add('bg-light');
+                const badge = document.createElement('span');
+                badge.className = 'badge bg-secondary d-block mt-1';
+                badge.innerText = 'Completado';
+                // El contenedor es la celda (parent)
+                setTimeout(() => {
+                    if (input.parentElement) input.parentElement.appendChild(badge);
+                }, 0);
+            }
+
             // Agregar validación en tiempo real
             input.addEventListener('change', () => {
                 const valor = parseInt(input.value) || 0;
@@ -464,9 +487,13 @@ const EntregaArticulos = {
      * Valida y envía el formulario
      */
     validarYEnviarFormulario(e) {
-        // NOTA: No hacemos e.preventDefault() al principio para permitir que el evento
-        // burbujee hacia bodega_modal.js, quien manejará la subida AJAX.
-        // Solo prevenimos si la validación falla.
+        // Si el PIN ya fue verificado, permitir el submit normal
+        if (this.pinVerificado) {
+            return true;
+        }
+
+        e.preventDefault();
+        e.stopImmediatePropagation();
 
         const detalles = [];
         const tbody = document.getElementById('tbody-articulos');
@@ -504,7 +531,7 @@ const EntregaArticulos = {
                 // Validaciones
                 if (!this.validarCantidadSolicitud(inputCantidad)) {
                     e.preventDefault();
-                    e.stopPropagation();
+                    e.stopImmediatePropagation();
                     return false;
                 }
             } else {
@@ -513,7 +540,7 @@ const EntregaArticulos = {
 
                 if (!selectArticulo || !selectArticulo.value) {
                     e.preventDefault();
-                    e.stopPropagation();
+                    e.stopImmediatePropagation();
                     alert('Seleccione un artículo en todas las filas.');
                     return false;
                 }
@@ -523,14 +550,14 @@ const EntregaArticulos = {
                 // Validar stock disponible
                 if (!this.validarStockDisponible(selectArticulo, inputCantidad)) {
                     e.preventDefault();
-                    e.stopPropagation();
+                    e.stopImmediatePropagation();
                     return false;
                 }
             }
 
             if (!inputCantidad.value || parseFloat(inputCantidad.value) <= 0) {
                 e.preventDefault();
-                e.stopPropagation();
+                e.stopImmediatePropagation();
                 alert('Ingrese una cantidad válida en todas las filas.');
                 return false;
             }
@@ -554,8 +581,33 @@ const EntregaArticulos = {
             detallesInput.value = JSON.stringify(detalles);
         }
 
-        // No hacer submit manual (e.target.submit()), dejar que bodega_modal.js lo capture.
-        return true;
+        // --- VALIDACIÓN DE PIN ---
+        const selectReceptor = document.getElementById('id_recibido_por');
+        const receptorId = selectReceptor ? selectReceptor.value : null;
+        const receptorNombre = selectReceptor ? selectReceptor.options[selectReceptor.selectedIndex].text : '';
+
+        if (!receptorId) {
+            alert('Debe seleccionar el usuario que recibe los artículos.');
+            return false;
+        }
+
+        if (window.EntregaPin) {
+            window.EntregaPin.mostrarModal(receptorId, receptorNombre, () => {
+                this.pinVerificado = true;
+                // Disparar el evento submit nuevamente o llamar al submit directo
+                const form = document.getElementById('formEntregaArticulo');
+                if (form) {
+                    // Usamos dispatchEvent para que otros handlers (como el de AJAX) actúen
+                    form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                }
+            });
+        } else {
+            // Si no está disponible el módulo de PIN por alguna razón, permitir continuar (o alertar)
+            console.error('Módulo de validación de PIN no encontrado.');
+            return true;
+        }
+
+        return false;
     },
 
     /**
