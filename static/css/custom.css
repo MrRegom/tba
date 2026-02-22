@@ -1611,3 +1611,13 @@ form .form-control[readonly] {
   padding-top: calc(var(--tb-header-height, 70px) + 1.5rem) !important;
   padding-bottom: 2rem;
 }
+
+/* ── Ocultar breadcrumbs en todas las páginas ───────────────
+   Los breadcrumbs (ol.breadcrumb y su contenedor nav.page-title-right)
+   se ocultan globalmente. El título h4 dentro de page-title-box
+   permanece visible.
+   ─────────────────────────────────────────────────────────── */
+.page-title-right,
+.page-title-box ol.breadcrumb {
+  display: none !important;
+}

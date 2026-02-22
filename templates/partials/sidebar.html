@@ -10,6 +10,9 @@
             <ul class="navbar-nav" id="navbar-nav">
                 <li class="menu-title"><span>MENÚ</span></li>
 
+                {# nav_gs_sol, nav_gs_bod, nav_gs_comp, nav_gs_inv, nav_gs_org, nav_gs_usr,  #}
+                {# nav_en_gestores son inyectados por apps.accounts.context_processors.sidebar_nav #}
+
                 <!-- Home: visible para todos los usuarios autenticados -->
                 <li class="nav-item">
                     <a class="nav-link menu-link {% if request.path == '/' %}active{% endif %}"
@@ -19,7 +22,7 @@
                     </a>
                 </li>
 
-                <!-- Reportes: requiere ver reportes -->
+                <!-- Reportes -->
                 {% if perms.reportes.view_reporte or request.user.is_staff %}
                 <li class="nav-item">
                     <a class="nav-link menu-link {% if '/reportes/' in request.path %}active{% endif %}"
@@ -30,20 +33,21 @@
                 </li>
                 {% endif %}
 
-                <!-- ================================================ -->
-                <!-- Bodega: requiere ver entregas, recepciones o movimientos -->
-                <!-- ================================================ -->
+                <!-- ============================================================ -->
+                <!-- Bodega                                                        -->
+                <!-- Se expande solo en páginas de bodega que NO sean gestores    -->
+                <!-- ============================================================ -->
                 {% if perms.bodega.view_entregaarticulo or perms.bodega.view_entregabien or perms.bodega.view_recepcionarticulo or perms.bodega.view_recepcionactivo or perms.bodega.view_movimiento %}
                 <li class="nav-item">
-                    <a class="nav-link menu-link {% if '/bodega/' not in request.path %}collapsed{% endif %}"
+                    <a class="nav-link menu-link {% if not '/bodega/' in request.path or nav_gs_bod %}collapsed{% endif %}"
                        href="#sidebarBodega"
                        data-bs-toggle="collapse" role="button"
-                       aria-expanded="{% if '/bodega/' in request.path %}true{% else %}false{% endif %}"
+                       aria-expanded="{% if '/bodega/' in request.path and not nav_gs_bod %}true{% else %}false{% endif %}"
                        aria-controls="sidebarBodega">
                         <i class="ri-archive-line"></i>
                         <span>Bodega</span>
                     </a>
-                    <div class="collapse menu-dropdown {% if '/bodega/' in request.path %}show{% endif %}" id="sidebarBodega">
+                    <div class="collapse menu-dropdown {% if '/bodega/' in request.path and not nav_gs_bod %}show{% endif %}" id="sidebarBodega">
                         <ul class="nav nav-sm flex-column">
                             {% if perms.bodega.view_entregaarticulo %}
                             <li class="nav-item">
@@ -90,24 +94,25 @@
                 </li>
                 {% endif %}
 
-                <!-- ================================================ -->
-                <!-- Compras: requiere ver órdenes de compra           -->
-                <!-- ================================================ -->
+                <!-- ============================================================ -->
+                <!-- Compras                                                       -->
+                <!-- Se expande solo en páginas de compras que NO sean gestores   -->
+                <!-- ============================================================ -->
                 {% if perms.compras.view_ordencompra %}
                 <li class="nav-item">
-                    <a class="nav-link menu-link {% if '/compras/' not in request.path %}collapsed{% endif %}"
+                    <a class="nav-link menu-link {% if not '/compras/' in request.path or nav_gs_comp %}collapsed{% endif %}"
                        href="#sidebarCompras"
                        data-bs-toggle="collapse" role="button"
-                       aria-expanded="{% if '/compras/' in request.path %}true{% else %}false{% endif %}"
+                       aria-expanded="{% if '/compras/' in request.path and not nav_gs_comp %}true{% else %}false{% endif %}"
                        aria-controls="sidebarCompras">
                         <i class="ri-shopping-cart-line"></i>
                         <span>Compras</span>
                     </a>
-                    <div class="collapse menu-dropdown {% if '/compras/' in request.path %}show{% endif %}" id="sidebarCompras">
+                    <div class="collapse menu-dropdown {% if '/compras/' in request.path and not nav_gs_comp %}show{% endif %}" id="sidebarCompras">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
                                 <a href="{% url 'compras:menu_compras' %}"
-                                   class="nav-link {% if '/compras/' in request.path %}active{% endif %}">
+                                   class="nav-link {% if '/compras/' in request.path and not nav_gs_comp %}active{% endif %}">
                                     Órdenes de Compra
                                 </a>
                             </li>
@@ -116,21 +121,22 @@
                 </li>
                 {% endif %}
 
-                <!-- ================================================ -->
-                <!-- Solicitudes: sub-items según permiso específico   -->
-                <!-- ================================================ -->
+                <!-- ============================================================ -->
+                <!-- Solicitudes                                                   -->
+                <!-- Se expande solo en páginas de solicitudes que NO sean gestor -->
+                <!-- ============================================================ -->
                 {% with puede_gestionar=perms.solicitudes.gestionar_solicitudes puede_ver_todas=perms.solicitudes.ver_todas_solicitudes puede_art=perms.solicitudes.ver_solicitudes_articulos puede_bie=perms.solicitudes.ver_solicitudes_bienes puede_mis=perms.solicitudes.ver_mis_solicitudes %}
                 {% if puede_gestionar or puede_ver_todas or puede_art or puede_bie or puede_mis %}
                 <li class="nav-item">
-                    <a class="nav-link menu-link {% if '/solicitudes/' not in request.path %}collapsed{% endif %}"
+                    <a class="nav-link menu-link {% if not '/solicitudes/' in request.path or nav_gs_sol %}collapsed{% endif %}"
                        href="#sidebarSolicitudes"
                        data-bs-toggle="collapse" role="button"
-                       aria-expanded="{% if '/solicitudes/' in request.path %}true{% else %}false{% endif %}"
+                       aria-expanded="{% if '/solicitudes/' in request.path and not nav_gs_sol %}true{% else %}false{% endif %}"
                        aria-controls="sidebarSolicitudes">
                         <i class="ri-file-text-line"></i>
                         <span>Solicitudes</span>
                     </a>
-                    <div class="collapse menu-dropdown {% if '/solicitudes/' in request.path %}show{% endif %}" id="sidebarSolicitudes">
+                    <div class="collapse menu-dropdown {% if '/solicitudes/' in request.path and not nav_gs_sol %}show{% endif %}" id="sidebarSolicitudes">
                         <ul class="nav nav-sm flex-column">
                             {% if puede_gestionar or puede_ver_todas %}
                             <li class="nav-item">
@@ -170,24 +176,25 @@
                 {% endif %}
                 {% endwith %}
 
-                <!-- ================================================ -->
-                <!-- Inventario: requiere ver activos                  -->
-                <!-- ================================================ -->
+                <!-- ============================================================ -->
+                <!-- Inventario                                                    -->
+                <!-- Se expande solo en páginas de activos que NO sean gestores   -->
+                <!-- ============================================================ -->
                 {% if perms.activos.view_activo %}
                 <li class="nav-item">
-                    <a class="nav-link menu-link {% if '/activos/' not in request.path %}collapsed{% endif %}"
+                    <a class="nav-link menu-link {% if not '/activos/' in request.path or nav_gs_inv %}collapsed{% endif %}"
                        href="#sidebarInventario"
                        data-bs-toggle="collapse" role="button"
-                       aria-expanded="{% if '/activos/' in request.path %}true{% else %}false{% endif %}"
+                       aria-expanded="{% if '/activos/' in request.path and not nav_gs_inv %}true{% else %}false{% endif %}"
                        aria-controls="sidebarInventario">
                         <i class="ri-clipboard-line"></i>
                         <span>Inventario</span>
                     </a>
-                    <div class="collapse menu-dropdown {% if '/activos/' in request.path %}show{% endif %}" id="sidebarInventario">
+                    <div class="collapse menu-dropdown {% if '/activos/' in request.path and not nav_gs_inv %}show{% endif %}" id="sidebarInventario">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
                                 <a href="{% url 'activos:lista_movimientos' %}"
-                                   class="nav-link {% if '/activos/' in request.path %}active{% endif %}">
+                                   class="nav-link {% if '/activos/' in request.path and not nav_gs_inv %}active{% endif %}">
                                     Movimientos
                                 </a>
                             </li>
@@ -196,9 +203,9 @@
                 </li>
                 {% endif %}
 
-                <!-- ================================================ -->
-                <!-- Bajas de Inventario: requiere ver bajas           -->
-                <!-- ================================================ -->
+                <!-- ============================================================ -->
+                <!-- Bajas de Inventario                                          -->
+                <!-- ============================================================ -->
                 {% if perms.bajas_inventario.view_bajainventario %}
                 <li class="nav-item">
                     <a class="nav-link menu-link {% if '/bajas/' in request.path %}active{% endif %}"
@@ -209,72 +216,66 @@
                 </li>
                 {% endif %}
 
-                <!-- ================================================ -->
-                <!-- Administración: requiere gestión de usuarios      -->
-                <!-- ================================================ -->
-                {% if perms.auth.view_user %}
-                <li class="nav-item">
-                    <a class="nav-link menu-link {% if '/administracion/' in request.path %}active{% endif %}"
-                       href="{% url 'accounts:menu_administracion' %}">
-                        <i class="ri-settings-3-line"></i>
-                        <span>Administración</span>
-                    </a>
-                </li>
-                {% endif %}
-
-                <!-- ================================================ -->
-                <!-- Gestores: solo staff / superuser                  -->
-                <!-- ================================================ -->
+                <!-- ============================================================ -->
+                <!-- Gestores: solo staff                                          -->
+                <!-- nav_en_gestores=True → expandido y cada item marcado activo  -->
+                <!-- ============================================================ -->
                 {% if request.user.is_staff %}
                 <li class="nav-item">
-                    <a class="nav-link menu-link collapsed"
+                    <a class="nav-link menu-link {% if not nav_en_gestores %}collapsed{% endif %}"
                        href="#sidebarGestores"
                        data-bs-toggle="collapse" role="button"
-                       aria-expanded="false"
+                       aria-expanded="{% if nav_en_gestores %}true{% else %}false{% endif %}"
                        aria-controls="sidebarGestores">
                         <i class="ri-equalizer-line"></i>
                         <span>Gestores</span>
                     </a>
-                    <div class="collapse menu-dropdown" id="sidebarGestores">
+                    <div class="collapse menu-dropdown {% if nav_en_gestores %}show{% endif %}" id="sidebarGestores">
                         <ul class="nav nav-sm flex-column">
                             {% if perms.solicitudes.gestionar_solicitudes or perms.solicitudes.ver_todas_solicitudes %}
                             <li class="nav-item">
-                                <a href="{% url 'solicitudes:menu_solicitudes' %}" class="nav-link">
+                                <a href="{% url 'solicitudes:menu_solicitudes' %}"
+                                   class="nav-link {% if nav_gs_sol %}active{% endif %}">
                                     Solicitudes
                                 </a>
                             </li>
                             {% endif %}
                             {% if perms.compras.view_estadoordencompra %}
                             <li class="nav-item">
-                                <a href="{% url 'compras:gestores_compras' %}" class="nav-link">
+                                <a href="{% url 'compras:gestores_compras' %}"
+                                   class="nav-link {% if nav_gs_comp %}active{% endif %}">
                                     Compras
                                 </a>
                             </li>
                             {% endif %}
                             {% if perms.bodega.view_articulo %}
                             <li class="nav-item">
-                                <a href="{% url 'bodega:menu_bodega' %}" class="nav-link">
+                                <a href="{% url 'bodega:menu_bodega' %}"
+                                   class="nav-link {% if nav_gs_bod %}active{% endif %}">
                                     Bodega
                                 </a>
                             </li>
                             {% endif %}
                             {% if perms.activos.view_activo %}
                             <li class="nav-item">
-                                <a href="{% url 'activos:gestores_inventario' %}" class="nav-link">
+                                <a href="{% url 'activos:gestores_inventario' %}"
+                                   class="nav-link {% if nav_gs_inv %}active{% endif %}">
                                     Inventario
                                 </a>
                             </li>
                             {% endif %}
                             {% if perms.activos.view_ubicacion %}
                             <li class="nav-item">
-                                <a href="{% url 'accounts:gestores_organizacion' %}" class="nav-link">
+                                <a href="{% url 'accounts:gestores_organizacion' %}"
+                                   class="nav-link {% if nav_gs_org %}active{% endif %}">
                                     Organización
                                 </a>
                             </li>
                             {% endif %}
                             {% if perms.auth.view_user %}
                             <li class="nav-item">
-                                <a href="{% url 'accounts:gestores_usuarios' %}" class="nav-link">
+                                <a href="{% url 'accounts:gestores_usuarios' %}"
+                                   class="nav-link {% if nav_gs_usr %}active{% endif %}">
                                     Usuarios
                                 </a>
                             </li>
