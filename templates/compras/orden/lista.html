@@ -62,18 +62,59 @@
                                         <td><strong>{{ orden.numero }}</strong></td>
                                         <td>{{ orden.fecha_orden|date:"d/m/Y" }}</td>
                                         <td>{{ orden.proveedor.razon_social }}</td>
-                                        <td><span class="badge bg-primary">{{ orden.estado.nombre }}</span></td>
-                                        <td>${{ orden.total|floatformat:0 }}</td>
-                                        <td>
-                                            <a href="{% url 'compras:orden_compra_detalle' orden.pk %}" class="btn btn-sm btn-info ordenes-modal-link" title="Ver detalle" data-modal-title="Detalle Orden {{ orden.numero }}">
-                                                <i class="ri-eye-line"></i> Ver
-                                            </a>
-                                            {% if orden.estado.codigo == 'PENDIENTE' %}
-                                            <a href="{% url 'compras:orden_compra_editar' orden.pk %}" class="btn btn-sm btn-warning" title="Editar orden">
-                                                <i class="ri-edit-line"></i> Editar
-                                            </a>
-                                            {% endif %}
-                                        </td>
+                                         <td>
+                                             <span class="badge" style="background-color:{{ orden.estado.color|default:'#6c757d' }};">
+                                                 {{ orden.estado.nombre }}
+                                             </span>
+                                         </td>
+                                         <td>${{ orden.total|floatformat:0 }}</td>
+                                         <td>
+                                             <div class="d-flex gap-1 flex-wrap">
+                                                 <a href="{% url 'compras:orden_compra_detalle' orden.pk %}"
+                                                    class="btn btn-sm btn-soft-primary ordenes-modal-link"
+                                                    title="Ver detalle"
+                                                    data-modal-title="Detalle Orden {{ orden.numero }}">
+                                                     <i class="ri-eye-line"></i> Ver
+                                                 </a>
+                                                 {% if orden.estado.codigo == 'PENDIENTE' %}
+                                                 <button type="button" class="btn btn-sm btn-soft-warning btn-editar-orden"
+                                                         data-edit-url="{% url 'compras:orden_compra_editar' orden.pk %}"
+                                                         data-numero="{{ orden.numero }}"
+                                                         title="Editar">
+                                                     <i class="ri-edit-line"></i> Editar
+                                                 </button>
+                                                 <button type="button"
+                                                         class="btn btn-sm btn-soft-success btn-cambiar-estado"
+                                                         data-orden-pk="{{ orden.pk }}"
+                                                         data-orden-numero="{{ orden.numero }}"
+                                                         data-nuevo-estado="APROBADA"
+                                                         data-url="{% url 'compras:orden_compra_cambiar_estado' orden.pk %}"
+                                                         title="Aprobar">
+                                                     <i class="ri-check-double-line"></i> Aprobar
+                                                 </button>
+                                                 <button type="button"
+                                                         class="btn btn-sm btn-soft-danger btn-cambiar-estado"
+                                                         data-orden-pk="{{ orden.pk }}"
+                                                         data-orden-numero="{{ orden.numero }}"
+                                                         data-nuevo-estado="RECHAZAR"
+                                                         data-url="{% url 'compras:orden_compra_cambiar_estado' orden.pk %}"
+                                                         title="Rechazar">
+                                                     <i class="ri-close-circle-line"></i> Rechazar
+                                                 </button>
+                                                 {% endif %}
+                                                 {% if orden.estado.codigo == 'APROBADA' %}
+                                                 <button type="button"
+                                                         class="btn btn-sm btn-soft-danger btn-cambiar-estado"
+                                                         data-orden-pk="{{ orden.pk }}"
+                                                         data-orden-numero="{{ orden.numero }}"
+                                                         data-nuevo-estado="RECHAZAR"
+                                                         data-url="{% url 'compras:orden_compra_cambiar_estado' orden.pk %}"
+                                                         title="Rechazar">
+                                                     <i class="ri-close-circle-line"></i> Rechazar
+                                                 </button>
+                                                 {% endif %}
+                                             </div>
+                                         </td>
                                     </tr>
                                     {% empty %}
                                     <tr>
@@ -91,6 +132,32 @@
 </div>
 
 {% include 'compras/partials/modal_container.html' %}
+
+<!-- Modal para editar orden (formulario cargado via AJAX) -->
+<div class="modal fade" id="editarOrdenModal" tabindex="-1" aria-labelledby="editarOrdenModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarOrdenModalLabel">Editar Orden</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="editarOrdenModalBody">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="mt-2">Cargando formulario...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" form="form-orden-compra-modal" class="btn btn-primary">
+                    <i class="ri-save-line"></i> Guardar Cambios
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
