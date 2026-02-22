@@ -6,8 +6,12 @@
                 <div class="page-title-box d-sm-flex align-items-center justify-content-between">
                     <h4 class="mb-sm-0">{{ titulo }}</h4>
                     <div class="btn-group">
-                        
-                        <a href="{% url 'compras:orden_compra_lista' %}" class="btn btn-secondary">
+                        {% if orden.estado.codigo == 'PENDIENTE' %}
+                        <a href="{% url 'compras:orden_compra_editar' orden.pk %}" class="btn btn-warning">
+                            <i class="ri-edit-line"></i> Editar
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'compras:menu_compras' %}" class="btn btn-secondary">
                             <i class="ri-arrow-left-line"></i> Volver
                         </a>
                     </div>
