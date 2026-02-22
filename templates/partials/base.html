@@ -1,9 +1,10 @@
 {% load static %}
 <!doctype html>
 
-<html lang="es" data-layout="vertical" data-layout-width="fluid" data-sidebar="light" data-topbar="brand"
+<html lang="es" data-layout="vertical" data-layout-width="fluid" data-sidebar="dark" data-topbar="brand"
     data-preloader="disable" data-card-layout="border" data-bs-theme="light" data-topbar-image="pattern-2"
-    data-sidebar-size="sm-hover" data-layout-position="fixed">
+    data-sidebar-size="lg" data-layout-position="fixed">
+
 
 <head>
 
@@ -21,6 +22,15 @@
     {% block extra_css %}
     {% endblock extra_css %}
 
+    <!-- Sidebar fix: forzar lg y bloquear restauración de sessionStorage -->
+    <script>
+      // Forzar sidebar-size=lg siempre (evita que sessionStorage restaure sm-hover)
+      sessionStorage.setItem('data-sidebar-size', 'lg');
+      sessionStorage.setItem('data-sidebar', 'dark');
+      // Bloquar defaultAttribute para que app.js no sobrescriba desde sessionStorage
+      // en la primera carga. Lo borramos para que lea desde los atributos HTML.
+      sessionStorage.removeItem('defaultAttribute');
+    </script>
     <!-- Layout config Js -->
     <script src="{% static 'js/layout.js' %}"></script>
 
