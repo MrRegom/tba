@@ -1,94 +1,55 @@
 /**
- * Marca el item activo del sidebar comparando location.pathname
- * con los href de los nav-links. Reemplaza la logica del tema Velzon
- * que solo funciona con archivos HTML estaticos.
+ * sidebar-active.js
+ *
+ * El estado activo se marca server-side en sidebar.html (Django request.path).
+ * Este script previene que app.js (función w()) sobreescriba esos estados.
+ *
+ * app.js corre como IIFE al final del body. Nosotros corremos DESPUÉS de app.js
+ * (ver base.html), pero podemos restaurar el estado server-side sin delay visible
+ * porque solo usamos requestAnimationFrame (2 frames, ~32ms, imperceptible).
  */
-(function() {
-    'use strict';
+(function () {
+  "use strict";
 
-    function activateMenuItem() {
-        var nav = document.getElementById('navbar-nav');
-        if (!nav) return;
+  // Capturar IDs de collapses que YA tienen .show desde el servidor
+  // (antes de que app.js los toque)
+  var openCollapseIds = [];
+  var activeLinks = [];
 
-        var currentPath = location.pathname;
+  document
+    .querySelectorAll("#navbar-nav .collapse.menu-dropdown.show")
+    .forEach(function (el) {
+      openCollapseIds.push(el.id);
+    });
+  document
+    .querySelectorAll(
+      "#navbar-nav .nav-link.active, #navbar-nav .menu-link.active",
+    )
+    .forEach(function (el) {
+      activeLinks.push(el);
+    });
 
-        // Limpiar estados activos previos puestos por app.js
-        nav.querySelectorAll('.active').forEach(function(el) {
-            el.classList.remove('active');
-        });
-        nav.querySelectorAll('.collapse.show').forEach(function(el) {
-            el.classList.remove('show');
-        });
-        nav.querySelectorAll('[aria-expanded="true"]').forEach(function(el) {
-            el.setAttribute('aria-expanded', 'false');
-        });
+  // Restaurar estado inmediatamente después de que app.js (IIFE) termine
+  // requestAnimationFrame asegura que corremos en el siguiente frame de render,
+  // lo que es visualmente imperceptible (< 16ms)
+  requestAnimationFrame(function () {
+    // Restaurar collapses
+    openCollapseIds.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.classList.add("show");
+      var toggle = document.querySelector(
+        '[data-bs-toggle="collapse"][aria-controls="' + id + '"]',
+      );
+      if (toggle) {
+        toggle.setAttribute("aria-expanded", "true");
+        toggle.classList.remove("collapsed");
+      }
+    });
 
-        // Buscar mejor coincidencia: primero exacta, luego por prefijo
-        var links = nav.querySelectorAll('a.nav-link, a.menu-link');
-        var bestMatch = null;
-        var bestLength = 0;
-
-        links.forEach(function(link) {
-            var href = link.getAttribute('href');
-            if (!href || href === '#' || href.startsWith('#')) return;
-
-            // Extraer pathname del href
-            try {
-                var url = new URL(href, location.origin);
-                var linkPath = url.pathname;
-
-                if (currentPath === linkPath) {
-                    // Coincidencia exacta - maxima prioridad
-                    if (linkPath.length > bestLength) {
-                        bestMatch = link;
-                        bestLength = linkPath.length + 1000; // Prioridad extra
-                    }
-                } else if (currentPath.startsWith(linkPath) && linkPath !== '/') {
-                    // Coincidencia por prefijo (para sub-paginas)
-                    if (linkPath.length > bestLength) {
-                        bestMatch = link;
-                        bestLength = linkPath.length;
-                    }
-                }
-            } catch(e) {
-                // Ignorar hrefs invalidos
-            }
-        });
-
-        if (!bestMatch) return;
-
-        // Marcar como activo
-        bestMatch.classList.add('active');
-
-        // Abrir collapse padre si es submenu
-        var collapse = bestMatch.closest('.collapse.menu-dropdown');
-        if (collapse) {
-            collapse.classList.add('show');
-            var parentToggle = collapse.parentElement.querySelector('[data-bs-toggle="collapse"]');
-            if (parentToggle) {
-                parentToggle.classList.add('active');
-                parentToggle.setAttribute('aria-expanded', 'true');
-            }
-
-            // Soporte para submenus anidados
-            var parentCollapse = collapse.parentElement.closest('.collapse.menu-dropdown');
-            if (parentCollapse) {
-                parentCollapse.classList.add('show');
-                var grandParentToggle = parentCollapse.parentElement.querySelector('[data-bs-toggle="collapse"]');
-                if (grandParentToggle) {
-                    grandParentToggle.classList.add('active');
-                    grandParentToggle.setAttribute('aria-expanded', 'true');
-                }
-            }
-        }
-    }
-
-    // Ejecutar despues de que app.js haya corrido
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(activateMenuItem, 100);
-        });
-    } else {
-        setTimeout(activateMenuItem, 100);
-    }
+    // Restaurar links activos
+    activeLinks.forEach(function (el) {
+      el.classList.add("active");
+    });
+  });
 })();
