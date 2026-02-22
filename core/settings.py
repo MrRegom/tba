@@ -111,8 +111,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 WSGI_APPLICATION = 'core.wsgi.application'
 
 # Database configuration logic - Multi-environment & Fallback
-if env('POSTGRES_ENGINE', default='').endswith('postgresql'):
-    DATABASES = {
+DATABASES = {
         'default': {
             'ENGINE': env('POSTGRES_ENGINE'),
             'NAME': env('POSTGRES_NAME'),
@@ -121,11 +120,8 @@ if env('POSTGRES_ENGINE', default='').endswith('postgresql'):
             'HOST': env('POSTGRES_HOST'),
             'PORT': env('POSTGRES_PORT'),
             'OPTIONS': {'client_encoding': 'UTF8'},
-        }
-    }
-else:
-    DATABASES = {
-        "default": {
+        },
+        "sqlite": {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
