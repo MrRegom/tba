@@ -530,6 +530,7 @@ class OrdenCompraUpdateView(BaseAuditedViewMixin, UpdateView):
 
     Permisos: compras.change_ordencompra
     Auditoría: Registra acción EDITAR automáticamente
+    Soporta carga AJAX: GET devuelve partial, POST exitoso devuelve JSON.
     """
     model = OrdenCompra
     form_class = OrdenCompraForm
@@ -547,19 +548,184 @@ class OrdenCompraUpdateView(BaseAuditedViewMixin, UpdateView):
         """Redirige al detalle de la orden editada."""
         return reverse_lazy('compras:orden_compra_detalle', kwargs={'pk': self.object.pk})
 
+    def _is_ajax(self):
+        """Detecta si la petición es AJAX."""
+        return self.request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
     def get_context_data(self, **kwargs) -> dict:
-        """Agrega datos al contexto."""
+        """Agrega datos al contexto incluyendo artículos y bienes existentes."""
+        from apps.bodega.models import Articulo
+        from apps.activos.models import Activo
+
         context = super().get_context_data(**kwargs)
         context['titulo'] = f'Editar Orden de Compra {self.object.numero}'
         context['action'] = 'Actualizar'
         context['orden'] = self.object
+        context['form_action_url'] = self.request.path
+
+        # Artículos disponibles → json_script (sin sub-modal HTML)
+        articulos_qs = Articulo.objects.filter(
+            activo=True, eliminado=False
+        ).select_related('categoria', 'unidad_medida').order_by('nombre')
+        context['articulos_disponibles_data'] = [
+            {
+                'id': a.id,
+                'codigo': a.codigo,
+                'nombre': a.nombre,
+                'categoria': a.categoria.nombre if a.categoria else '',
+                'unidad': a.unidad_medida.simbolo if a.unidad_medida else 'unidad',
+            }
+            for a in articulos_qs
+        ]
+
+        # Activos disponibles → json_script (sin sub-modal HTML)
+        activos_qs = Activo.objects.filter(
+            activo=True, eliminado=False
+        ).select_related('categoria').order_by('nombre')
+        context['activos_disponibles_data'] = [
+            {
+                'id': a.id,
+                'codigo': a.codigo,
+                'nombre': a.nombre,
+                'categoria': a.categoria.nombre if a.categoria else '',
+            }
+            for a in activos_qs
+        ]
+
+
+        # Artículos existentes en la orden para pre-poblar tablas
+        detalles_articulos = self.object.detalles_articulos.filter(
+            eliminado=False
+        ).select_related('articulo__categoria', 'articulo__unidad_medida')
+
+        articulos_existentes = []
+        for d in detalles_articulos:
+            articulos_existentes.append({
+                'articulo_id': d.articulo.id,
+                'codigo': d.articulo.codigo,
+                'nombre': d.articulo.nombre,
+                'categoria': d.articulo.categoria.nombre if d.articulo.categoria else '',
+                'unidad': d.articulo.unidad_medida.simbolo if d.articulo.unidad_medida else 'unidad',
+                'cantidad': int(d.cantidad),
+                'precio_unitario': float(d.precio_unitario),
+                'descuento': float(d.descuento),
+            })
+        # Pasar como lista Python (no como string JSON) para que json_script funcione
+        context['articulos_existentes_data'] = articulos_existentes
+
+        # Bienes/activos existentes en la orden para pre-poblar tablas
+        detalles_bienes = self.object.detalles.filter(
+            eliminado=False
+        ).select_related('activo__categoria')
+
+        bienes_existentes = []
+        for d in detalles_bienes:
+            bienes_existentes.append({
+                'activo_id': d.activo.id,
+                'codigo': d.activo.codigo,
+                'nombre': d.activo.nombre,
+                'categoria': d.activo.categoria.nombre if d.activo.categoria else '',
+                'cantidad': int(d.cantidad),
+                'precio_unitario': float(d.precio_unitario),
+                'descuento': float(d.descuento),
+            })
+        # Pasar como lista Python (no como string JSON) para que json_script funcione
+        context['bienes_existentes_data'] = bienes_existentes
+
+        # IDs de solicitudes ya asociadas a esta orden (para persistencia en el toggle)
+        context['solicitudes_asociadas_ids'] = list(
+            self.object.solicitudes.values_list('id', flat=True)
+        )
+        context['tiene_solicitudes'] = len(context['solicitudes_asociadas_ids']) > 0
+
         return context
 
+    def render_to_response(self, context, **response_kwargs):
+        """Si es petición AJAX (GET), devuelve el partial del formulario."""
+        if self._is_ajax():
+            self.template_name = 'compras/partials/modal_editar_form.html'
+        return super().render_to_response(context, **response_kwargs)
+
     def form_valid(self, form):
-        """Procesa el formulario válido con log de auditoría."""
+        """Procesa el formulario válido, actualizando artículos y bienes."""
+        from django.http import JsonResponse
+        import json
+        from decimal import Decimal
+        from apps.bodega.models import Articulo
+        from apps.activos.models import Activo
+
         response = super().form_valid(form)
+
+        # Procesar artículos si se enviaron
+        articulos_json = self.request.POST.get('articulos_json', '')
+        if articulos_json:
+            try:
+                articulos_data = json.loads(articulos_json)
+                # Eliminar los existentes y recrear
+                self.object.detalles_articulos.filter(eliminado=False).delete()
+                for item in articulos_data:
+                    articulo = Articulo.objects.get(pk=item['articulo_id'])
+                    DetalleOrdenCompraArticulo.objects.create(
+                        orden_compra=self.object,
+                        articulo=articulo,
+                        cantidad=item['cantidad'],
+                        precio_unitario=Decimal(str(item.get('precio_unitario', 0))),
+                        descuento=Decimal(str(item.get('descuento', 0)))
+                    )
+            except (json.JSONDecodeError, Articulo.DoesNotExist, KeyError, ValueError) as e:
+                print(f"ERROR procesando artículos en edición: {e}")
+
+        # Procesar bienes/activos si se enviaron
+        bienes_json = self.request.POST.get('bienes_json', '')
+        if bienes_json:
+            try:
+                bienes_data = json.loads(bienes_json)
+                # Eliminar los existentes y recrear
+                self.object.detalles.filter(eliminado=False).delete()
+                for item in bienes_data:
+                    activo = Activo.objects.get(pk=item['activo_id'])
+                    DetalleOrdenCompra.objects.create(
+                        orden_compra=self.object,
+                        activo=activo,
+                        cantidad=item['cantidad'],
+                        precio_unitario=Decimal(str(item.get('precio_unitario', 0))),
+                        descuento=Decimal(str(item.get('descuento', 0)))
+                    )
+            except (json.JSONDecodeError, Activo.DoesNotExist, KeyError, ValueError) as e:
+                print(f"ERROR procesando bienes en edición: {e}")
+
+        # Recalcular totales
+        orden_service = OrdenCompraService()
+        orden_service.recalcular_totales(self.object)
+
         self.log_action(self.object, self.request)
+
+        # Si es AJAX, retornar JSON con éxito
+        if self._is_ajax():
+            messages.success(self.request, self.get_success_message(self.object))
+            return JsonResponse({
+                'success': True,
+                'message': self.get_success_message(self.object),
+                'redirect_url': str(self.get_success_url())
+            })
+
         return response
+
+    def form_invalid(self, form):
+        """Si es AJAX, devuelve el partial con errores; si no, renderiza el form completo."""
+        if self._is_ajax():
+            self.object = self.get_object()
+            context = self.get_context_data(form=form)
+            self.template_name = 'compras/partials/modal_editar_form.html'
+            from django.http import HttpResponse
+            from django.template.loader import render_to_string
+            html = render_to_string(
+                'compras/partials/modal_editar_form.html',
+                context,
+                request=self.request
+            )
+            return HttpResponse(html, status=422)
+        return super().form_invalid(form)
 
 
 class OrdenCompraDeleteView(BaseAuditedViewMixin, DeleteView):
@@ -609,6 +775,71 @@ class OrdenCompraDeleteView(BaseAuditedViewMixin, DeleteView):
 
         messages.success(request, self.get_success_message(self.object))
         return redirect(self.success_url)
+
+
+class CambiarEstadoOrdenCompraView(BaseAuditedViewMixin, View):
+    """
+    Cambia el estado de una Orden de Compra vía POST (soporta AJAX).
+    Permisos: compras.change_ordencompra
+    Transiciones: PENDIENTE → APROBADA | RECHAZAR, APROBADA → PENDIENTE | RECHAZAR
+    """
+    permission_required = 'compras.change_ordencompra'
+
+    TRANSICIONES_VALIDAS = {
+        'PENDIENTE': ['APROBADA', 'RECHAZAR'],
+        'APROBADA':  ['PENDIENTE', 'RECHAZAR'],
+        'RECHAZAR':  ['PENDIENTE'],
+    }
+
+    def _is_ajax(self):
+        return self.request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+    def post(self, request, pk, *args, **kwargs):
+        from django.http import JsonResponse
+        orden = OrdenCompra.objects.filter(pk=pk, eliminado=False).first()
+        if not orden:
+            if self._is_ajax():
+                return JsonResponse({'success': False, 'error': 'Orden no encontrada.'}, status=404)
+            messages.error(request, 'Orden no encontrada.')
+            return redirect('compras:orden_compra_lista')
+
+        nuevo_codigo = request.POST.get('estado_codigo', '').strip().upper()
+        estado_actual = orden.estado.codigo if orden.estado else ''
+
+        permitidos = self.TRANSICIONES_VALIDAS.get(estado_actual, [])
+        if nuevo_codigo not in permitidos:
+            msg = f'No se puede cambiar de "{estado_actual}" a "{nuevo_codigo}".'
+            if self._is_ajax():
+                return JsonResponse({'success': False, 'error': msg}, status=400)
+            messages.error(request, msg)
+            return redirect('compras:orden_compra_lista')
+
+        nuevo_estado = EstadoOrdenCompra.objects.filter(codigo=nuevo_codigo).first()
+        if not nuevo_estado:
+            msg = f'Estado "{nuevo_codigo}" no existe en el sistema.'
+            if self._is_ajax():
+                return JsonResponse({'success': False, 'error': msg}, status=400)
+            messages.error(request, msg)
+            return redirect('compras:orden_compra_lista')
+
+        estado_anterior_nombre = orden.estado.nombre
+        orden.estado = nuevo_estado
+        orden.save(update_fields=['estado'])
+
+        msg = f'Orden {orden.numero} cambiada a "{nuevo_estado.nombre}".'
+        messages.success(request, msg)
+
+        if self._is_ajax():
+            return JsonResponse({
+                'success': True,
+                'message': msg,
+                'nuevo_estado': {
+                    'codigo': nuevo_estado.codigo,
+                    'nombre': nuevo_estado.nombre,
+                    'color': nuevo_estado.color,
+                },
+            })
+        return redirect('compras:orden_compra_lista')
 
 
 class ObtenerDetallesSolicitudesView(View):
