@@ -104,8 +104,20 @@ class VerSolicitudesArticulosPermissionMixin(SolicitudPermissionMixin):
     Mixin para vistas que muestran solicitudes de ARTÍCULOS.
 
     Verifica que el usuario pueda ver solicitudes de artículos.
+    Sobreescribe has_permission() explícitamente para evitar que el MRO
+    utilice GestionSolicitudesPermissionMixin.has_permission() de la vista
+    base SolicitudListView.
     """
     permission_required = 'solicitudes.ver_solicitudes_articulos'
+
+    def has_permission(self):
+        """Permite acceso si tiene permiso de ver artículos O permisos de gestión."""
+        user = self.request.user
+        return (
+            user.has_perm('solicitudes.ver_solicitudes_articulos') or
+            user.has_perm('solicitudes.gestionar_solicitudes') or
+            user.has_perm('solicitudes.ver_todas_solicitudes')
+        )
 
 
 class VerSolicitudesBienesPermissionMixin(SolicitudPermissionMixin):
@@ -113,8 +125,20 @@ class VerSolicitudesBienesPermissionMixin(SolicitudPermissionMixin):
     Mixin para vistas que muestran solicitudes de BIENES.
 
     Verifica que el usuario pueda ver solicitudes de bienes.
+    Sobreescribe has_permission() explícitamente para evitar que el MRO
+    utilice GestionSolicitudesPermissionMixin.has_permission() de la vista
+    base SolicitudListView.
     """
     permission_required = 'solicitudes.ver_solicitudes_bienes'
+
+    def has_permission(self):
+        """Permite acceso si tiene permiso de ver bienes O permisos de gestión."""
+        user = self.request.user
+        return (
+            user.has_perm('solicitudes.ver_solicitudes_bienes') or
+            user.has_perm('solicitudes.gestionar_solicitudes') or
+            user.has_perm('solicitudes.ver_todas_solicitudes')
+        )
 
 
 class MisSolicitudesPermissionMixin(SolicitudPermissionMixin):
