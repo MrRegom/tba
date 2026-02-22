@@ -10,7 +10,7 @@
             <ul class="navbar-nav" id="navbar-nav">
                 <li class="menu-title"><span>MENÚ</span></li>
 
-                <!-- Home -->
+                <!-- Home: visible para todos los usuarios autenticados -->
                 <li class="nav-item">
                     <a class="nav-link menu-link {% if request.path == '/' %}active{% endif %}"
                        href="{% url 'dashboard' %}">
@@ -19,7 +19,8 @@
                     </a>
                 </li>
 
-                <!-- Reportes -->
+                <!-- Reportes: requiere ver reportes -->
+                {% if perms.reportes.view_reporte or request.user.is_staff %}
                 <li class="nav-item">
                     <a class="nav-link menu-link {% if '/reportes/' in request.path %}active{% endif %}"
                        href="{% url 'reportes:seleccionar_reporte' %}">
@@ -27,8 +28,12 @@
                         <span>Reportes</span>
                     </a>
                 </li>
+                {% endif %}
 
-                <!-- Bodega -->
+                <!-- ================================================ -->
+                <!-- Bodega: requiere ver entregas, recepciones o movimientos -->
+                <!-- ================================================ -->
+                {% if perms.bodega.view_entregaarticulo or perms.bodega.view_entregabien or perms.bodega.view_recepcionarticulo or perms.bodega.view_recepcionactivo or perms.bodega.view_movimiento %}
                 <li class="nav-item">
                     <a class="nav-link menu-link {% if '/bodega/' not in request.path %}collapsed{% endif %}"
                        href="#sidebarBodega"
@@ -40,41 +45,55 @@
                     </a>
                     <div class="collapse menu-dropdown {% if '/bodega/' in request.path %}show{% endif %}" id="sidebarBodega">
                         <ul class="nav nav-sm flex-column">
+                            {% if perms.bodega.view_entregaarticulo %}
                             <li class="nav-item">
                                 <a href="{% url 'bodega:entrega_articulo_lista' %}"
                                    class="nav-link {% if 'entrega' in request.path and 'articulo' in request.path %}active{% endif %}">
                                     Entrega de Artículos
                                 </a>
                             </li>
+                            {% endif %}
+                            {% if perms.bodega.view_entregabien %}
                             <li class="nav-item">
                                 <a href="{% url 'bodega:entrega_bien_lista' %}"
                                    class="nav-link {% if 'entrega' in request.path and 'bien' in request.path %}active{% endif %}">
                                     Entrega de Bienes
                                 </a>
                             </li>
+                            {% endif %}
+                            {% if perms.bodega.view_recepcionarticulo %}
                             <li class="nav-item">
                                 <a href="{% url 'bodega:recepcion_articulo_lista' %}"
                                    class="nav-link {% if 'recepcion' in request.path and 'articulo' in request.path %}active{% endif %}">
                                     Recepción de Artículos
                                 </a>
                             </li>
+                            {% endif %}
+                            {% if perms.bodega.view_recepcionactivo %}
                             <li class="nav-item">
                                 <a href="{% url 'bodega:recepcion_activo_lista' %}"
                                    class="nav-link {% if 'recepcion' in request.path and 'activo' in request.path %}active{% endif %}">
                                     Recepción de Bienes
                                 </a>
                             </li>
+                            {% endif %}
+                            {% if perms.bodega.view_movimiento %}
                             <li class="nav-item">
                                 <a href="{% url 'bodega:movimiento_lista' %}"
                                    class="nav-link {% if 'movimiento' in request.path and '/bodega/' in request.path %}active{% endif %}">
                                     Movimientos de Bodega
                                 </a>
                             </li>
+                            {% endif %}
                         </ul>
                     </div>
                 </li>
+                {% endif %}
 
-                <!-- Compras -->
+                <!-- ================================================ -->
+                <!-- Compras: requiere ver órdenes de compra           -->
+                <!-- ================================================ -->
+                {% if perms.compras.view_ordencompra %}
                 <li class="nav-item">
                     <a class="nav-link menu-link {% if '/compras/' not in request.path %}collapsed{% endif %}"
                        href="#sidebarCompras"
@@ -95,8 +114,13 @@
                         </ul>
                     </div>
                 </li>
+                {% endif %}
 
-                <!-- Solicitudes -->
+                <!-- ================================================ -->
+                <!-- Solicitudes: sub-items según permiso específico   -->
+                <!-- ================================================ -->
+                {% with puede_gestionar=perms.solicitudes.gestionar_solicitudes puede_ver_todas=perms.solicitudes.ver_todas_solicitudes puede_art=perms.solicitudes.ver_solicitudes_articulos puede_bie=perms.solicitudes.ver_solicitudes_bienes puede_mis=perms.solicitudes.ver_mis_solicitudes %}
+                {% if puede_gestionar or puede_ver_todas or puede_art or puede_bie or puede_mis %}
                 <li class="nav-item">
                     <a class="nav-link menu-link {% if '/solicitudes/' not in request.path %}collapsed{% endif %}"
                        href="#sidebarSolicitudes"
@@ -108,35 +132,48 @@
                     </a>
                     <div class="collapse menu-dropdown {% if '/solicitudes/' in request.path %}show{% endif %}" id="sidebarSolicitudes">
                         <ul class="nav nav-sm flex-column">
+                            {% if puede_gestionar or puede_ver_todas %}
                             <li class="nav-item">
                                 <a href="{% url 'solicitudes:lista_solicitudes' %}"
                                    class="nav-link {% if 'administrar' in request.path %}active{% endif %}">
                                     Administrar Solicitudes
                                 </a>
                             </li>
+                            {% endif %}
+                            {% if puede_art or puede_gestionar or puede_ver_todas %}
                             <li class="nav-item">
                                 <a href="{% url 'solicitudes:lista_solicitudes_articulos' %}"
                                    class="nav-link {% if 'articulos' in request.path and '/solicitudes/' in request.path %}active{% endif %}">
                                     Solicitud de Artículos
                                 </a>
                             </li>
+                            {% endif %}
+                            {% if puede_bie or puede_gestionar or puede_ver_todas %}
                             <li class="nav-item">
                                 <a href="{% url 'solicitudes:lista_solicitudes_bienes' %}"
                                    class="nav-link {% if 'bienes' in request.path and '/solicitudes/' in request.path %}active{% endif %}">
                                     Solicitud de Bienes
                                 </a>
                             </li>
+                            {% endif %}
+                            {% if puede_mis or puede_gestionar or puede_ver_todas %}
                             <li class="nav-item">
                                 <a href="{% url 'solicitudes:mis_solicitudes' %}"
                                    class="nav-link {% if 'mis' in request.path and '/solicitudes/' in request.path %}active{% endif %}">
                                     Mis Solicitudes
                                 </a>
                             </li>
+                            {% endif %}
                         </ul>
                     </div>
                 </li>
+                {% endif %}
+                {% endwith %}
 
-                <!-- Inventario -->
+                <!-- ================================================ -->
+                <!-- Inventario: requiere ver activos                  -->
+                <!-- ================================================ -->
+                {% if perms.activos.view_activo %}
                 <li class="nav-item">
                     <a class="nav-link menu-link {% if '/activos/' not in request.path %}collapsed{% endif %}"
                        href="#sidebarInventario"
@@ -157,8 +194,12 @@
                         </ul>
                     </div>
                 </li>
+                {% endif %}
 
-                <!-- Bajas de Inventario -->
+                <!-- ================================================ -->
+                <!-- Bajas de Inventario: requiere ver bajas           -->
+                <!-- ================================================ -->
+                {% if perms.bajas_inventario.view_bajainventario %}
                 <li class="nav-item">
                     <a class="nav-link menu-link {% if '/bajas/' in request.path %}active{% endif %}"
                        href="{% url 'bajas_inventario:menu_bajas' %}">
@@ -166,8 +207,12 @@
                         <span>Bajas de Inventario</span>
                     </a>
                 </li>
+                {% endif %}
 
-                <!-- Administración -->
+                <!-- ================================================ -->
+                <!-- Administración: requiere gestión de usuarios      -->
+                <!-- ================================================ -->
+                {% if perms.auth.view_user %}
                 <li class="nav-item">
                     <a class="nav-link menu-link {% if '/administracion/' in request.path %}active{% endif %}"
                        href="{% url 'accounts:menu_administracion' %}">
@@ -175,8 +220,12 @@
                         <span>Administración</span>
                     </a>
                 </li>
+                {% endif %}
 
-                <!-- Gestores -->
+                <!-- ================================================ -->
+                <!-- Gestores: solo staff / superuser                  -->
+                <!-- ================================================ -->
+                {% if request.user.is_staff %}
                 <li class="nav-item">
                     <a class="nav-link menu-link collapsed"
                        href="#sidebarGestores"
@@ -188,39 +237,52 @@
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarGestores">
                         <ul class="nav nav-sm flex-column">
+                            {% if perms.solicitudes.gestionar_solicitudes or perms.solicitudes.ver_todas_solicitudes %}
                             <li class="nav-item">
                                 <a href="{% url 'solicitudes:menu_solicitudes' %}" class="nav-link">
                                     Solicitudes
                                 </a>
                             </li>
+                            {% endif %}
+                            {% if perms.compras.view_estadoordencompra %}
                             <li class="nav-item">
                                 <a href="{% url 'compras:gestores_compras' %}" class="nav-link">
                                     Compras
                                 </a>
                             </li>
+                            {% endif %}
+                            {% if perms.bodega.view_articulo %}
                             <li class="nav-item">
                                 <a href="{% url 'bodega:menu_bodega' %}" class="nav-link">
                                     Bodega
                                 </a>
                             </li>
+                            {% endif %}
+                            {% if perms.activos.view_activo %}
                             <li class="nav-item">
                                 <a href="{% url 'activos:gestores_inventario' %}" class="nav-link">
                                     Inventario
                                 </a>
                             </li>
+                            {% endif %}
+                            {% if perms.activos.view_ubicacion %}
                             <li class="nav-item">
                                 <a href="{% url 'accounts:gestores_organizacion' %}" class="nav-link">
                                     Organización
                                 </a>
                             </li>
+                            {% endif %}
+                            {% if perms.auth.view_user %}
                             <li class="nav-item">
                                 <a href="{% url 'accounts:gestores_usuarios' %}" class="nav-link">
                                     Usuarios
                                 </a>
                             </li>
+                            {% endif %}
                         </ul>
                     </div>
                 </li>
+                {% endif %}
 
             </ul>
         </div>
