@@ -1,0 +1,318 @@
+{% load static %}
+{% if form.errors %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <strong>Error:</strong> Por favor corrija los siguientes errores:
+    <ul class="mb-0">
+        {% for field in form %}
+            {% for error in field.errors %}
+                <li>{{ field.label }}: {{ error }}</li>
+            {% endfor %}
+        {% endfor %}
+        {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endif %}
+
+<form method="post" id="form-orden-compra-modal" action="{{ form_action_url }}">
+    {% csrf_token %}
+
+    <!-- Campos ocultos -->
+    {{ form.fecha_orden }}
+    {{ form.estado }}
+
+    <div class="row g-3">
+        <!-- Fecha Entrega, Proveedor, Bodega -->
+        <div class="col-md-4">
+            <label class="form-label">Fecha Entrega Esperada</label>
+            {{ form.fecha_entrega_esperada }}
+            {% if form.fecha_entrega_esperada.errors %}
+                <div class="text-danger small">{{ form.fecha_entrega_esperada.errors.0 }}</div>
+            {% endif %}
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Proveedor <span class="text-danger">*</span></label>
+            {{ form.proveedor }}
+            {% if form.proveedor.errors %}
+                <div class="text-danger small">{{ form.proveedor.errors.0 }}</div>
+            {% endif %}
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Bodega Destino <span class="text-danger">*</span></label>
+            {{ form.bodega_destino }}
+            {% if form.bodega_destino.errors %}
+                <div class="text-danger small">{{ form.bodega_destino.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <!-- Observaciones -->
+        <div class="col-md-12">
+            <label class="form-label">Observaciones</label>
+            {{ form.observaciones }}
+            {% if form.observaciones.errors %}
+                <div class="text-danger small">{{ form.observaciones.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <!-- Campos solicitudes ocultos -->
+        <div id="solicitudes-hidden-inputs">
+            {{ form.solicitudes }}
+        </div>
+
+        <!-- Campos ocultos para artículos y bienes -->
+        <input type="hidden" id="articulosJson" name="articulos_json" value="">
+        <input type="hidden" id="bienesJson" name="bienes_json" value="">
+
+        <!-- Toggle para asociar solicitud -->
+        <div class="col-md-12 mb-3">
+            <div class="card border-primary">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <label class="form-label mb-0 me-3"><strong>¿Requiere asociar una solicitud?</strong></label>
+                        <div class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="requiere_solicitud"
+                                   id="requiere_solicitud_si_m" value="si"
+                                   {% if tiene_solicitudes %}checked{% endif %}>
+                            <label class="btn btn-outline-success" for="requiere_solicitud_si_m">
+                                <i class="ri-check-line"></i> SÍ
+                            </label>
+                            <input type="radio" class="btn-check" name="requiere_solicitud"
+                                   id="requiere_solicitud_no_m" value="no"
+                                   {% if not tiene_solicitudes %}checked{% endif %}>
+                            <label class="btn btn-outline-danger" for="requiere_solicitud_no_m">
+                                <i class="ri-close-line"></i> NO
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de solicitudes disponibles -->
+        <div class="col-md-12" id="seccion-solicitudes" {% if not tiene_solicitudes %}style="display: none;"{% endif %}>
+            <label class="form-label">Solicitudes Disponibles</label>
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm mb-0" id="tabla-solicitudes-disponibles">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Número</th>
+                                    <th>Fecha</th>
+                                    <th>Tipo</th>
+                                    <th>Solicitante</th>
+                                    <th>Estado</th>
+                                    <th class="text-center">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for solicitud in form.solicitudes.field.queryset %}
+                                <tr data-solicitud-id="{{ solicitud.id }}"
+                                    data-solicitud-numero="{{ solicitud.numero }}"
+                                    data-solicitud-tipo="{{ solicitud.tipo }}"
+                                    data-solicitante="{{ solicitud.solicitante.get_full_name|default:solicitud.solicitante.username }}">
+                                    <td><strong>{{ solicitud.numero }}</strong></td>
+                                    <td>{{ solicitud.fecha_solicitud|date:"d/m/Y" }}</td>
+                                    <td>
+                                        {% if solicitud.tipo == 'ARTICULO' %}
+                                            <span class="badge bg-primary">Artículos</span>
+                                        {% else %}
+                                            <span class="badge bg-info">Activos</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ solicitud.solicitante.get_full_name|default:solicitud.solicitante.username }}</td>
+                                    <td>
+                                        <span class="badge" style="background-color: {{ solicitud.estado.color }}">
+                                            {{ solicitud.estado.nombre }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-sm btn-success btn-toggle-solicitud"
+                                                data-solicitud-id="{{ solicitud.id }}" data-action="agregar">
+                                            <i class="ri-add-line"></i> Agregar
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">No hay solicitudes disponibles</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección Artículos de Bodega -->
+        <div class="col-md-12" id="seccion-articulos">
+            <div class="card">
+                <div class="card-header bg-primary bg-opacity-10">
+                    <h5 class="card-title mb-0 text-primary">
+                        <i class="ri-shopping-cart-line"></i> Artículos de Bodega
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Buscador inline: sin sub-modal -->
+                    <div class="mb-3 position-relative">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-primary text-white">
+                                <i class="ri-search-line"></i>
+                            </span>
+                            <input type="text" id="buscar-articulo-inline" class="form-control"
+                                   placeholder="Buscar artículo por código o nombre..."
+                                   autocomplete="off">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-limpiar-articulo"
+                                    title="Limpiar búsqueda">
+                                <i class="ri-close-line"></i>
+                            </button>
+                        </div>
+                        <!-- Dropdown de resultados -->
+                        <div id="resultados-articulo"
+                             class="position-absolute bg-white border rounded shadow mt-1 w-100"
+                             style="display:none; max-height:240px; overflow-y:auto; z-index:1060;">
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-nowrap table-sm" id="tabla-articulos-orden">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="35%">Artículo</th>
+                                    <th width="12%">Cantidad</th>
+                                    <th width="15%">Precio Unit.</th>
+                                    <th width="12%">Descuento %</th>
+                                    <th width="15%">Subtotal</th>
+                                    <th width="11%">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-articulos-orden"></tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <td colspan="4" class="text-end"><strong>Total Artículos:</strong></td>
+                                    <td><strong id="total-articulos">$0</strong></td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div id="sin-articulos" class="text-center text-muted py-3{% if articulos_existentes_data %} d-none{% endif %}">
+                        <i class="ri-inbox-line" style="font-size: 2.5rem;"></i>
+                        <p class="mb-0 small">No hay artículos. Use el buscador para agregar.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección Bienes / Activos -->
+        <div class="col-md-12" id="seccion-bienes">
+            <div class="card">
+                <div class="card-header bg-info bg-opacity-10">
+                    <h5 class="card-title mb-0 text-info">
+                        <i class="ri-inbox-line"></i> Bienes / Activos
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Buscador inline -->
+                    <div class="mb-3 position-relative">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-info text-white">
+                                <i class="ri-search-line"></i>
+                            </span>
+                            <input type="text" id="buscar-bien-inline" class="form-control"
+                                   placeholder="Buscar bien/activo por código o nombre..."
+                                   autocomplete="off">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-limpiar-bien"
+                                    title="Limpiar búsqueda">
+                                <i class="ri-close-line"></i>
+                            </button>
+                        </div>
+                        <!-- Dropdown de resultados -->
+                        <div id="resultados-bien"
+                             class="position-absolute bg-white border rounded shadow mt-1 w-100"
+                             style="display:none; max-height:240px; overflow-y:auto; z-index:1060;">
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-nowrap table-sm" id="tabla-bienes-orden">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="35%">Bien/Activo</th>
+                                    <th width="12%">Cantidad</th>
+                                    <th width="15%">Precio Unit.</th>
+                                    <th width="12%">Descuento %</th>
+                                    <th width="15%">Subtotal</th>
+                                    <th width="11%">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-bienes-orden"></tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <td colspan="4" class="text-end"><strong>Total Bienes:</strong></td>
+                                    <td><strong id="total-bienes">$0</strong></td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div id="sin-bienes" class="text-center text-muted py-3{% if bienes_existentes_data %} d-none{% endif %}">
+                        <i class="ri-inbox-line" style="font-size: 2.5rem;"></i>
+                        <p class="mb-0 small">No hay bienes. Use el buscador para agregar.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Datos para JS usando json_script -->
+{{ articulos_existentes_data|json_script:"data-articulos-existentes" }}
+{{ bienes_existentes_data|json_script:"data-bienes-existentes" }}
+{{ solicitudes_asociadas_ids|json_script:"data-solicitudes-asociadas" }}
+{{ articulos_disponibles_data|json_script:"data-articulos-disponibles" }}
+{{ activos_disponibles_data|json_script:"data-activos-disponibles" }}
+
+<script>
+(function() {
+    function leerJson(id) {
+        var el = document.getElementById(id);
+        if (!el) return [];
+        try { return JSON.parse(el.textContent); } catch(e) { return []; }
+    }
+
+    var ARTICULOS_EXISTENTES_MODAL  = leerJson('data-articulos-existentes');
+    var BIENES_EXISTENTES_MODAL     = leerJson('data-bienes-existentes');
+    var ARTICULOS_DISPONIBLES_MODAL = leerJson('data-articulos-disponibles');
+    var ACTIVOS_DISPONIBLES_MODAL   = leerJson('data-activos-disponibles');
+
+    // Marcar solicitudes ya asociadas
+    var solicitudesAsociadasIds = leerJson('data-solicitudes-asociadas') || [];
+    solicitudesAsociadasIds.forEach(function(solicitudId) {
+        var btn = document.querySelector('.btn-toggle-solicitud[data-solicitud-id="' + solicitudId + '"]');
+        if (btn) {
+            btn.innerHTML = '<i class="ri-check-line"></i> Quitar';
+            btn.className = 'btn btn-sm btn-warning btn-toggle-solicitud';
+            btn.setAttribute('data-action', 'quitar');
+            var fila = btn.closest('tr');
+            if (fila) fila.classList.add('table-success');
+        }
+    });
+
+    // Exponer para ordenes_modal.js
+    window.MODAL_EDIT_DATA = {
+        articulos: ARTICULOS_DISPONIBLES_MODAL,
+        activos:   ACTIVOS_DISPONIBLES_MODAL,
+        articulosExistentes: ARTICULOS_EXISTENTES_MODAL,
+        bienesExistentes:    BIENES_EXISTENTES_MODAL
+    };
+
+    document.dispatchEvent(new CustomEvent('ordenEditModalLoaded', {
+        detail: window.MODAL_EDIT_DATA
+    }));
+})();
+</script>
+
