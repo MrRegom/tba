@@ -24,6 +24,7 @@ urlpatterns = [
     path('ordenes/<int:pk>/agregar-articulo/', views.OrdenCompraAgregarArticuloView.as_view(), name='orden_compra_agregar_articulo'),
     path('ordenes/<int:pk>/agregar-activo/', views.OrdenCompraAgregarActivoView.as_view(), name='orden_compra_agregar_activo'),
     path('ordenes/<int:pk>/eliminar/', views.OrdenCompraDeleteView.as_view(), name='orden_compra_eliminar'),
+    path('ordenes/<int:pk>/cambiar-estado/', views.CambiarEstadoOrdenCompraView.as_view(), name='orden_compra_cambiar_estado'),
 
     # AJAX
     path('api/obtener-detalles-solicitudes/', views.ObtenerDetallesSolicitudesView.as_view(), name='obtener_detalles_solicitudes'),
