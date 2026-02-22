@@ -2,58 +2,71 @@
 
 <!-- ========== App Menu ========== -->
 <div class="app-menu navbar-menu">
-    <div class="navbar-brand-box" style="display: none;">
-        <!-- Logo oculto - el topbar cubre esta área -->
-    </div>
-
+    <div class="navbar-brand-box" style="display: none;"></div>
 
     <div id="scrollbar">
         <div class="container-fluid">
-            <div id="two-column-menu">
-            </div>
+            <div id="two-column-menu"></div>
             <ul class="navbar-nav" id="navbar-nav">
-                <li class="menu-title"><span data-key="t-menu">MENÚ</span></li>
+                <li class="menu-title"><span>MENÚ</span></li>
+
+                <!-- Home -->
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="{% url 'dashboard' %}">
-                        <i class="ri-dashboard-2-line"></i> <span data-key="t-home">Home</span>
+                    <a class="nav-link menu-link {% if request.path == '/' %}active{% endif %}"
+                       href="{% url 'dashboard' %}">
+                        <i class="ri-home-4-line"></i>
+                        <span>Home</span>
                     </a>
                 </li>
 
+                <!-- Reportes -->
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="{% url 'reportes:seleccionar_reporte' %}">
-                        <i class="ri-file-chart-line"></i> <span data-key="t-reportes">Reportes</span>
+                    <a class="nav-link menu-link {% if '/reportes/' in request.path %}active{% endif %}"
+                       href="{% url 'reportes:seleccionar_reporte' %}">
+                        <i class="ri-file-chart-line"></i>
+                        <span>Reportes</span>
                     </a>
                 </li>
 
+                <!-- Bodega -->
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarBodega" data-bs-toggle="collapse" role="button"
-                        aria-expanded="false" aria-controls="sidebarBodega">
-                        <i class="ri-archive-line"></i> <span data-key="t-bodega">Bodega</span>
+                    <a class="nav-link menu-link {% if '/bodega/' not in request.path %}collapsed{% endif %}"
+                       href="#sidebarBodega"
+                       data-bs-toggle="collapse" role="button"
+                       aria-expanded="{% if '/bodega/' in request.path %}true{% else %}false{% endif %}"
+                       aria-controls="sidebarBodega">
+                        <i class="ri-archive-line"></i>
+                        <span>Bodega</span>
                     </a>
-                    <div class="collapse menu-dropdown" id="sidebarBodega">
+                    <div class="collapse menu-dropdown {% if '/bodega/' in request.path %}show{% endif %}" id="sidebarBodega">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{% url 'bodega:entrega_articulo_lista' %}" class="nav-link" data-key="t-entrega-articulos">
+                                <a href="{% url 'bodega:entrega_articulo_lista' %}"
+                                   class="nav-link {% if 'entrega' in request.path and 'articulo' in request.path %}active{% endif %}">
                                     Entrega de Artículos
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{% url 'bodega:entrega_bien_lista' %}" class="nav-link" data-key="t-entrega-bienes">
+                                <a href="{% url 'bodega:entrega_bien_lista' %}"
+                                   class="nav-link {% if 'entrega' in request.path and 'bien' in request.path %}active{% endif %}">
                                     Entrega de Bienes
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{% url 'bodega:recepcion_articulo_lista' %}" class="nav-link" data-key="t-recepcion-articulos">
+                                <a href="{% url 'bodega:recepcion_articulo_lista' %}"
+                                   class="nav-link {% if 'recepcion' in request.path and 'articulo' in request.path %}active{% endif %}">
                                     Recepción de Artículos
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{% url 'bodega:recepcion_activo_lista' %}" class="nav-link" data-key="t-recepcion-bienes">
+                                <a href="{% url 'bodega:recepcion_activo_lista' %}"
+                                   class="nav-link {% if 'recepcion' in request.path and 'activo' in request.path %}active{% endif %}">
                                     Recepción de Bienes
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{% url 'bodega:movimiento_lista' %}" class="nav-link" data-key="t-movimientos-bodega">
+                                <a href="{% url 'bodega:movimiento_lista' %}"
+                                   class="nav-link {% if 'movimiento' in request.path and '/bodega/' in request.path %}active{% endif %}">
                                     Movimientos de Bodega
                                 </a>
                             </li>
@@ -61,15 +74,21 @@
                     </div>
                 </li>
 
+                <!-- Compras -->
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarCompras" data-bs-toggle="collapse" role="button"
-                        aria-expanded="false" aria-controls="sidebarCompras">
-                        <i class="ri-shopping-cart-line"></i> <span data-key="t-compras">Compras</span>
+                    <a class="nav-link menu-link {% if '/compras/' not in request.path %}collapsed{% endif %}"
+                       href="#sidebarCompras"
+                       data-bs-toggle="collapse" role="button"
+                       aria-expanded="{% if '/compras/' in request.path %}true{% else %}false{% endif %}"
+                       aria-controls="sidebarCompras">
+                        <i class="ri-shopping-cart-line"></i>
+                        <span>Compras</span>
                     </a>
-                    <div class="collapse menu-dropdown" id="sidebarCompras">
+                    <div class="collapse menu-dropdown {% if '/compras/' in request.path %}show{% endif %}" id="sidebarCompras">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{% url 'compras:menu_compras' %}" class="nav-link" data-key="t-ordenes-compra">
+                                <a href="{% url 'compras:menu_compras' %}"
+                                   class="nav-link {% if '/compras/' in request.path %}active{% endif %}">
                                     Órdenes de Compra
                                 </a>
                             </li>
@@ -77,30 +96,39 @@
                     </div>
                 </li>
 
+                <!-- Solicitudes -->
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarSolicitudes" data-bs-toggle="collapse" role="button"
-                        aria-expanded="false" aria-controls="sidebarSolicitudes">
-                        <i class="ri-file-text-line"></i> <span data-key="t-solicitudes">Solicitudes</span>
+                    <a class="nav-link menu-link {% if '/solicitudes/' not in request.path %}collapsed{% endif %}"
+                       href="#sidebarSolicitudes"
+                       data-bs-toggle="collapse" role="button"
+                       aria-expanded="{% if '/solicitudes/' in request.path %}true{% else %}false{% endif %}"
+                       aria-controls="sidebarSolicitudes">
+                        <i class="ri-file-text-line"></i>
+                        <span>Solicitudes</span>
                     </a>
-                    <div class="collapse menu-dropdown" id="sidebarSolicitudes">
+                    <div class="collapse menu-dropdown {% if '/solicitudes/' in request.path %}show{% endif %}" id="sidebarSolicitudes">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{% url 'solicitudes:lista_solicitudes' %}" class="nav-link" data-key="t-administrar-solicitudes">
+                                <a href="{% url 'solicitudes:lista_solicitudes' %}"
+                                   class="nav-link {% if 'administrar' in request.path %}active{% endif %}">
                                     Administrar Solicitudes
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{% url 'solicitudes:lista_solicitudes_articulos' %}" class="nav-link" data-key="t-solicitud-articulos">
+                                <a href="{% url 'solicitudes:lista_solicitudes_articulos' %}"
+                                   class="nav-link {% if 'articulos' in request.path and '/solicitudes/' in request.path %}active{% endif %}">
                                     Solicitud de Artículos
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{% url 'solicitudes:lista_solicitudes_bienes' %}" class="nav-link" data-key="t-solicitud-bienes">
+                                <a href="{% url 'solicitudes:lista_solicitudes_bienes' %}"
+                                   class="nav-link {% if 'bienes' in request.path and '/solicitudes/' in request.path %}active{% endif %}">
                                     Solicitud de Bienes
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{% url 'solicitudes:mis_solicitudes' %}" class="nav-link" data-key="t-mis-solicitudes">
+                                <a href="{% url 'solicitudes:mis_solicitudes' %}"
+                                   class="nav-link {% if 'mis' in request.path and '/solicitudes/' in request.path %}active{% endif %}">
                                     Mis Solicitudes
                                 </a>
                             </li>
@@ -108,15 +136,21 @@
                     </div>
                 </li>
 
+                <!-- Inventario -->
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarInventario" data-bs-toggle="collapse" role="button"
-                        aria-expanded="false" aria-controls="sidebarInventario">
-                        <i class="ri-clipboard-line"></i> <span data-key="t-inventario">Inventario</span>
+                    <a class="nav-link menu-link {% if '/activos/' not in request.path %}collapsed{% endif %}"
+                       href="#sidebarInventario"
+                       data-bs-toggle="collapse" role="button"
+                       aria-expanded="{% if '/activos/' in request.path %}true{% else %}false{% endif %}"
+                       aria-controls="sidebarInventario">
+                        <i class="ri-clipboard-line"></i>
+                        <span>Inventario</span>
                     </a>
-                    <div class="collapse menu-dropdown" id="sidebarInventario">
+                    <div class="collapse menu-dropdown {% if '/activos/' in request.path %}show{% endif %}" id="sidebarInventario">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{% url 'activos:lista_movimientos' %}" class="nav-link" data-key="t-movimientos-inventario">
+                                <a href="{% url 'activos:lista_movimientos' %}"
+                                   class="nav-link {% if '/activos/' in request.path %}active{% endif %}">
                                     Movimientos
                                 </a>
                             </li>
@@ -124,65 +158,75 @@
                     </div>
                 </li>
 
+                <!-- Bajas de Inventario -->
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="{% url 'bajas_inventario:menu_bajas' %}">
-                        <i class="ri-delete-bin-line"></i> <span data-key="t-bajas">Bajas de Inventario</span>
+                    <a class="nav-link menu-link {% if '/bajas/' in request.path %}active{% endif %}"
+                       href="{% url 'bajas_inventario:menu_bajas' %}">
+                        <i class="ri-delete-bin-line"></i>
+                        <span>Bajas de Inventario</span>
                     </a>
                 </li>
 
+                <!-- Administración -->
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="{% url 'accounts:menu_administracion' %}">
-                        <i class="ri-settings-3-line"></i> <span data-key="t-administracion">Administración</span>
+                    <a class="nav-link menu-link {% if '/administracion/' in request.path %}active{% endif %}"
+                       href="{% url 'accounts:menu_administracion' %}">
+                        <i class="ri-settings-3-line"></i>
+                        <span>Administración</span>
                     </a>
                 </li>
 
+                <!-- Gestores -->
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarGestores" data-bs-toggle="collapse" role="button"
-                        aria-expanded="false" aria-controls="sidebarGestores">
-                        <i class="ri-equalizer-line"></i> <span data-key="t-gestores">Gestores</span>
+                    <a class="nav-link menu-link collapsed"
+                       href="#sidebarGestores"
+                       data-bs-toggle="collapse" role="button"
+                       aria-expanded="false"
+                       aria-controls="sidebarGestores">
+                        <i class="ri-equalizer-line"></i>
+                        <span>Gestores</span>
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarGestores">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{% url 'solicitudes:menu_solicitudes' %}" class="nav-link" data-key="t-gest ores-solicitudes">
+                                <a href="{% url 'solicitudes:menu_solicitudes' %}" class="nav-link">
                                     Solicitudes
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{% url 'compras:gestores_compras' %}" class="nav-link" data-key="t-gestores-compras">
+                                <a href="{% url 'compras:gestores_compras' %}" class="nav-link">
                                     Compras
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{% url 'bodega:menu_bodega' %}" class="nav-link" data-key="t-gestores-bodega">
+                                <a href="{% url 'bodega:menu_bodega' %}" class="nav-link">
                                     Bodega
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{% url 'activos:gestores_inventario' %}" class="nav-link" data-key="t-gestores-inventario">
+                                <a href="{% url 'activos:gestores_inventario' %}" class="nav-link">
                                     Inventario
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{% url 'accounts:gestores_organizacion' %}" class="nav-link" data-key="t-gestores-organizacion">
+                                <a href="{% url 'accounts:gestores_organizacion' %}" class="nav-link">
                                     Organización
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{% url 'accounts:gestores_usuarios' %}" class="nav-link" data-key="t-gestores-usuarios">
+                                <a href="{% url 'accounts:gestores_usuarios' %}" class="nav-link">
                                     Usuarios
                                 </a>
                             </li>
                         </ul>
                     </div>
                 </li>
+
             </ul>
         </div>
-        <!-- Sidebar -->
     </div>
 
     <div class="sidebar-background"></div>
 </div>
 <!-- Left Sidebar End -->
-<!-- Vertical Overlay-->
 <div class="vertical-overlay"></div>
