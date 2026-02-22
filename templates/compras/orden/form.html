@@ -9,7 +9,7 @@
                 <div class="page-title-box d-sm-flex align-items-center justify-content-between">
                     <h4 class="mb-sm-0">{{ titulo }}</h4>
                     <div>
-                        <a href="{% url 'compras:orden_compra_lista' %}" class="btn btn-secondary">
+                        <a href="{% url 'compras:menu_compras' %}" class="btn btn-secondary">
                             <i class="ri-arrow-left-line"></i> Volver
                         </a>
                     </div>
@@ -273,7 +273,7 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="ri-save-line"></i> {{ action }}
                                 </button>
-                                <a href="{% url 'compras:orden_compra_lista' %}" class="btn btn-secondary">
+                                <a href="{% url 'compras:menu_compras' %}" class="btn btn-secondary">
                                     Cancelar
                                 </a>
                             </div>
@@ -420,7 +420,70 @@ const ACTIVOS_DISPONIBLES = [
     }{% if not forloop.last %},{% endif %}
     {% endfor %}
 ];
+
+{% if articulos_existentes_json %}
+const ARTICULOS_EXISTENTES = {{ articulos_existentes_json }};
+{% else %}
+const ARTICULOS_EXISTENTES = [];
+{% endif %}
+
+{% if bienes_existentes_json %}
+const BIENES_EXISTENTES = {{ bienes_existentes_json }};
+{% else %}
+const BIENES_EXISTENTES = [];
+{% endif %}
 </script>
 <!-- Carga automática de artículos de solicitudes - Versión refactorizada con SRP -->
 <script src="{% static 'js/compras/crear-orden-refactored.js' %}?v=1"></script>
+
+{% if articulos_existentes_json or bienes_existentes_json %}
+<script>
+// Pre-poblado de artículos y bienes existentes al editar
+// Nota: Este listener corre DESPUÉS del DOMContentLoaded de crear-orden-refactored.js
+// (los listeners del mismo evento corren en orden de registro), por lo tanto
+// window.ordenCompraController ya está creado cuando este código ejecuta.
+document.addEventListener('DOMContentLoaded', function() {
+    if (!window.ordenCompraController) return;
+
+    // Pre-poblar artículos existentes
+    ARTICULOS_EXISTENTES.forEach(function(item) {
+        var articulo = {
+            id: item.articulo_id,
+            codigo: item.codigo,
+            nombre: item.nombre,
+            categoria: item.categoria,
+            unidad: item.unidad
+        };
+        window.ordenCompraController.agregarFilaArticuloManual(articulo);
+        var idx = window.ordenCompraController.contadorArticulos - 1;
+        var cantInput = document.getElementById('cantidad_articulo_' + idx);
+        var precioInput = document.getElementById('precio_articulo_' + idx);
+        var descuentoInput = document.getElementById('descuento_articulo_' + idx);
+        if (cantInput) cantInput.value = item.cantidad;
+        if (precioInput) precioInput.value = item.precio_unitario;
+        if (descuentoInput) descuentoInput.value = item.descuento;
+    });
+
+    // Pre-poblar bienes/activos existentes
+    BIENES_EXISTENTES.forEach(function(item) {
+        var bien = {
+            id: item.activo_id,
+            codigo: item.codigo,
+            nombre: item.nombre,
+            categoria: item.categoria
+        };
+        window.ordenCompraController.agregarFilaBienManual(bien);
+        var idx = window.ordenCompraController.contadorBienes - 1;
+        var cantInput = document.getElementById('cantidad_bien_' + idx);
+        var precioInput = document.getElementById('precio_bien_' + idx);
+        var descuentoInput = document.getElementById('descuento_bien_' + idx);
+        if (cantInput) cantInput.value = item.cantidad;
+        if (precioInput) precioInput.value = item.precio_unitario;
+        if (descuentoInput) descuentoInput.value = item.descuento;
+    });
+
+    window.ordenCompraController.actualizarTotales();
+});
+</script>
+{% endif %}
 {% endblock %}
