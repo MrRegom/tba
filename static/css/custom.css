@@ -334,74 +334,18 @@ svg {
 }
 
 /* Estilos para el menú de navegación */
-/* Efecto hover para enlaces del menú (no los títulos) */
-.navbar-nav .nav-item:not(.menu-title) .nav-link:hover, 
-.navbar-nav .nav-item:not(.menu-title) .nav-link:focus,
-.navbar-nav .nav-item:not(.menu-title) .menu-link:hover, 
-.navbar-nav .nav-item:not(.menu-title) .menu-link:focus {
-  background-color: rgba(var(--tb-primary-rgb), 0.04);
-  color: var(--tb-primary) !important;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-}
+/* NOTA: Los colores del sidebar vienen del bloque [data-sidebar=dark] al final.
+   Aquí solo se definen reglas de transición y opacidad neutras. */
 
-/* Estilos específicos para elementos activos - borde bicolor gobierno */
-.navbar-nav .nav-link.active, 
-.navbar-nav .menu-link.active,
-.nav-sm .nav-link.active {
-  border-style: solid;
-  border-width: 1px;
-  border-top-color: var(--tb-primary) !important;    /* Azul arriba */
-  border-left-color: var(--tb-primary) !important;   /* Azul izquierda */
-  border-right-color: var(--tb-secondary) !important; /* Rojo derecha */
-  border-bottom-color: var(--tb-secondary) !important; /* Rojo abajo */
-  border-radius: 6px;
-  background-color: rgba(var(--tb-primary-rgb), 0.04) !important;
-  color: var(--tb-primary) !important;
-  font-weight: 700 !important;  /* Negrita más fuerte */
-  padding: calc(0.5rem - 1px) calc(1rem - 1px); /* Ajustado para compensar el borde */
-}
-
-/* Asegurar que los elementos padre no se marquen como activos cuando sus hijos lo están */
-.navbar-nav .nav-link[aria-expanded="true"],
-.navbar-nav .menu-link[aria-expanded="true"] {
-  background-color: rgba(var(--tb-primary-rgb), 0.05) !important;
-  border-color: rgba(var(--tb-primary-rgb), 0.2) !important;
-  font-weight: 600 !important;
-  color: var(--tb-primary) !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
-  border: 1px solid rgba(var(--tb-primary-rgb), 0.2) !important;
-  opacity: 1 !important;
-}
-
-/* Solo indicador sutil para elementos expandidos */
-.navbar-nav .nav-link[aria-expanded="true"]:not(.active),
-.navbar-nav .menu-link[aria-expanded="true"]:not(.active) {
-  background-color: rgba(var(--tb-primary-rgb), 0.08) !important;
-  color: var(--tb-primary) !important;
-  border-radius: 6px;
-  font-weight: 600 !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
-  opacity: 1 !important;
-}
-
-/* Destacar elementos del menú en hover dentro de submenús */
-.nav-sm .nav-link:hover {
-  background-color: rgba(var(--tb-primary-rgb), 0.04);
-  color: var(--tb-primary) !important;
-  border-radius: 6px;
-}
-
-/* Efecto de transición suave para todos los enlaces */
+/* Evitar transparencia en links después de hacer click */
 .navbar-nav .nav-link,
 .navbar-nav .menu-link,
 .nav-sm .nav-link {
   transition: all 0.2s ease-in-out;
-  padding: 0.5rem 1rem;
-  border: 1px solid transparent; /* Para evitar saltos al activarse */
+  opacity: 1 !important;
 }
 
-/* Estilo específico para los elementos de título */
+/* Estilo del título de sección del menú */
 .navbar-nav .menu-title,
 .navbar-nav li.menu-title,
 .navbar-nav li.menu-title span,
@@ -419,34 +363,12 @@ svg {
   background-color: transparent !important;
 }
 
-/* Mejorar espaciado vertical */
+/* Espaciado vertical de items */
 .navbar-nav .nav-item {
   margin-bottom: 2px;
 }
 
-/* Mejorar estilo del submenú activo - muy sutil */
-.menu-dropdown.show {
-  background-color: rgba(var(--tb-primary-rgb), 0.01);
-  border-radius: 6px;
-  margin-top: 2px;
-  padding-left: 0.5rem;
-}
-
-/* Prevenir que enlaces desplegables se vean "activos" cuando solo están expandidos */
-.nav-link[aria-expanded="true"]:not(.active),
-.menu-link[aria-expanded="true"]:not(.active) {
-  background-color: rgba(var(--tb-primary-rgb), 0.08) !important;
-  color: var(--tb-primary) !important;
-  font-weight: 600 !important;
-  opacity: 1 !important;
-}
-
-/* Elementos anidados en submenús NO deben heredar estilos activos por default */
-.menu-dropdown .nav-link:not(.active) {
-  background-color: transparent !important;
-}
-
-/* Prevenir transparencia en links después de hacer click */
+/* Prevenir transparencia */
 .nav-link:active,
 .nav-link:visited,
 .menu-link:active,
@@ -457,38 +379,7 @@ svg {
   background-color: inherit !important;
 }
 
-/* Asegurar que los links del menú no se vuelvan transparentes */
-.navbar-nav .nav-link,
-.navbar-nav .menu-link,
-.nav-sm .nav-link {
-  opacity: 1 !important;
-}
 
-.navbar-nav .nav-link:hover,
-.navbar-nav .menu-link:hover,
-.nav-sm .nav-link:hover {
-  opacity: 1 !important;
-}
-
-/* Específicamente evitar que Reportería SFERE se muestre como activo */
-.navbar-nav .nav-item a[href="#sidebarReportes"] {
-  background-color: transparent !important;
-  border-color: transparent !important;
-  font-weight: normal !important;
-  box-shadow: none !important;
-}
-
-.navbar-nav .nav-item a[href="#sidebarReportes"][aria-expanded="true"] {
-  color: var(--tb-primary) !important;
-  background-color: rgba(var(--tb-primary-rgb), 0.02) !important;
-}
-
-/* Destacar elementos del menú en hover dentro de submenús */
-.nav-sm .nav-link:hover {
-  background-color: rgba(var(--tb-primary-rgb), 0.04);
-  color: var(--tb-primary) !important;
-  border-radius: 6px;
-}
 
 /* ====================================================
    ESTILOS PARA PESTAÑAS ESTILO KIT DIGITAL
@@ -1594,4 +1485,129 @@ form .form-control[readonly] {
   .footer {
     transition: none !important;
   }
+}
+
+/* ============================================================
+   SIDEBAR INSTITUCIONAL — Colegio TBA (Azul marino + Dorado)
+   Sobreescribe las CSS variables del tema Velzon para sidebar dark
+   ============================================================ */
+
+/* Colores institucionales del colegio */
+:root {
+  --colegio-azul:        #1e3a8a;
+  --colegio-azul-oscuro: #162456;
+  --colegio-dorado:      #D4AF37;
+  --colegio-dorado-claro:#f0cc5a;
+}
+
+/* ── Variables Velzon para el sidebar ── */
+/* El tema usa data-sidebar=dark, sobreescribimos sus colores */
+[data-sidebar=dark] {
+  --tb-vertical-menu-bg:                    #1a2f6f !important;
+  --tb-vertical-menu-title:                 #D4AF37 !important;
+  --tb-vertical-border-color:               rgba(212,175,55,0.25) !important;
+
+  /* Links del menú principal */
+  --tb-vertical-item-color:                 rgba(255,255,255,0.75) !important;
+  --tb-vertical-item-hover-color:           #ffffff !important;
+  --tb-vertical-item-active-color:          #D4AF37 !important;
+
+  /* Links del sub-menú */
+  --tb-vertical-sub-item-color:             rgba(255,255,255,0.55) !important;
+  --tb-vertical-sub-item-hover-color:       rgba(255,255,255,0.90) !important;
+  --tb-vertical-sub-item-active-color:      #D4AF37 !important;
+}
+
+/* ── Sidebar fondo con gradiente del colegio ── */
+[data-sidebar=dark] .app-menu {
+  background: linear-gradient(
+    175deg,
+    #162456 0%,
+    #1e3a8a 45%,
+    #1a2f6f 100%
+  ) !important;
+  border-right: 2px solid rgba(212, 175, 55, 0.4) !important;
+  box-shadow: 4px 0 24px rgba(10, 20, 60, 0.5) !important;
+}
+
+/* ── Scrollbar dorado sutil ── */
+[data-sidebar=dark] #scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(212, 175, 55, 0.35) transparent;
+}
+[data-sidebar=dark] #scrollbar::-webkit-scrollbar { width: 4px; }
+[data-sidebar=dark] #scrollbar::-webkit-scrollbar-track { background: transparent; }
+[data-sidebar=dark] #scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.35);
+  border-radius: 4px;
+}
+
+/* ── Título "MENÚ" ── */
+[data-sidebar=dark] .app-menu .navbar-nav .menu-title {
+  color: rgba(212, 175, 55, 0.6) !important;
+  font-size: 0.65rem !important;
+  letter-spacing: 0.12em !important;
+}
+
+/* ── íconos del menú principal ── */
+[data-sidebar=dark] .app-menu .navbar-nav .nav-link.menu-link i,
+[data-sidebar=dark] .app-menu .navbar-nav .nav-link.menu-link .ri {
+  color: rgba(212, 175, 55, 0.7) !important;
+  font-size: 1.1rem;
+  transition: color 0.18s ease;
+}
+
+/* ── Hover del link principal ── */
+[data-sidebar=dark] .app-menu .navbar-nav .nav-link.menu-link:hover {
+  background-color: rgba(212, 175, 55, 0.1) !important;
+  border-radius: 8px;
+}
+[data-sidebar=dark] .app-menu .navbar-nav .nav-link.menu-link:hover i {
+  color: #D4AF37 !important;
+}
+
+/* ── Link activo (página actual) ── */
+[data-sidebar=dark] .app-menu .navbar-nav .nav-link.active,
+[data-sidebar=dark] .app-menu .navbar-nav .nav-link.menu-link.active {
+  background-color: rgba(212, 175, 55, 0.15) !important;
+  border-radius: 8px !important;
+  box-shadow: inset 3px 0 0 #D4AF37 !important;
+  font-weight: 600 !important;
+}
+[data-sidebar=dark] .app-menu .navbar-nav .nav-link.active i {
+  color: #D4AF37 !important;
+}
+
+/* ── Link expandido ── */
+[data-sidebar=dark] .app-menu .navbar-nav .nav-link[aria-expanded=true],
+[data-sidebar=dark] .app-menu .navbar-nav .nav-link.menu-link[aria-expanded=true] {
+  background-color: rgba(212, 175, 55, 0.08) !important;
+  border-radius: 8px !important;
+  color: #D4AF37 !important;
+}
+[data-sidebar=dark] .app-menu .navbar-nav .nav-link[aria-expanded=true] i {
+  color: #D4AF37 !important;
+}
+
+/* ── Sub-menú ── */
+[data-sidebar=dark] .app-menu .nav-sm .nav-link {
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+[data-sidebar=dark] .app-menu .nav-sm .nav-link:hover {
+  background-color: rgba(212, 175, 55, 0.08) !important;
+  padding-left: 1.5rem;
+}
+[data-sidebar=dark] .app-menu .nav-sm .nav-link.active {
+  background-color: rgba(212, 175, 55, 0.12) !important;
+  box-shadow: inset 3px 0 0 #D4AF37 !important;
+  font-weight: 600 !important;
+}
+
+/* ── Espaciado del contenido principal ──────────────────────
+   Agrega separación entre el topbar y el primer elemento de la página.
+   ─────────────────────────────────────────────────────────── */
+.page-content {
+  padding-top: calc(var(--tb-header-height, 70px) + 1.5rem) !important;
+  padding-bottom: 2rem;
 }
