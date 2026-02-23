@@ -76,10 +76,16 @@
             <!-- ============ CATEGORÍAS TAB ============ -->
             <div class="tab-pane fade show active" id="categorias" role="tabpanel" aria-labelledby="categorias-tab">
                 <div class="card">
-                    <div class="card-header d-flex align-items-center">
+                    <div class="card-header d-flex align-items-center gap-2">
                         <h4 class="card-title flex-grow-1 mb-0">Gestión de Categorías</h4>
+                        <a href="{% url 'activos:categoria_activo_exportar_excel' %}" class="btn btn-outline-success btn-sm">
+                            <i class="ri-file-excel-line me-1"></i>Exportar
+                        </a>
                         {% if perms.activos.add_categoriaactivo %}
-                        <a href="{% url 'activos:crear_categoria' %}" class="btn btn-primary">
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalImportarCategoriaActivo">
+                            <i class="ri-upload-line me-1"></i>Importar
+                        </button>
+                        <a href="{% url 'activos:crear_categoria' %}" class="btn btn-primary btn-sm">
                             <i class="ri-add-line me-1"></i>Nueva Categoría
                         </a>
                         {% endif %}
@@ -136,10 +142,16 @@
             <!-- ============ ESTADOS TAB ============ -->
             <div class="tab-pane fade" id="estados" role="tabpanel" aria-labelledby="estados-tab">
                 <div class="card">
-                    <div class="card-header d-flex align-items-center">
+                    <div class="card-header d-flex align-items-center gap-2">
                         <h4 class="card-title flex-grow-1 mb-0">Gestión de Estados</h4>
+                        <a href="{% url 'activos:estado_activo_exportar_excel' %}" class="btn btn-outline-success btn-sm">
+                            <i class="ri-file-excel-line me-1"></i>Exportar
+                        </a>
                         {% if perms.activos.add_estadoactivo %}
-                        <a href="{% url 'activos:crear_estado' %}" class="btn btn-primary">
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalImportarEstadoActivo">
+                            <i class="ri-upload-line me-1"></i>Importar
+                        </button>
+                        <a href="{% url 'activos:crear_estado' %}" class="btn btn-primary btn-sm">
                             <i class="ri-add-line me-1"></i>Nuevo Estado
                         </a>
                         {% endif %}
@@ -214,10 +226,16 @@
             <!-- ============ MARCAS TAB ============ -->
             <div class="tab-pane fade" id="marcas" role="tabpanel" aria-labelledby="marcas-tab">
                 <div class="card">
-                    <div class="card-header d-flex align-items-center">
+                    <div class="card-header d-flex align-items-center gap-2">
                         <h4 class="card-title flex-grow-1 mb-0">Gestión de Marcas/Modelos</h4>
+                        <a href="{% url 'activos:marca_activo_exportar_excel' %}" class="btn btn-outline-success btn-sm">
+                            <i class="ri-file-excel-line me-1"></i>Exportar
+                        </a>
                         {% if perms.activos.add_marca %}
-                        <a href="{% url 'activos:crear_marca' %}" class="btn btn-primary">
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalImportarMarcaActivo">
+                            <i class="ri-upload-line me-1"></i>Importar
+                        </button>
+                        <a href="{% url 'activos:crear_marca' %}" class="btn btn-primary btn-sm">
                             <i class="ri-add-line me-1"></i>Nueva Marca
                         </a>
                         {% endif %}
@@ -272,10 +290,16 @@
             <!-- ============ TIPOS DE MOVIMIENTO TAB ============ -->
             <div class="tab-pane fade" id="tipos" role="tabpanel" aria-labelledby="tipos-tab">
                 <div class="card">
-                    <div class="card-header d-flex align-items-center">
+                    <div class="card-header d-flex align-items-center gap-2">
                         <h4 class="card-title flex-grow-1 mb-0">Gestión de Tipos de Movimiento</h4>
+                        <a href="{% url 'activos:tipo_movimiento_activo_exportar_excel' %}" class="btn btn-outline-success btn-sm">
+                            <i class="ri-file-excel-line me-1"></i>Exportar
+                        </a>
                         {% if perms.activos.add_tipomovimientoactivo %}
-                        <a href="{% url 'activos:crear_tipo_movimiento' %}" class="btn btn-primary">
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalImportarTipoMovimientoActivo">
+                            <i class="ri-upload-line me-1"></i>Importar
+                        </button>
+                        <a href="{% url 'activos:crear_tipo_movimiento' %}" class="btn btn-primary btn-sm">
                             <i class="ri-add-line me-1"></i>Nuevo Tipo
                         </a>
                         {% endif %}
@@ -330,10 +354,16 @@
             <!-- ============ ACTIVOS/BIENES TAB ============ -->
             <div class="tab-pane fade" id="activos" role="tabpanel" aria-labelledby="activos-tab">
                 <div class="card">
-                    <div class="card-header d-flex align-items-center">
+                    <div class="card-header d-flex align-items-center gap-2">
                         <h4 class="card-title flex-grow-1 mb-0">Activos/Bienes</h4>
+                        <a href="{% url 'activos:activo_exportar_excel' %}" class="btn btn-outline-success btn-sm">
+                            <i class="ri-file-excel-line me-1"></i>Exportar
+                        </a>
                         {% if perms.activos.add_activo %}
-                        <a href="{% url 'activos:crear_activo' %}" class="btn btn-primary">
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalImportarActivo">
+                            <i class="ri-upload-line me-1"></i>Importar
+                        </button>
+                        <a href="{% url 'activos:crear_activo' %}" class="btn btn-primary btn-sm">
                             <i class="ri-add-line me-1"></i>Nuevo Activo
                         </a>
                         {% endif %}
@@ -394,6 +424,12 @@
         </div>
     </div>
 </div>
+
+{% include 'partials/modal_importar_excel.html' with nombre_modal='CategoriaActivo' titulo='Categorías de Activos' url_descargar_plantilla='activos:categoria_activo_descargar_plantilla' url_importar='activos:categoria_activo_importar_excel' %}
+{% include 'partials/modal_importar_excel.html' with nombre_modal='EstadoActivo' titulo='Estados de Activos' url_descargar_plantilla='activos:estado_activo_descargar_plantilla' url_importar='activos:estado_activo_importar_excel' %}
+{% include 'partials/modal_importar_excel.html' with nombre_modal='MarcaActivo' titulo='Marcas/Modelos' url_descargar_plantilla='activos:marca_activo_descargar_plantilla' url_importar='activos:marca_activo_importar_excel' %}
+{% include 'partials/modal_importar_excel.html' with nombre_modal='TipoMovimientoActivo' titulo='Tipos de Movimiento' url_descargar_plantilla='activos:tipo_movimiento_activo_descargar_plantilla' url_importar='activos:tipo_movimiento_activo_importar_excel' %}
+{% include 'partials/modal_importar_excel.html' with nombre_modal='Activo' titulo='Activos/Bienes' url_descargar_plantilla='activos:activo_descargar_plantilla' url_importar='activos:activo_importar_excel' %}
 
 <!-- Modal genérico para gestores de inventario -->
 <div class="modal fade" id="invModal" tabindex="-1" aria-hidden="true">

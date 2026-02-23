@@ -2223,3 +2223,219 @@ class GestoresInventarioView(BaseAuditedViewMixin, TemplateView):
             'categoria', 'estado', 'marca'
         ).order_by('codigo')
         return context
+
+# ── Exportaciones Excel (Gestores Inventario) ────────────────────────────────
+from openpyxl import Workbook as _AWWB
+from openpyxl.styles import Font as _AFont, PatternFill as _APF, Alignment as _AAlign
+from openpyxl.utils import get_column_letter as _agcl
+from io import BytesIO as _ABytesIO
+from django.contrib.auth.decorators import login_required as _login_required_a
+
+
+def _activos_wb(titulo, headers_widths, rows_data):
+    wb = _AWWB(); ws = wb.active; ws.title = titulo[:31]
+    hf = _APF("solid", fgColor="1F3864"); hfont = _AFont(bold=True, color="FFFFFF", size=10)
+    center = _AAlign(horizontal="center", vertical="center"); left = _AAlign(horizontal="left", vertical="center")
+    odd = _APF("solid", fgColor="EBF0F8")
+    for col, (h, w) in enumerate(headers_widths, 1):
+        c = ws.cell(row=1, column=col, value=h); c.font = hfont; c.fill = hf; c.alignment = center
+        ws.column_dimensions[_agcl(col)].width = w
+    ws.freeze_panes = "A2"
+    for ri, fila in enumerate(rows_data, 2):
+        f = odd if ri % 2 == 0 else None
+        for ci, v in enumerate(fila, 1):
+            c = ws.cell(row=ri, column=ci, value=v)
+            if f: c.fill = f
+            c.alignment = center if ci >= len(fila) else left
+    out = _ABytesIO(); wb.save(out); out.seek(0); return out.read()
+
+
+def _activos_excel_resp(data, filename):
+    from django.http import HttpResponse
+    resp = HttpResponse(data, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    resp['Content-Disposition'] = f'attachment; filename="{filename}"'; return resp
+
+
+@_login_required_a
+def categoria_activo_exportar_excel(request):
+    from .models import CategoriaActivo
+    rows = [(c.codigo, c.nombre, c.sigla or "", c.descripcion or "", "SI" if c.activo else "NO")
+            for c in CategoriaActivo.objects.filter(eliminado=False).order_by("codigo")]
+    hdrs = [("Código",15),("Nombre",35),("Sigla",12),("Descripción",45),("Activo",10)]
+    return _activos_excel_resp(_activos_wb("Categorías Activos", hdrs, rows), "categorias_activos.xlsx")
+
+
+@_login_required_a
+def estado_activo_exportar_excel(request):
+    from .models import EstadoActivo
+    rows = [(e.codigo, e.nombre, e.color or "", "SI" if e.es_inicial else "NO",
+             "SI" if e.permite_movimiento else "NO", "SI" if e.activo else "NO")
+            for e in EstadoActivo.objects.filter(eliminado=False).order_by("codigo")]
+    hdrs = [("Código",15),("Nombre",35),("Color",12),("Es Inicial",12),("Permite Mov.",15),("Activo",10)]
+    return _activos_excel_resp(_activos_wb("Estados Activos", hdrs, rows), "estados_activos.xlsx")
+
+
+@_login_required_a
+def marca_activo_exportar_excel(request):
+    from .models import Marca
+    rows = [(m.codigo, m.nombre, m.descripcion or "", "SI" if m.activo else "NO")
+            for m in Marca.objects.filter(eliminado=False).order_by("codigo")]
+    hdrs = [("Código",15),("Nombre",35),("Descripción",45),("Activo",10)]
+    return _activos_excel_resp(_activos_wb("Marcas", hdrs, rows), "marcas_activos.xlsx")
+
+
+@_login_required_a
+def tipo_movimiento_activo_exportar_excel(request):
+    from .models import TipoMovimientoActivo
+    rows = [(t.codigo, t.nombre, t.descripcion or "", "SI" if t.activo else "NO")
+            for t in TipoMovimientoActivo.objects.filter(eliminado=False).order_by("codigo")]
+    hdrs = [("Código",15),("Nombre",35),("Descripción",45),("Activo",10)]
+    return _activos_excel_resp(_activos_wb("Tipos Mov. Activos", hdrs, rows), "tipos_movimiento_activos.xlsx")
+
+
+@_login_required_a
+def activo_exportar_excel(request):
+    from .models import Activo
+    rows = [(a.codigo, a.nombre, a.categoria.nombre if a.categoria else "",
+             a.marca.nombre if a.marca else "", a.estado.nombre if a.estado else "",
+             a.numero_serie or "", a.descripcion or "")
+            for a in Activo.objects.filter(eliminado=False).select_related("categoria","marca","estado").order_by("codigo")]
+    hdrs = [("Código",15),("Nombre",35),("Categoría",22),("Marca",20),("Estado",20),("N° Serie",18),("Descripción",40)]
+    return _activos_excel_resp(_activos_wb("Activos", hdrs, rows), "activos.xlsx")
+
+
+# ==================== IMPORTAR INVENTARIO (ACTIVOS) ====================
+
+@login_required
+def categoria_activo_descargar_plantilla(request):
+    from apps.bodega.excel_services.importacion_excel import ImportacionExcelService
+    from django.http import HttpResponse
+    contenido = ImportacionExcelService.generar_plantilla_categorias_activo()
+    response = HttpResponse(contenido, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response["Content-Disposition"] = 'attachment; filename="plantilla_categorias_activo.xlsx"'
+    return response
+
+
+@login_required
+def categoria_activo_importar_excel(request):
+    from apps.bodega.excel_services.importacion_excel import ImportacionExcelService
+    from django.http import JsonResponse
+    if request.method != "POST":
+        return JsonResponse({"success": False, "mensaje": "Metodo no permitido"}, status=405)
+    archivo = request.FILES.get("archivo")
+    valido, error = ImportacionExcelService.validar_archivo_excel(archivo)
+    if not valido:
+        return JsonResponse({"success": False, "mensaje": error})
+    try:
+        creadas, actualizadas, errores = ImportacionExcelService.importar_categorias_activo(archivo, request.user)
+        return JsonResponse({"success": True, "mensaje": f"Importacion completada: {creadas} creados, {actualizadas} actualizados.", "creadas": creadas, "actualizadas": actualizadas, "errores": errores[:10]})
+    except Exception as e:
+        return JsonResponse({"success": False, "mensaje": str(e)})
+
+
+@login_required
+def estado_activo_descargar_plantilla(request):
+    from apps.bodega.excel_services.importacion_excel import ImportacionExcelService
+    from django.http import HttpResponse
+    contenido = ImportacionExcelService.generar_plantilla_estados_activo()
+    response = HttpResponse(contenido, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response["Content-Disposition"] = 'attachment; filename="plantilla_estados_activo.xlsx"'
+    return response
+
+
+@login_required
+def estado_activo_importar_excel(request):
+    from apps.bodega.excel_services.importacion_excel import ImportacionExcelService
+    from django.http import JsonResponse
+    if request.method != "POST":
+        return JsonResponse({"success": False, "mensaje": "Metodo no permitido"}, status=405)
+    archivo = request.FILES.get("archivo")
+    valido, error = ImportacionExcelService.validar_archivo_excel(archivo)
+    if not valido:
+        return JsonResponse({"success": False, "mensaje": error})
+    try:
+        creadas, actualizadas, errores = ImportacionExcelService.importar_estados_activo(archivo, request.user)
+        return JsonResponse({"success": True, "mensaje": f"Importacion completada: {creadas} creados, {actualizadas} actualizados.", "creadas": creadas, "actualizadas": actualizadas, "errores": errores[:10]})
+    except Exception as e:
+        return JsonResponse({"success": False, "mensaje": str(e)})
+
+
+@login_required
+def marca_activo_descargar_plantilla(request):
+    from apps.bodega.excel_services.importacion_excel import ImportacionExcelService
+    from django.http import HttpResponse
+    contenido = ImportacionExcelService.generar_plantilla_marcas_activo()
+    response = HttpResponse(contenido, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response["Content-Disposition"] = 'attachment; filename="plantilla_marcas_activo.xlsx"'
+    return response
+
+
+@login_required
+def marca_activo_importar_excel(request):
+    from apps.bodega.excel_services.importacion_excel import ImportacionExcelService
+    from django.http import JsonResponse
+    if request.method != "POST":
+        return JsonResponse({"success": False, "mensaje": "Metodo no permitido"}, status=405)
+    archivo = request.FILES.get("archivo")
+    valido, error = ImportacionExcelService.validar_archivo_excel(archivo)
+    if not valido:
+        return JsonResponse({"success": False, "mensaje": error})
+    try:
+        creadas, actualizadas, errores = ImportacionExcelService.importar_marcas_activo(archivo, request.user)
+        return JsonResponse({"success": True, "mensaje": f"Importacion completada: {creadas} creados, {actualizadas} actualizados.", "creadas": creadas, "actualizadas": actualizadas, "errores": errores[:10]})
+    except Exception as e:
+        return JsonResponse({"success": False, "mensaje": str(e)})
+
+
+@login_required
+def tipo_movimiento_activo_descargar_plantilla(request):
+    from apps.bodega.excel_services.importacion_excel import ImportacionExcelService
+    from django.http import HttpResponse
+    contenido = ImportacionExcelService.generar_plantilla_tipos_movimiento_activo()
+    response = HttpResponse(contenido, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response["Content-Disposition"] = 'attachment; filename="plantilla_tipos_movimiento_activo.xlsx"'
+    return response
+
+
+@login_required
+def tipo_movimiento_activo_importar_excel(request):
+    from apps.bodega.excel_services.importacion_excel import ImportacionExcelService
+    from django.http import JsonResponse
+    if request.method != "POST":
+        return JsonResponse({"success": False, "mensaje": "Metodo no permitido"}, status=405)
+    archivo = request.FILES.get("archivo")
+    valido, error = ImportacionExcelService.validar_archivo_excel(archivo)
+    if not valido:
+        return JsonResponse({"success": False, "mensaje": error})
+    try:
+        creadas, actualizadas, errores = ImportacionExcelService.importar_tipos_movimiento_activo(archivo, request.user)
+        return JsonResponse({"success": True, "mensaje": f"Importacion completada: {creadas} creados, {actualizadas} actualizados.", "creadas": creadas, "actualizadas": actualizadas, "errores": errores[:10]})
+    except Exception as e:
+        return JsonResponse({"success": False, "mensaje": str(e)})
+
+
+@login_required
+def activo_descargar_plantilla(request):
+    from apps.bodega.excel_services.importacion_excel import ImportacionExcelService
+    from django.http import HttpResponse
+    contenido = ImportacionExcelService.generar_plantilla_activos()
+    response = HttpResponse(contenido, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response["Content-Disposition"] = 'attachment; filename="plantilla_activos.xlsx"'
+    return response
+
+
+@login_required
+def activo_importar_excel(request):
+    from apps.bodega.excel_services.importacion_excel import ImportacionExcelService
+    from django.http import JsonResponse
+    if request.method != "POST":
+        return JsonResponse({"success": False, "mensaje": "Metodo no permitido"}, status=405)
+    archivo = request.FILES.get("archivo")
+    valido, error = ImportacionExcelService.validar_archivo_excel(archivo)
+    if not valido:
+        return JsonResponse({"success": False, "mensaje": error})
+    try:
+        creadas, actualizadas, errores = ImportacionExcelService.importar_activos(archivo, request.user)
+        return JsonResponse({"success": True, "mensaje": f"Importacion completada: {creadas} creados, {actualizadas} actualizados.", "creadas": creadas, "actualizadas": actualizadas, "errores": errores[:10]})
+    except Exception as e:
+        return JsonResponse({"success": False, "mensaje": str(e)})

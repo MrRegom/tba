@@ -72,4 +72,22 @@ urlpatterns = [
     path('proveniencias/crear/', views.ProvenienciaCreateView.as_view(), name='crear_proveniencia'),
     path('proveniencias/<int:pk>/editar/', views.ProvenienciaUpdateView.as_view(), name='editar_proveniencia'),
     path('proveniencias/<int:pk>/eliminar/', views.ProvenienciaDeleteView.as_view(), name='eliminar_proveniencia'),
+
+    # ==================== EXPORTACIONES EXCEL ====================
+    path('categorias/exportar/', views.categoria_activo_exportar_excel, name='categoria_activo_exportar_excel'),
+    path('estados/exportar/', views.estado_activo_exportar_excel, name='estado_activo_exportar_excel'),
+    path('marcas/exportar/', views.marca_activo_exportar_excel, name='marca_activo_exportar_excel'),
+    path('tipos-movimiento/exportar/', views.tipo_movimiento_activo_exportar_excel, name='tipo_movimiento_activo_exportar_excel'),
+    path('activos/exportar/', views.activo_exportar_excel, name='activo_exportar_excel'),
+    path('categorias/plantilla/', views.categoria_activo_descargar_plantilla, name='categoria_activo_descargar_plantilla'),
+    path('categorias/importar/', views.categoria_activo_importar_excel, name='categoria_activo_importar_excel'),
+    path('estados/plantilla/', views.estado_activo_descargar_plantilla, name='estado_activo_descargar_plantilla'),
+    path('estados/importar/', views.estado_activo_importar_excel, name='estado_activo_importar_excel'),
+    path('marcas/plantilla/', views.marca_activo_descargar_plantilla, name='marca_activo_descargar_plantilla'),
+    path('marcas/importar/', views.marca_activo_importar_excel, name='marca_activo_importar_excel'),
+    path('tipos-movimiento/plantilla/', views.tipo_movimiento_activo_descargar_plantilla, name='tipo_movimiento_activo_descargar_plantilla'),
+    path('tipos-movimiento/importar/', views.tipo_movimiento_activo_importar_excel, name='tipo_movimiento_activo_importar_excel'),
+    path('activos/plantilla/', views.activo_descargar_plantilla, name='activo_descargar_plantilla'),
+    path('activos/importar/', views.activo_importar_excel, name='activo_importar_excel'),
+
 ]
