@@ -3408,3 +3408,180 @@ def tipo_recepcion_importar_excel(request):
         })
     except Exception as e:
         return JsonResponse({'error': f'Error al importar: {str(e)}'}, status=500)
+
+
+# ── Exportaciones Excel (Gestores Bodega) ───────────────────────────────────
+from openpyxl import Workbook as _BWWB
+from openpyxl.styles import Font as _BFont, PatternFill as _BPF, Alignment as _BAlign
+from openpyxl.utils import get_column_letter as _bgcl
+from io import BytesIO as _BBytesIO
+
+
+def _bodega_wb(titulo, headers_widths, rows_data):
+    wb = _BWWB(); ws = wb.active; ws.title = titulo[:31]
+    hf = _BPF("solid", fgColor="1F3864"); hfont = _BFont(bold=True, color="FFFFFF", size=10)
+    center = _BAlign(horizontal="center", vertical="center"); left = _BAlign(horizontal="left", vertical="center")
+    odd = _BPF("solid", fgColor="EBF0F8")
+    for col, (h, w) in enumerate(headers_widths, 1):
+        c = ws.cell(row=1, column=col, value=h); c.font = hfont; c.fill = hf; c.alignment = center
+        ws.column_dimensions[_bgcl(col)].width = w
+    ws.freeze_panes = "A2"
+    for ri, fila in enumerate(rows_data, 2):
+        f = odd if ri % 2 == 0 else None
+        for ci, v in enumerate(fila, 1):
+            c = ws.cell(row=ri, column=ci, value=v)
+            if f: c.fill = f
+            c.alignment = center if ci >= len(fila) else left
+    out = _BBytesIO(); wb.save(out); out.seek(0); return out.read()
+
+
+def _bodega_excel_resp(data, filename):
+    from django.http import HttpResponse
+    resp = HttpResponse(data, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    resp['Content-Disposition'] = f'attachment; filename="{filename}"'; return resp
+
+
+@login_required
+def articulo_exportar_excel(request):
+    from .models import Articulo
+    rows = [(a.codigo or "", a.nombre, str(a.categoria) if a.categoria else "",
+             str(a.marca) if a.marca else "", a.stock_actual, a.stock_minimo,
+             a.stock_maximo or 0, str(a.unidad_medida) if a.unidad_medida else "")
+            for a in Articulo.objects.filter(eliminado=False).select_related("categoria","marca","unidad_medida").order_by("nombre")]
+    hdrs = [("Código",15),("Nombre",35),("Categoría",22),("Marca",20),("Stock Actual",14),("Stock Mínimo",14),("Stock Máximo",14),("Unidad",15)]
+    return _bodega_excel_resp(_bodega_wb("Artículos", hdrs, rows), "articulos.xlsx")
+
+
+@login_required
+def categoria_exportar_excel(request):
+    from .models import Categoria
+    rows = [(c.codigo, c.nombre, c.descripcion or "") for c in Categoria.objects.filter(eliminado=False).order_by("codigo")]
+    hdrs = [("Código",15),("Nombre",35),("Descripción",45)]
+    return _bodega_excel_resp(_bodega_wb("Categorías", hdrs, rows), "categorias_bodega.xlsx")
+
+
+@login_required
+def operacion_exportar_excel(request):
+    from .models import Operacion
+    rows = [(o.codigo, o.nombre, o.descripcion or "") for o in Operacion.objects.filter(eliminado=False).order_by("codigo")]
+    hdrs = [("Código",15),("Nombre",35),("Descripción",45)]
+    return _bodega_excel_resp(_bodega_wb("Operaciones", hdrs, rows), "operaciones.xlsx")
+
+
+@login_required
+def tipo_movimiento_exportar_excel(request):
+    from .models import TipoMovimiento
+    rows = [(t.codigo, t.nombre) for t in TipoMovimiento.objects.filter(eliminado=False).order_by("codigo")]
+    hdrs = [("Código",15),("Nombre",40)]
+    return _bodega_excel_resp(_bodega_wb("Tipos Movimiento", hdrs, rows), "tipos_movimiento_bodega.xlsx")
+
+
+@login_required
+def unidad_medida_exportar_excel(request):
+    from .models import UnidadMedida
+    rows = [(u.codigo, u.nombre, u.abreviatura or "") for u in UnidadMedida.objects.filter(eliminado=False).order_by("codigo")]
+    hdrs = [("Código",15),("Nombre",35),("Abreviatura",15)]
+    return _bodega_excel_resp(_bodega_wb("Unidades Medida", hdrs, rows), "unidades_medida.xlsx")
+
+
+@login_required
+def estado_recepcion_exportar_excel(request):
+    from .models import EstadoRecepcion
+    rows = [(e.codigo, e.nombre, e.descripcion or "") for e in EstadoRecepcion.objects.filter(eliminado=False).order_by("codigo")]
+    hdrs = [("Código",15),("Nombre",35),("Descripción",45)]
+    return _bodega_excel_resp(_bodega_wb("Estados Recepción", hdrs, rows), "estados_recepcion.xlsx")
+
+
+@login_required
+def tipo_recepcion_exportar_excel(request):
+    from .models import TipoRecepcion
+    rows = [(t.codigo, t.nombre, t.descripcion or "") for t in TipoRecepcion.objects.filter(eliminado=False).order_by("codigo")]
+    hdrs = [("Código",15),("Nombre",35),("Descripción",45)]
+    return _bodega_excel_resp(_bodega_wb("Tipos Recepción", hdrs, rows), "tipos_recepcion.xlsx")
+
+
+# ==================== IMPORTAR CATEGORIA ====================
+
+@login_required
+def categoria_descargar_plantilla(request):
+    from apps.bodega.excel_services.importacion_excel import ImportacionExcelService
+    from django.http import HttpResponse
+    contenido = ImportacionExcelService.generar_plantilla_categorias_bodega()
+    response = HttpResponse(contenido, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="plantilla_categorias.xlsx"'
+    return response
+
+
+@login_required
+def categoria_importar_excel(request):
+    from apps.bodega.excel_services.importacion_excel import ImportacionExcelService
+    from django.http import JsonResponse
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'mensaje': 'Método no permitido'}, status=405)
+    archivo = request.FILES.get('archivo')
+    valido, error = ImportacionExcelService.validar_archivo_excel(archivo)
+    if not valido:
+        return JsonResponse({'success': False, 'mensaje': error})
+    try:
+        creadas, actualizadas, errores = ImportacionExcelService.importar_categorias_bodega(archivo, request.user)
+        return JsonResponse({'success': True, 'mensaje': f'Importación completada: {creadas} creados, {actualizadas} actualizados.', 'creadas': creadas, 'actualizadas': actualizadas, 'errores': errores[:10]})
+    except Exception as e:
+        return JsonResponse({'success': False, 'mensaje': str(e)})
+
+
+# ==================== IMPORTAR UNIDAD MEDIDA ====================
+
+@login_required
+def unidad_medida_descargar_plantilla(request):
+    from apps.bodega.excel_services.importacion_excel import ImportacionExcelService
+    from django.http import HttpResponse
+    contenido = ImportacionExcelService.generar_plantilla_unidades_medida()
+    response = HttpResponse(contenido, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="plantilla_unidades_medida.xlsx"'
+    return response
+
+
+@login_required
+def unidad_medida_importar_excel(request):
+    from apps.bodega.excel_services.importacion_excel import ImportacionExcelService
+    from django.http import JsonResponse
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'mensaje': 'Método no permitido'}, status=405)
+    archivo = request.FILES.get('archivo')
+    valido, error = ImportacionExcelService.validar_archivo_excel(archivo)
+    if not valido:
+        return JsonResponse({'success': False, 'mensaje': error})
+    try:
+        creadas, actualizadas, errores = ImportacionExcelService.importar_unidades_medida(archivo, request.user)
+        return JsonResponse({'success': True, 'mensaje': f'Importación completada: {creadas} creados, {actualizadas} actualizados.', 'creadas': creadas, 'actualizadas': actualizadas, 'errores': errores[:10]})
+    except Exception as e:
+        return JsonResponse({'success': False, 'mensaje': str(e)})
+
+
+# ==================== IMPORTAR ARTICULO ====================
+
+@login_required
+def articulo_descargar_plantilla(request):
+    from apps.bodega.excel_services.importacion_excel import ImportacionExcelService
+    from django.http import HttpResponse
+    contenido = ImportacionExcelService.generar_plantilla_articulos()
+    response = HttpResponse(contenido, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="plantilla_articulos.xlsx"'
+    return response
+
+
+@login_required
+def articulo_importar_excel(request):
+    from apps.bodega.excel_services.importacion_excel import ImportacionExcelService
+    from django.http import JsonResponse
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'mensaje': 'Método no permitido'}, status=405)
+    archivo = request.FILES.get('archivo')
+    valido, error = ImportacionExcelService.validar_archivo_excel(archivo)
+    if not valido:
+        return JsonResponse({'success': False, 'mensaje': error})
+    try:
+        creadas, actualizadas, errores = ImportacionExcelService.importar_articulos(archivo, request.user)
+        return JsonResponse({'success': True, 'mensaje': f'Importación completada: {creadas} creados, {actualizadas} actualizados.', 'creadas': creadas, 'actualizadas': actualizadas, 'errores': errores[:10]})
+    except Exception as e:
+        return JsonResponse({'success': False, 'mensaje': str(e)})

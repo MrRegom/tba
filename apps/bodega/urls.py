@@ -111,4 +111,20 @@ urlpatterns = [
     path('mantenedores/tipos-recepcion/<int:pk>/eliminar/', views.TipoRecepcionDeleteView.as_view(), name='tipo_recepcion_eliminar'),
     path('mantenedores/tipos-recepcion/importar/plantilla/', views.tipo_recepcion_descargar_plantilla, name='tipo_recepcion_descargar_plantilla'),
     path('mantenedores/tipos-recepcion/importar/', views.tipo_recepcion_importar_excel, name='tipo_recepcion_importar_excel'),
+
+    # ==================== EXPORTACIONES EXCEL ====================
+    path('mantenedores/articulos/exportar/', views.articulo_exportar_excel, name='articulo_exportar_excel'),
+    path('mantenedores/categorias/exportar/', views.categoria_exportar_excel, name='categoria_exportar_excel'),
+    path('mantenedores/operaciones/exportar/', views.operacion_exportar_excel, name='operacion_exportar_excel'),
+    path('mantenedores/tipos-movimiento/exportar/', views.tipo_movimiento_exportar_excel, name='tipo_movimiento_exportar_excel'),
+    path('mantenedores/unidades/exportar/', views.unidad_medida_exportar_excel, name='unidad_medida_exportar_excel'),
+    path('mantenedores/estados-recepcion/exportar/', views.estado_recepcion_exportar_excel, name='estado_recepcion_exportar_excel'),
+    path('mantenedores/tipos-recepcion/exportar/', views.tipo_recepcion_exportar_excel, name='tipo_recepcion_exportar_excel'),
+    path('articulos/plantilla/', views.articulo_descargar_plantilla, name='articulo_descargar_plantilla'),
+    path('articulos/importar/', views.articulo_importar_excel, name='articulo_importar_excel'),
+    path('categorias/plantilla/', views.categoria_descargar_plantilla, name='categoria_descargar_plantilla'),
+    path('categorias/importar/', views.categoria_importar_excel, name='categoria_importar_excel'),
+    path('unidades-medida/plantilla/', views.unidad_medida_descargar_plantilla, name='unidad_medida_descargar_plantilla'),
+    path('unidades-medida/importar/', views.unidad_medida_importar_excel, name='unidad_medida_importar_excel'),
+
 ]

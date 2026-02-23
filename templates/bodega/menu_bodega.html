@@ -81,10 +81,16 @@
             <!-- ============ ARTÍCULOS TAB ============ -->
             <div class="tab-pane fade show active" id="articulos" role="tabpanel" aria-labelledby="articulos-tab">
                 <div class="card">
-                    <div class="card-header d-flex align-items-center">
+                    <div class="card-header d-flex align-items-center gap-2">
                         <h4 class="card-title flex-grow-1 mb-0">Gestión de Artículos</h4>
+                        <a href="{% url 'bodega:articulo_exportar_excel' %}" class="btn btn-outline-success btn-sm">
+                            <i class="ri-file-excel-line me-1"></i>Exportar
+                        </a>
                         {% if permisos.puede_crear_articulo %}
-                        <a href="{% url 'bodega:articulo_crear' %}" class="btn btn-primary">
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalImportarArticulo">
+                            <i class="ri-upload-line me-1"></i>Importar
+                        </button>
+                        <a href="{% url 'bodega:articulo_crear' %}" class="btn btn-primary btn-sm">
                             <i class="ri-add-line me-1"></i>Nuevo Artículo
                         </a>
                         {% endif %}
@@ -156,10 +162,16 @@
             <!-- ============ CATEGORÍAS TAB ============ -->
             <div class="tab-pane fade" id="categorias" role="tabpanel" aria-labelledby="categorias-tab">
                 <div class="card">
-                    <div class="card-header d-flex align-items-center">
+                    <div class="card-header d-flex align-items-center gap-2">
                         <h4 class="card-title flex-grow-1 mb-0">Gestión de Categorías</h4>
+                        <a href="{% url 'bodega:categoria_exportar_excel' %}" class="btn btn-outline-success btn-sm">
+                            <i class="ri-file-excel-line me-1"></i>Exportar
+                        </a>
                         {% if permisos.puede_crear_categoria %}
-                        <a href="{% url 'bodega:categoria_crear' %}" class="btn btn-primary">
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalImportarCategoria">
+                            <i class="ri-upload-line me-1"></i>Importar
+                        </button>
+                        <a href="{% url 'bodega:categoria_crear' %}" class="btn btn-primary btn-sm">
                             <i class="ri-add-line me-1"></i>Nueva Categoría
                         </a>
                         {% endif %}
@@ -203,10 +215,16 @@
             <!-- ============ OPERACIONES TAB ============ -->
             <div class="tab-pane fade" id="operaciones" role="tabpanel" aria-labelledby="operaciones-tab">
                 <div class="card">
-                    <div class="card-header d-flex align-items-center">
+                    <div class="card-header d-flex align-items-center gap-2">
                         <h4 class="card-title flex-grow-1 mb-0">Gestión de Operaciones</h4>
+                        <a href="{% url 'bodega:operacion_exportar_excel' %}" class="btn btn-outline-success btn-sm">
+                            <i class="ri-file-excel-line me-1"></i>Exportar
+                        </a>
                         {% if permisos.puede_crear_operacion %}
-                        <a href="{% url 'bodega:operacion_crear' %}" class="btn btn-primary">
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalImportarOperacion">
+                            <i class="ri-upload-line me-1"></i>Importar
+                        </button>
+                        <a href="{% url 'bodega:operacion_crear' %}" class="btn btn-primary btn-sm">
                             <i class="ri-add-line me-1"></i>Nueva Operación
                         </a>
                         {% endif %}
@@ -250,10 +268,16 @@
             <!-- ============ TIPOS DE MOVIMIENTO TAB ============ -->
             <div class="tab-pane fade" id="tipos-movimiento" role="tabpanel" aria-labelledby="tipos-movimiento-tab">
                 <div class="card">
-                    <div class="card-header d-flex align-items-center">
+                    <div class="card-header d-flex align-items-center gap-2">
                         <h4 class="card-title flex-grow-1 mb-0">Gestión de Tipos de Movimiento</h4>
+                        <a href="{% url 'bodega:tipo_movimiento_exportar_excel' %}" class="btn btn-outline-success btn-sm">
+                            <i class="ri-file-excel-line me-1"></i>Exportar
+                        </a>
                         {% if permisos.puede_crear_tipo_movimiento %}
-                        <a href="{% url 'bodega:tipo_movimiento_crear' %}" class="btn btn-primary">
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalImportarTipoMovimiento">
+                            <i class="ri-upload-line me-1"></i>Importar
+                        </button>
+                        <a href="{% url 'bodega:tipo_movimiento_crear' %}" class="btn btn-primary btn-sm">
                             <i class="ri-add-line me-1"></i>Nuevo Tipo
                         </a>
                         {% endif %}
@@ -295,10 +319,16 @@
             <!-- ============ UNIDADES DE MEDIDA TAB ============ -->
             <div class="tab-pane fade" id="unidades-medida" role="tabpanel" aria-labelledby="unidades-medida-tab">
                 <div class="card">
-                    <div class="card-header d-flex align-items-center">
+                    <div class="card-header d-flex align-items-center gap-2">
                         <h4 class="card-title flex-grow-1 mb-0">Gestión de Unidades de Medida</h4>
+                        <a href="{% url 'bodega:unidad_medida_exportar_excel' %}" class="btn btn-outline-success btn-sm">
+                            <i class="ri-file-excel-line me-1"></i>Exportar
+                        </a>
                         {% if permisos.puede_crear_unidad %}
-                        <a href="{% url 'bodega:unidad_crear' %}" class="btn btn-primary">
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalImportarUnidadMedida">
+                            <i class="ri-upload-line me-1"></i>Importar
+                        </button>
+                        <a href="{% url 'bodega:unidad_crear' %}" class="btn btn-primary btn-sm">
                             <i class="ri-add-line me-1"></i>Nueva Unidad
                         </a>
                         {% endif %}
@@ -342,10 +372,16 @@
             <!-- ============ ESTADOS DE RECEPCIÓN TAB ============ -->
             <div class="tab-pane fade" id="estados-recepcion" role="tabpanel" aria-labelledby="estados-recepcion-tab">
                 <div class="card">
-                    <div class="card-header d-flex align-items-center">
+                    <div class="card-header d-flex align-items-center gap-2">
                         <h4 class="card-title flex-grow-1 mb-0">Gestión de Estados de Recepción</h4>
+                        <a href="{% url 'bodega:estado_recepcion_exportar_excel' %}" class="btn btn-outline-success btn-sm">
+                            <i class="ri-file-excel-line me-1"></i>Exportar
+                        </a>
                         {% if permisos.puede_crear_estado_recepcion %}
-                        <a href="{% url 'bodega:estado_recepcion_crear' %}" class="btn btn-primary">
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalImportarEstadoRecepcion">
+                            <i class="ri-upload-line me-1"></i>Importar
+                        </button>
+                        <a href="{% url 'bodega:estado_recepcion_crear' %}" class="btn btn-primary btn-sm">
                             <i class="ri-add-line me-1"></i>Nuevo Estado
                         </a>
                         {% endif %}
@@ -389,10 +425,16 @@
             <!-- ============ TIPOS DE RECEPCIÓN TAB ============ -->
             <div class="tab-pane fade" id="tipos-recepcion" role="tabpanel" aria-labelledby="tipos-recepcion-tab">
                 <div class="card">
-                    <div class="card-header d-flex align-items-center">
+                    <div class="card-header d-flex align-items-center gap-2">
                         <h4 class="card-title flex-grow-1 mb-0">Gestión de Tipos de Recepción</h4>
+                        <a href="{% url 'bodega:tipo_recepcion_exportar_excel' %}" class="btn btn-outline-success btn-sm">
+                            <i class="ri-file-excel-line me-1"></i>Exportar
+                        </a>
                         {% if permisos.puede_crear_tipo_recepcion %}
-                        <a href="{% url 'bodega:tipo_recepcion_crear' %}" class="btn btn-primary">
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalImportarTipoRecepcion">
+                            <i class="ri-upload-line me-1"></i>Importar
+                        </button>
+                        <a href="{% url 'bodega:tipo_recepcion_crear' %}" class="btn btn-primary btn-sm">
                             <i class="ri-add-line me-1"></i>Nuevo Tipo
                         </a>
                         {% endif %}
@@ -436,6 +478,14 @@
         </div>
     </div>
 </div>
+
+{% include 'partials/modal_importar_excel.html' with nombre_modal='Articulo' titulo='Artículos' url_descargar_plantilla='bodega:articulo_descargar_plantilla' url_importar='bodega:articulo_importar_excel' %}
+{% include 'partials/modal_importar_excel.html' with nombre_modal='Categoria' titulo='Categorías' url_descargar_plantilla='bodega:categoria_descargar_plantilla' url_importar='bodega:categoria_importar_excel' %}
+{% include 'partials/modal_importar_excel.html' with nombre_modal='Operacion' titulo='Operaciones' url_descargar_plantilla='bodega:operacion_descargar_plantilla' url_importar='bodega:operacion_importar_excel' %}
+{% include 'partials/modal_importar_excel.html' with nombre_modal='TipoMovimiento' titulo='Tipos de Movimiento' url_descargar_plantilla='bodega:tipo_movimiento_descargar_plantilla' url_importar='bodega:tipo_movimiento_importar_excel' %}
+{% include 'partials/modal_importar_excel.html' with nombre_modal='UnidadMedida' titulo='Unidades de Medida' url_descargar_plantilla='bodega:unidad_medida_descargar_plantilla' url_importar='bodega:unidad_medida_importar_excel' %}
+{% include 'partials/modal_importar_excel.html' with nombre_modal='EstadoRecepcion' titulo='Estados de Recepción' url_descargar_plantilla='bodega:estado_recepcion_descargar_plantilla' url_importar='bodega:estado_recepcion_importar_excel' %}
+{% include 'partials/modal_importar_excel.html' with nombre_modal='TipoRecepcion' titulo='Tipos de Recepción' url_descargar_plantilla='bodega:tipo_recepcion_descargar_plantilla' url_importar='bodega:tipo_recepcion_importar_excel' %}
 
 <!-- Modal genérico para artículos -->
 <div class="modal fade" id="articuloModal" tabindex="-1" aria-hidden="true">
