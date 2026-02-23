@@ -38,6 +38,13 @@ urlpatterns = [
     path('mantenedores/estados-orden-compra/crear/', views.EstadoOrdenCompraCreateView.as_view(), name='estado_orden_compra_crear'),
     path('mantenedores/estados-orden-compra/<int:pk>/editar/', views.EstadoOrdenCompraUpdateView.as_view(), name='estado_orden_compra_editar'),
     path('mantenedores/estados-orden-compra/<int:pk>/eliminar/', views.EstadoOrdenCompraDeleteView.as_view(), name='estado_orden_compra_eliminar'),
+    path('mantenedores/estados-orden-compra/exportar/', views.estado_orden_compra_exportar_excel, name='estado_orden_compra_exportar_excel'),
     path('mantenedores/estados-orden-compra/importar/plantilla/', views.estado_orden_compra_descargar_plantilla, name='estado_orden_compra_descargar_plantilla'),
     path('mantenedores/estados-orden-compra/importar/', views.estado_orden_compra_importar_excel, name='estado_orden_compra_importar_excel'),
+
+    # Exportar Proveedores
+    path('proveedores/exportar/', views.proveedor_exportar_excel, name='proveedor_exportar_excel'),
+    path('proveedores/plantilla/', views.proveedor_descargar_plantilla, name='proveedor_descargar_plantilla'),
+    path('proveedores/importar/', views.proveedor_importar_excel, name='proveedor_importar_excel'),
+
 ]

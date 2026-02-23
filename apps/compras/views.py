@@ -1283,3 +1283,82 @@ def estado_orden_compra_importar_excel(request):
         })
     except Exception as e:
         return JsonResponse({'error': f'Error al importar: {str(e)}'}, status=500)
+
+# ── Exportaciones Excel (Gestores Compras) ──────────────────────────────────
+from openpyxl import Workbook as _WB
+from openpyxl.styles import Font as _Font, PatternFill as _PF, Alignment as _Align
+from openpyxl.utils import get_column_letter as _gcl
+from io import BytesIO as _BytesIO
+
+
+def _compras_wb(titulo, headers_widths, rows_data):
+    wb = _WB(); ws = wb.active; ws.title = titulo[:31]
+    hf = _PF("solid", fgColor="1F3864"); hfont = _Font(bold=True, color="FFFFFF", size=10)
+    center = _Align(horizontal="center", vertical="center"); left = _Align(horizontal="left", vertical="center")
+    odd = _PF("solid", fgColor="EBF0F8")
+    for col, (h, w) in enumerate(headers_widths, 1):
+        c = ws.cell(row=1, column=col, value=h); c.font = hfont; c.fill = hf; c.alignment = center
+        ws.column_dimensions[_gcl(col)].width = w
+    ws.freeze_panes = "A2"
+    for ri, fila in enumerate(rows_data, 2):
+        f = odd if ri % 2 == 0 else None
+        for ci, v in enumerate(fila, 1):
+            c = ws.cell(row=ri, column=ci, value=v)
+            if f: c.fill = f
+            c.alignment = center if ci >= len(fila)-1 else left
+    out = _BytesIO(); wb.save(out); out.seek(0); return out.read()
+
+
+def _compras_excel_resp(data, filename):
+    from django.http import HttpResponse
+    resp = HttpResponse(data, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    resp['Content-Disposition'] = f'attachment; filename="{filename}"'; return resp
+
+
+@login_required
+def estado_orden_compra_exportar_excel(request):
+    from .models import EstadoOrdenCompra
+    rows = [(e.codigo, e.nombre, e.descripcion or "", e.color or "", "SI" if e.activo else "NO")
+            for e in EstadoOrdenCompra.objects.filter(eliminado=False).order_by("codigo")]
+    hdrs = [("Código",15),("Nombre",35),("Descripción",45),("Color",12),("Activo",10)]
+    return _compras_excel_resp(_compras_wb("Estados OC", hdrs, rows), "estados_orden_compra.xlsx")
+
+
+@login_required
+def proveedor_exportar_excel(request):
+    from .models import Proveedor
+    rows = [(p.rut, p.razon_social, p.email or "", p.telefono or "",
+             p.direccion or "", p.ciudad or "", p.comuna or "", "SI" if p.activo else "NO")
+            for p in Proveedor.objects.filter(eliminado=False).order_by("razon_social")]
+    hdrs = [("RUT",14),("Razón Social",40),("Email",30),("Teléfono",15),
+            ("Dirección",35),("Ciudad",20),("Comuna",20),("Activo",10)]
+    return _compras_excel_resp(_compras_wb("Proveedores", hdrs, rows), "proveedores.xlsx")
+
+
+# ==================== IMPORTAR PROVEEDOR ====================
+
+@login_required
+def proveedor_descargar_plantilla(request):
+    from apps.bodega.excel_services.importacion_excel import ImportacionExcelService
+    from django.http import HttpResponse
+    contenido = ImportacionExcelService.generar_plantilla_proveedores()
+    response = HttpResponse(contenido, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="plantilla_proveedores.xlsx"'
+    return response
+
+
+@login_required
+def proveedor_importar_excel(request):
+    from apps.bodega.excel_services.importacion_excel import ImportacionExcelService
+    from django.http import JsonResponse
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'mensaje': 'Método no permitido'}, status=405)
+    archivo = request.FILES.get('archivo')
+    valido, error = ImportacionExcelService.validar_archivo_excel(archivo)
+    if not valido:
+        return JsonResponse({'success': False, 'mensaje': error})
+    try:
+        creadas, actualizadas, errores = ImportacionExcelService.importar_proveedores(archivo, request.user)
+        return JsonResponse({'success': True, 'mensaje': f'Importación completada: {creadas} creados, {actualizadas} actualizados.', 'creadas': creadas, 'actualizadas': actualizadas, 'errores': errores[:10]})
+    except Exception as e:
+        return JsonResponse({'success': False, 'mensaje': str(e)})
