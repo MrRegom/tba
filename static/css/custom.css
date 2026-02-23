@@ -1019,7 +1019,7 @@ svg {
 
 /* Reduce el padding superior del contenido de la página - LAYOUT FLUID VERTICAL */
 .page-content {
-  padding-top: 1.5rem !important;
+  padding-top: 0 !important;
   padding-bottom: 1.5rem !important;
 }
 
@@ -1029,18 +1029,18 @@ svg {
   margin-top: 0 !important;
 }
 
-/* Row sin márgenes negativos */
+/* Row con márgenes negativos para subir el contenido principal */
 .page-content > .container-fluid > .row:first-child {
-  margin-top: 0 !important;
+  margin-top: -2.5rem !important;
 }
 
 /* Reduce el padding del título de página sin ocultarlo */
 /* Solo para módulos (cuando está dentro de page-content > container-fluid) */
 .page-content > .container-fluid > .row > .col-12 > .page-title-box {
   padding-top: 0 !important;
-  padding-bottom: 0.5rem !important;
-  margin-top: 0 !important;
-  margin-bottom: 0.75rem !important;
+  padding-bottom: 0.25rem !important;
+  margin-top: -0.5rem !important;
+  margin-bottom: 0.5rem !important;
 }
 
 /* Asegurar visibilidad de botones en page-title-box */
@@ -1463,7 +1463,7 @@ form .form-control[readonly] {
 
 /* Main content con padding para compensar topbar fijo */
 .main-content {
-  padding-top: 70px !important;
+  padding-top: 55px !important;
 }
 
 /* Sidebar en posición fija para superponerse al contenido */
