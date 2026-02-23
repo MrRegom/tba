@@ -87,4 +87,28 @@ urlpatterns = [
     path('cargos/crear/', views.CargoCreateView.as_view(), name='cargo_crear'),
     path('cargos/<int:pk>/editar/', views.CargoUpdateView.as_view(), name='cargo_editar'),
     path('cargos/<int:pk>/eliminar/', views.CargoDeleteView.as_view(), name='cargo_eliminar'),
+
+    # ==================== EXPORTACIONES EXCEL ====================
+    # Organización
+    path('organizacion/ubicaciones/exportar/', views.ubicacion_exportar_excel, name='ubicacion_exportar_excel'),
+    path('organizacion/talleres/exportar/', views.taller_exportar_excel, name='taller_exportar_excel'),
+    path('organizacion/bodegas/exportar/', views.bodega_exportar_excel, name='bodega_exportar_excel'),
+    path('organizacion/departamentos/exportar/', views.departamento_exportar_excel, name='departamento_exportar_excel'),
+    path('organizacion/areas/exportar/', views.area_exportar_excel, name='area_exportar_excel'),
+    # Usuarios
+    path('usuarios/exportar/', views.usuarios_exportar_excel, name='usuarios_exportar_excel'),
+    path('cargos/exportar/', views.cargo_exportar_excel, name='cargo_exportar_excel'),
+    path('ubicaciones/plantilla/', views.ubicacion_descargar_plantilla, name='ubicacion_descargar_plantilla'),
+    path('ubicaciones/importar/', views.ubicacion_importar_excel, name='ubicacion_importar_excel'),
+    path('talleres/plantilla/', views.taller_descargar_plantilla, name='taller_descargar_plantilla'),
+    path('talleres/importar/', views.taller_importar_excel, name='taller_importar_excel'),
+    path('bodegas-org/plantilla/', views.bodega_org_descargar_plantilla, name='bodega_org_descargar_plantilla'),
+    path('bodegas-org/importar/', views.bodega_org_importar_excel, name='bodega_org_importar_excel'),
+    path('departamentos/plantilla/', views.departamento_descargar_plantilla, name='departamento_descargar_plantilla'),
+    path('departamentos/importar/', views.departamento_importar_excel, name='departamento_importar_excel'),
+    path('areas/plantilla/', views.area_descargar_plantilla, name='area_descargar_plantilla'),
+    path('areas/importar/', views.area_importar_excel, name='area_importar_excel'),
+    path('cargos/plantilla/', views.cargo_descargar_plantilla, name='cargo_descargar_plantilla'),
+    path('cargos/importar/', views.cargo_importar_excel, name='cargo_importar_excel'),
+
 ]
