@@ -1738,3 +1738,198 @@ def estado_solicitud_importar_excel(request):
         })
     except Exception as e:
         return JsonResponse({'error': f'Error al importar: {str(e)}'}, status=500)
+
+
+# ==================== EXPORTAR DATOS MAESTROS (GESTORES) ====================
+
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment
+from openpyxl.utils import get_column_letter
+from io import BytesIO
+
+
+def _excel_response(contenido: bytes, filename: str):
+    resp = HttpResponse(contenido, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    resp['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return resp
+
+
+@login_required
+def tipo_solicitud_exportar_excel(request):
+    """Exporta el listado de tipos de solicitud a Excel."""
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Tipos de Solicitud"
+
+    header_fill = PatternFill("solid", fgColor="1F3864")
+    header_font = Font(bold=True, color="FFFFFF", size=10)
+    center = Alignment(horizontal="center", vertical="center")
+
+    headers = ["Código", "Nombre", "Descripción", "Requiere Aprobación", "Activo"]
+    widths  = [15,        35,       45,             22,                    10]
+
+    for col, (h, w) in enumerate(zip(headers, widths), start=1):
+        cell = ws.cell(row=1, column=col, value=h)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = center
+        ws.column_dimensions[get_column_letter(col)].width = w
+
+    ws.freeze_panes = "A2"
+
+    odd_fill = PatternFill("solid", fgColor="EBF0F8")
+    for row_idx, obj in enumerate(
+        TipoSolicitud.objects.filter(eliminado=False).order_by('codigo'), start=2
+    ):
+        fill = odd_fill if row_idx % 2 == 0 else None
+        fila = [
+            obj.codigo,
+            obj.nombre,
+            obj.descripcion or "",
+            "SI" if obj.requiere_aprobacion else "NO",
+            "SI" if obj.activo else "NO",
+        ]
+        for col, valor in enumerate(fila, start=1):
+            cell = ws.cell(row=row_idx, column=col, value=valor)
+            cell.alignment = center if col in (4, 5) else Alignment(horizontal="left", vertical="center")
+            if fill:
+                cell.fill = fill
+
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return _excel_response(output.read(), "tipos_solicitud.xlsx")
+
+
+@login_required
+def estado_solicitud_exportar_excel(request):
+    """Exporta el listado de estados de solicitud a Excel."""
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Estados de Solicitud"
+
+    header_fill = PatternFill("solid", fgColor="1F3864")
+    header_font = Font(bold=True, color="FFFFFF", size=10)
+    center = Alignment(horizontal="center", vertical="center")
+
+    headers = ["Código", "Nombre", "Color", "Es Inicial", "Es Final", "Requiere Acción", "Activo"]
+    widths  = [15,        35,       12,       12,           10,         18,                10]
+
+    for col, (h, w) in enumerate(zip(headers, widths), start=1):
+        cell = ws.cell(row=1, column=col, value=h)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = center
+        ws.column_dimensions[get_column_letter(col)].width = w
+
+    ws.freeze_panes = "A2"
+
+    odd_fill = PatternFill("solid", fgColor="EBF0F8")
+    for row_idx, obj in enumerate(
+        EstadoSolicitud.objects.filter(eliminado=False).order_by('codigo'), start=2
+    ):
+        fill = odd_fill if row_idx % 2 == 0 else None
+        color_hex = obj.color.lstrip('#') if hasattr(obj, 'color') and obj.color else "CCCCCC"
+        fila = [
+            obj.codigo,
+            obj.nombre,
+            obj.color if hasattr(obj, 'color') else "",
+            "SI" if obj.es_inicial else "NO",
+            "SI" if obj.es_final else "NO",
+            "SI" if obj.requiere_accion else "NO",
+            "SI" if obj.activo else "NO",
+        ]
+        for col, valor in enumerate(fila, start=1):
+            cell = ws.cell(row=row_idx, column=col, value=valor)
+            cell.alignment = center if col in (3, 4, 5, 6, 7) else Alignment(horizontal="left", vertical="center")
+            if fill:
+                cell.fill = fill
+            # Colorear la celda de color con el color del estado
+            if col == 3 and color_hex:
+                try:
+                    cell.fill = PatternFill("solid", fgColor=color_hex)
+                except Exception:
+                    pass
+
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return _excel_response(output.read(), "estados_solicitud.xlsx")
+
+
+# ==================== EXPORTAR / IMPORTAR SOLICITUDES ====================
+
+from .excel_services import ExportacionSolicitudesService, ImportacionSolicitudesService
+
+
+@login_required
+def solicitudes_exportar_excel(request):
+    """Exporta la lista de solicitudes (con filtros) a Excel."""
+    from .forms import FiltroSolicitudesForm
+
+    queryset = Solicitud.objects.filter(eliminado=False)
+
+    form = FiltroSolicitudesForm(request.GET)
+    if form.is_valid():
+        data = form.cleaned_data
+        if data.get('estado'):
+            queryset = queryset.filter(estado=data['estado'])
+        if data.get('tipo'):
+            queryset = queryset.filter(tipo_solicitud=data['tipo'])
+        if data.get('fecha_desde'):
+            queryset = queryset.filter(fecha_solicitud__gte=data['fecha_desde'])
+        if data.get('fecha_hasta'):
+            queryset = queryset.filter(fecha_solicitud__lte=data['fecha_hasta'])
+        if data.get('buscar'):
+            q = data['buscar']
+            queryset = queryset.filter(
+                Q(numero__icontains=q) |
+                Q(solicitante__username__icontains=q) |
+                Q(area__nombre__icontains=q) |
+                Q(departamento__nombre__icontains=q)
+            )
+
+    contenido = ExportacionSolicitudesService.exportar(queryset, titulo="Reporte de Solicitudes")
+    response = HttpResponse(
+        contenido,
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+    response['Content-Disposition'] = 'attachment; filename="solicitudes.xlsx"'
+    return response
+
+
+@login_required
+def solicitudes_descargar_plantilla(request):
+    """Descarga la plantilla Excel para importar solicitudes."""
+    contenido = ImportacionSolicitudesService.generar_plantilla()
+    response = HttpResponse(
+        contenido,
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+    response['Content-Disposition'] = 'attachment; filename="plantilla_solicitudes.xlsx"'
+    return response
+
+
+@login_required
+def solicitudes_importar_excel(request):
+    """Importa solicitudes desde un archivo Excel."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Metodo no permitido'}, status=405)
+    if 'archivo' not in request.FILES:
+        return JsonResponse({'error': 'No se proporciono archivo'}, status=400)
+
+    archivo = request.FILES['archivo']
+    try:
+        creadas, omitidas, errores = ImportacionSolicitudesService.importar(archivo, request.user)
+        mensaje = f"Importacion completada: {creadas} solicitudes creadas"
+        if omitidas:
+            mensaje += f", {omitidas} omitidas"
+        return JsonResponse({
+            'success': True,
+            'mensaje': mensaje,
+            'creadas': creadas,
+            'omitidas': omitidas,
+            'errores': errores[:10],
+        })
+    except Exception as e:
+        return JsonResponse({'error': f'Error al importar: {str(e)}'}, status=500)

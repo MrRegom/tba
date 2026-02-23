@@ -35,11 +35,17 @@ urlpatterns = [
     path('articulos/crear/', views.SolicitudArticuloCreateView.as_view(), name='crear_solicitud_articulos'),
     path('articulos/<int:pk>/editar/', views.SolicitudArticuloUpdateView.as_view(), name='editar_solicitud_articulos'),
 
+    # ==================== EXPORTAR / IMPORTAR SOLICITUDES ====================
+    path('exportar/', views.solicitudes_exportar_excel, name='solicitudes_exportar_excel'),
+    path('importar/plantilla/', views.solicitudes_descargar_plantilla, name='solicitudes_descargar_plantilla'),
+    path('importar/', views.solicitudes_importar_excel, name='solicitudes_importar_excel'),
+
     # ==================== MANTENEDORES: TIPOS DE SOLICITUD ====================
     path('tipos/', views.TipoSolicitudListView.as_view(), name='tipo_solicitud_lista'),
     path('tipos/crear/', views.TipoSolicitudCreateView.as_view(), name='tipo_solicitud_crear'),
     path('tipos/<int:pk>/editar/', views.TipoSolicitudUpdateView.as_view(), name='tipo_solicitud_editar'),
     path('tipos/<int:pk>/eliminar/', views.TipoSolicitudDeleteView.as_view(), name='tipo_solicitud_eliminar'),
+    path('tipos/exportar/', views.tipo_solicitud_exportar_excel, name='tipo_solicitud_exportar_excel'),
     path('tipos/importar/plantilla/', views.tipo_solicitud_descargar_plantilla, name='tipo_solicitud_descargar_plantilla'),
     path('tipos/importar/', views.tipo_solicitud_importar_excel, name='tipo_solicitud_importar_excel'),
 
@@ -48,6 +54,7 @@ urlpatterns = [
     path('estados/crear/', views.EstadoSolicitudCreateView.as_view(), name='estado_solicitud_crear'),
     path('estados/<int:pk>/editar/', views.EstadoSolicitudUpdateView.as_view(), name='estado_solicitud_editar'),
     path('estados/<int:pk>/eliminar/', views.EstadoSolicitudDeleteView.as_view(), name='estado_solicitud_eliminar'),
+    path('estados/exportar/', views.estado_solicitud_exportar_excel, name='estado_solicitud_exportar_excel'),
     path('estados/importar/plantilla/', views.estado_solicitud_descargar_plantilla, name='estado_solicitud_descargar_plantilla'),
     path('estados/importar/', views.estado_solicitud_importar_excel, name='estado_solicitud_importar_excel'),
 ]

@@ -32,8 +32,19 @@
 <div class="row">
     <div class="col-lg-12">
         <div class="card">
-            <div class="card-header d-flex align-items-center">
+            <div class="card-header d-flex align-items-center gap-2">
                 <h5 class="card-title mb-0 flex-grow-1">Gestión de Solicitudes</h5>
+                {% if perms.solicitudes.gestionar_solicitudes or perms.solicitudes.ver_todas_solicitudes %}
+                <a href="{% url 'solicitudes:solicitudes_exportar_excel' %}?{{ request.GET.urlencode }}"
+                   class="btn btn-success btn-sm"
+                   title="Exportar solicitudes filtradas a Excel">
+                    <i class="ri-file-excel-line me-1"></i>Exportar
+                </a>
+                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#importarSolicitudesModal"
+                        title="Importar solicitudes desde Excel">
+                    <i class="ri-upload-2-line me-1"></i>Importar
+                </button>
+                {% endif %}
             </div>
             <div class="card-body">
                 <!-- Filtros -->
@@ -130,10 +141,93 @@
 
 {% include 'solicitudes/partials/modal_container.html' %}
 
+<!-- Modal Importar Solicitudes -->
+<div class="modal fade" id="importarSolicitudesModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="ri-upload-2-line me-2"></i>Importar Solicitudes desde Excel</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="ri-information-line me-1"></i>
+                    El archivo debe seguir el formato de la plantilla oficial.
+                    <a href="{% url 'solicitudes:solicitudes_descargar_plantilla' %}" class="alert-link">
+                        <i class="ri-download-line me-1"></i>Descargar plantilla
+                    </a>
+                </div>
+                <div id="importar-resultado" class="d-none mb-3"></div>
+                <form id="formImportarSolicitudes" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="archivoSolicitudes" class="form-label">Archivo Excel (.xlsx)</label>
+                        <input type="file" class="form-control" id="archivoSolicitudes" name="archivo" accept=".xlsx,.xls" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnImportarSolicitudes">
+                    <span class="spinner-border spinner-border-sm d-none me-1" id="importarSpinner"></span>
+                    <i class="ri-upload-2-line me-1"></i>Importar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% block extra_js %}
 <script src="{% static 'js/solicitudes/crear-solicitud.js' %}"></script>
 <script src="{% static 'js/solicitudes_modal.js' %}"></script>
 <script>
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
+
+    document.getElementById('btnImportarSolicitudes')?.addEventListener('click', function () {
+        const form = document.getElementById('formImportarSolicitudes');
+        const archivo = document.getElementById('archivoSolicitudes').files[0];
+        const resultado = document.getElementById('importar-resultado');
+        const spinner = document.getElementById('importarSpinner');
+
+        if (!archivo) {
+            resultado.className = 'alert alert-warning';
+            resultado.textContent = 'Seleccione un archivo antes de continuar.';
+            return;
+        }
+
+        spinner.classList.remove('d-none');
+        this.disabled = true;
+
+        const formData = new FormData(form);
+        fetch("{% url 'solicitudes:solicitudes_importar_excel' %}", {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        })
+        .then(r => r.json())
+        .then(data => {
+            spinner.classList.add('d-none');
+            document.getElementById('btnImportarSolicitudes').disabled = false;
+            resultado.classList.remove('d-none');
+            if (data.success) {
+                let html = `<div class="alert alert-success"><i class="ri-check-line me-1"></i>${data.mensaje}</div>`;
+                if (data.errores && data.errores.length) {
+                    html += `<div class="alert alert-warning"><strong>Advertencias:</strong><ul class="mb-0 mt-1">`;
+                    data.errores.forEach(e => { html += `<li>${e}</li>`; });
+                    html += `</ul></div>`;
+                }
+                resultado.innerHTML = html;
+                setTimeout(() => location.reload(), 2500);
+            } else {
+                resultado.innerHTML = `<div class="alert alert-danger"><i class="ri-error-warning-line me-1"></i>${data.error}</div>`;
+            }
+        })
+        .catch(() => {
+            spinner.classList.add('d-none');
+            document.getElementById('btnImportarSolicitudes').disabled = false;
+            resultado.classList.remove('d-none');
+            resultado.innerHTML = `<div class="alert alert-danger">Error de conexión. Intente nuevamente.</div>`;
+        });
+    });
 </script>
 {% endblock %}

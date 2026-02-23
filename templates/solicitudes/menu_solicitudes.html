@@ -55,10 +55,18 @@
             <!-- ============ TIPOS DE SOLICITUD TAB ============ -->
             <div class="tab-pane fade show active" id="tipos-solicitud" role="tabpanel" aria-labelledby="tipos-solicitud-tab">
                 <div class="card">
-                    <div class="card-header d-flex align-items-center">
+                    <div class="card-header d-flex align-items-center gap-2">
                         <h4 class="card-title flex-grow-1 mb-0">Gestión de Tipos de Solicitud</h4>
+                        {% if perms.solicitudes.change_tiposolicitud %}
+                        <a href="{% url 'solicitudes:tipo_solicitud_exportar_excel' %}" class="btn btn-success btn-sm" title="Exportar a Excel">
+                            <i class="ri-file-excel-line me-1"></i>Exportar
+                        </a>
+                        <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#importarTiposModal" title="Importar desde Excel">
+                            <i class="ri-upload-2-line me-1"></i>Importar
+                        </button>
+                        {% endif %}
                         {% if perms.solicitudes.add_tiposolicitud %}
-                        <a href="{% url 'solicitudes:tipo_solicitud_crear' %}" class="btn btn-primary">
+                        <a href="{% url 'solicitudes:tipo_solicitud_crear' %}" class="btn btn-primary btn-sm">
                             <i class="ri-add-line me-1"></i>Nuevo Tipo
                         </a>
                         {% endif %}
@@ -119,10 +127,18 @@
             <!-- ============ ESTADOS DE SOLICITUD TAB ============ -->
             <div class="tab-pane fade" id="estados-solicitud" role="tabpanel" aria-labelledby="estados-solicitud-tab">
                 <div class="card">
-                    <div class="card-header d-flex align-items-center">
+                    <div class="card-header d-flex align-items-center gap-2">
                         <h4 class="card-title flex-grow-1 mb-0">Gestión de Estados de Solicitud</h4>
+                        {% if perms.solicitudes.change_estadosolicitud %}
+                        <a href="{% url 'solicitudes:estado_solicitud_exportar_excel' %}" class="btn btn-success btn-sm" title="Exportar a Excel">
+                            <i class="ri-file-excel-line me-1"></i>Exportar
+                        </a>
+                        <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#importarEstadosModal" title="Importar desde Excel">
+                            <i class="ri-upload-2-line me-1"></i>Importar
+                        </button>
+                        {% endif %}
                         {% if perms.solicitudes.add_estadosolicitud %}
-                        <a href="{% url 'solicitudes:estado_solicitud_crear' %}" class="btn btn-primary">
+                        <a href="{% url 'solicitudes:estado_solicitud_crear' %}" class="btn btn-primary btn-sm">
                             <i class="ri-add-line me-1"></i>Nuevo Estado
                         </a>
                         {% endif %}
@@ -192,6 +208,82 @@
     </div>
 </div>
 
+<!-- Modal Importar Tipos de Solicitud -->
+<div class="modal fade" id="importarTiposModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="ri-upload-2-line me-2"></i>Importar Tipos de Solicitud</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="ri-information-line me-1"></i>
+                    Use la plantilla oficial para asegurar el formato correcto.
+                    <a href="{% url 'solicitudes:tipo_solicitud_descargar_plantilla' %}" class="alert-link">
+                        <i class="ri-download-line me-1"></i>Descargar plantilla
+                    </a>
+                </div>
+                <div id="resultado-tipos" class="d-none mb-3"></div>
+                <form id="formImportarTipos" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Archivo Excel (.xlsx)</label>
+                        <input type="file" class="form-control" name="archivo" accept=".xlsx,.xls" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary btn-importar" data-form="formImportarTipos"
+                        data-url="{% url 'solicitudes:tipo_solicitud_importar_excel' %}"
+                        data-resultado="resultado-tipos">
+                    <span class="spinner-border spinner-border-sm d-none me-1"></span>
+                    <i class="ri-upload-2-line me-1"></i>Importar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Importar Estados de Solicitud -->
+<div class="modal fade" id="importarEstadosModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="ri-upload-2-line me-2"></i>Importar Estados de Solicitud</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="ri-information-line me-1"></i>
+                    Use la plantilla oficial para asegurar el formato correcto.
+                    <a href="{% url 'solicitudes:estado_solicitud_descargar_plantilla' %}" class="alert-link">
+                        <i class="ri-download-line me-1"></i>Descargar plantilla
+                    </a>
+                </div>
+                <div id="resultado-estados" class="d-none mb-3"></div>
+                <form id="formImportarEstados" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Archivo Excel (.xlsx)</label>
+                        <input type="file" class="form-control" name="archivo" accept=".xlsx,.xls" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary btn-importar" data-form="formImportarEstados"
+                        data-url="{% url 'solicitudes:estado_solicitud_importar_excel' %}"
+                        data-resultado="resultado-estados">
+                    <span class="spinner-border spinner-border-sm d-none me-1"></span>
+                    <i class="ri-upload-2-line me-1"></i>Importar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal genérico para gestores -->
 <div class="modal fade" id="gestorModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
@@ -209,6 +301,62 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+
+    // ── Lógica de importación Excel (compartida entre Tipos y Estados) ──────
+    document.querySelectorAll('.btn-importar').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const formId    = this.dataset.form;
+            const url       = this.dataset.url;
+            const resultId  = this.dataset.resultado;
+            const form      = document.getElementById(formId);
+            const resultado = document.getElementById(resultId);
+            const spinner   = this.querySelector('.spinner-border');
+            const archivo   = form.querySelector('input[type="file"]').files[0];
+
+            if (!archivo) {
+                resultado.className = 'alert alert-warning';
+                resultado.textContent = 'Seleccione un archivo antes de continuar.';
+                resultado.classList.remove('d-none');
+                return;
+            }
+
+            spinner.classList.remove('d-none');
+            btn.disabled = true;
+
+            const formData = new FormData(form);
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            })
+            .then(r => r.json())
+            .then(data => {
+                spinner.classList.add('d-none');
+                btn.disabled = false;
+                resultado.classList.remove('d-none');
+                if (data.success) {
+                    let html = `<div class="alert alert-success"><i class="ri-check-line me-1"></i>${data.mensaje}</div>`;
+                    if (data.errores && data.errores.length) {
+                        html += `<div class="alert alert-warning"><strong>Advertencias:</strong><ul class="mb-0 mt-1">`;
+                        data.errores.forEach(e => { html += `<li>${e}</li>`; });
+                        html += `</ul></div>`;
+                    }
+                    resultado.innerHTML = html;
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    resultado.innerHTML = `<div class="alert alert-danger"><i class="ri-error-warning-line me-1"></i>${data.error}</div>`;
+                }
+            })
+            .catch(() => {
+                spinner.classList.add('d-none');
+                btn.disabled = false;
+                resultado.classList.remove('d-none');
+                resultado.innerHTML = `<div class="alert alert-danger">Error de conexión. Intente nuevamente.</div>`;
+            });
+        });
+    });
+
+    // ── Modal genérico para edición (Tipos / Estados) ────────────────────────
     const modalEl = document.getElementById('gestorModal');
     const modalContent = document.getElementById('gestorModalContent');
     const modal = new bootstrap.Modal(modalEl);
