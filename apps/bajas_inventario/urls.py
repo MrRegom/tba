@@ -25,4 +25,12 @@ urlpatterns = [
     path('motivos/crear/', views.MotivoBajaCreateView.as_view(), name='crear_motivo'),
     path('motivos/<int:pk>/editar/', views.MotivoBajaUpdateView.as_view(), name='editar_motivo'),
     path('motivos/<int:pk>/eliminar/', views.MotivoBajaDeleteView.as_view(), name='eliminar_motivo'),
+
+    # ==================== GESTORES ====================
+    path('gestores/', views.GestoresBajasView.as_view(), name='gestores_bajas'),
+
+    # ==================== EXPORTACIONES / IMPORTACIONES EXCEL ====================
+    path('motivos/exportar/', views.motivo_baja_exportar_excel, name='motivo_baja_exportar_excel'),
+    path('motivos/plantilla/', views.motivo_baja_descargar_plantilla, name='motivo_baja_descargar_plantilla'),
+    path('motivos/importar/', views.motivo_baja_importar_excel, name='motivo_baja_importar_excel'),
 ]
