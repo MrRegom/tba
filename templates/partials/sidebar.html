@@ -264,6 +264,14 @@
                                 </a>
                             </li>
                             {% endif %}
+                            {% if perms.bajas_inventario.view_motivobaja %}
+                            <li class="nav-item">
+                                <a href="{% url 'bajas_inventario:gestores_bajas' %}"
+                                   class="nav-link {% if nav_gs_bajas %}active{% endif %}">
+                                    Bajas de Inventario
+                                </a>
+                            </li>
+                            {% endif %}
                             {% if perms.activos.view_ubicacion %}
                             <li class="nav-item">
                                 <a href="{% url 'accounts:gestores_organizacion' %}"
