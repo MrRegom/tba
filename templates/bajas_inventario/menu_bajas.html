@@ -118,23 +118,25 @@
                     </div>
                     <div class="card-body">
                         <div class="row g-3">
-                            <!-- Card: Motivos de Baja -->
+                            <!-- Card: Gestores de Bajas -->
+                            {% if permisos.puede_motivos %}
                             <div class="col-lg-3 col-sm-6">
                                 <div class="modulo-card">
                                     <div class="modulo-card-icon modulo-card-icon-primary">
-                                        <i class="ri-file-list-3-line"></i>
+                                        <i class="ri-settings-3-line"></i>
                                     </div>
                                     <div class="modulo-card-content">
-                                        <h6 class="modulo-card-title">MOTIVOS</h6>
-                                        <p class="modulo-card-desc">Gestione los motivos de baja</p>
+                                        <h6 class="modulo-card-title">GESTORES</h6>
+                                        <p class="modulo-card-desc">Gestione los catálogos de bajas</p>
                                         <div class="modulo-card-actions d-grid gap-2">
-                                            <a href="{% url 'bajas_inventario:lista_motivos' %}" class="btn btn-sm btn-outline-primary">
-                                                <i class="ri-file-list-3-line align-bottom me-1"></i> Ver Motivos
+                                            <a href="{% url 'bajas_inventario:gestores_bajas' %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="ri-settings-3-line align-bottom me-1"></i> Ver Gestores
                                             </a>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
