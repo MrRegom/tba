@@ -40,27 +40,30 @@ def sidebar_nav(request):
         nav_gs_sol  — Gestores › Solicitudes  (/solicitudes/ exacto)
         nav_gs_bod  — Gestores › Bodega       (/bodega/ exacto)
         nav_gs_comp — Gestores › Compras      (/compras/gestores/…)
-        nav_gs_inv  — Gestores › Inventario   (/activos/gestores/…)
-        nav_gs_org  — Gestores › Organización (/administracion/organizacion/…)
-        nav_gs_usr  — Gestores › Usuarios     (/administracion/personal/…)
+        nav_gs_inv  — Gestores › Inventario         (/activos/gestores/…)
+        nav_gs_bajas — Gestores › Bajas Inventario  (/bajas/gestores/…)
+        nav_gs_org  — Gestores › Organización       (/administracion/organizacion/…)
+        nav_gs_usr  — Gestores › Usuarios           (/administracion/personal/…)
         nav_en_gestores — True cuando cualquiera de las anteriores es True
     """
     path = request.path
 
-    gs_sol  = (path == '/solicitudes/')
-    gs_bod  = (path == '/bodega/')
-    gs_comp = path.startswith('/compras/gestores/')
-    gs_inv  = path.startswith('/activos/gestores/')
-    gs_org  = path.startswith('/administracion/organizacion/')
-    gs_usr  = path.startswith('/administracion/personal/')
+    gs_sol   = (path == '/solicitudes/')
+    gs_bod   = (path == '/bodega/')
+    gs_comp  = path.startswith('/compras/gestores/')
+    gs_inv   = path.startswith('/activos/gestores/')
+    gs_bajas = path.startswith('/bajas-inventario/gestores/')
+    gs_org   = path.startswith('/administracion/organizacion/')
+    gs_usr   = path.startswith('/administracion/personal/')
 
     return {
         'nav_gs_sol':      gs_sol,
         'nav_gs_bod':      gs_bod,
         'nav_gs_comp':     gs_comp,
         'nav_gs_inv':      gs_inv,
+        'nav_gs_bajas':    gs_bajas,
         'nav_gs_org':      gs_org,
         'nav_gs_usr':      gs_usr,
-        'nav_en_gestores': gs_sol or gs_bod or gs_comp or gs_inv or gs_org or gs_usr,
+        'nav_en_gestores': gs_sol or gs_bod or gs_comp or gs_inv or gs_bajas or gs_org or gs_usr,
     }
 
