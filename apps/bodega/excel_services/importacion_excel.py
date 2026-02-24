@@ -1765,3 +1765,65 @@ class ImportacionExcelService:
                 except Exception as e:
                     errores.append(f"Fila {idx}: {str(e)}")
         return creadas, actualizadas, errores
+
+    # ==================== MÉTODOS PARA MOTIVOS DE BAJA ====================
+
+    @staticmethod
+    def generar_plantilla_motivos_baja() -> bytes:
+        from openpyxl import Workbook
+        from openpyxl.styles import Font, Alignment
+        from io import BytesIO
+        from apps.bajas_inventario.models import MotivoBaja
+        wb = Workbook()
+        ws = wb.active
+        ws.title = 'Motivos de Baja'
+        encabezados = ['Codigo', 'Nombre', 'Descripcion']
+        for col_idx, enc in enumerate(encabezados, start=1):
+            cell = ws.cell(row=1, column=col_idx, value=enc)
+            cell.font = Font(bold=True)
+            cell.alignment = Alignment(horizontal='center')
+        for row_idx, obj in enumerate(MotivoBaja.objects.filter(eliminado=False).order_by('codigo')[:10], start=2):
+            ws.cell(row=row_idx, column=1, value=obj.codigo)
+            ws.cell(row=row_idx, column=2, value=obj.nombre)
+            ws.cell(row=row_idx, column=3, value=obj.descripcion or '')
+        ws.column_dimensions['A'].width = 15
+        ws.column_dimensions['B'].width = 35
+        ws.column_dimensions['C'].width = 45
+        output = BytesIO()
+        wb.save(output)
+        output.seek(0)
+        contenido = output.read()
+        output.close()
+        return contenido
+
+    @staticmethod
+    def importar_motivos_baja(archivo, usuario):
+        from apps.bajas_inventario.models import MotivoBaja
+        columnas_esperadas = ['Codigo', 'Nombre', 'Descripcion']
+        datos = ImportacionExcelService.leer_datos_desde_excel(archivo, columnas_esperadas)
+        creadas = 0
+        actualizadas = 0
+        errores = []
+        with transaction.atomic():
+            for idx, fila in enumerate(datos, start=2):
+                try:
+                    codigo = fila.get('Codigo', '').strip()
+                    nombre = fila.get('Nombre', '').strip()
+                    if not codigo or not nombre:
+                        errores.append(f"Fila {idx}: Codigo y Nombre son obligatorios")
+                        continue
+                    obj, created = MotivoBaja.objects.update_or_create(
+                        codigo=codigo,
+                        defaults={
+                            'nombre': nombre,
+                            'descripcion': fila.get('Descripcion', '').strip() or None,
+                            'eliminado': False,
+                        }
+                    )
+                    if created:
+                        creadas += 1
+                    else:
+                        actualizadas += 1
+                except Exception as e:
+                    errores.append(f"Fila {idx}: {str(e)}")
+        return creadas, actualizadas, errores
