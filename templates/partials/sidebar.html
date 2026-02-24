@@ -208,8 +208,8 @@
                 <!-- ============================================================ -->
                 {% if perms.bajas_inventario.view_bajainventario %}
                 <li class="nav-item">
-                    <a class="nav-link menu-link {% if '/bajas/' in request.path %}active{% endif %}"
-                       href="{% url 'bajas_inventario:menu_bajas' %}">
+                    <a class="nav-link menu-link {% if '/bajas-inventario/' in request.path and not nav_en_gestores %}active{% endif %}"
+                       href="{% url 'bajas_inventario:lista_bajas' %}">
                         <i class="ri-delete-bin-line"></i>
                         <span>Bajas de Inventario</span>
                     </a>
