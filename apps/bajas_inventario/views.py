@@ -16,7 +16,8 @@ from django.views.generic import (
     TemplateView, ListView, DetailView, CreateView, UpdateView, DeleteView
 )
 from django.contrib import messages
-from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse, JsonResponse
 
 from core.mixins import (
     BaseAuditedViewMixin, AtomicTransactionMixin, SoftDeleteMixin,
@@ -390,3 +391,85 @@ class MotivoBajaDeleteView(BaseAuditedViewMixin, SoftDeleteMixin, DeleteView):
         context['titulo'] = f'Eliminar Motivo {self.object.codigo}'
         context['motivo'] = self.object
         return context
+
+
+# ==================== GESTORES DE BAJAS ====================
+
+class GestoresBajasView(BaseAuditedViewMixin, TemplateView):
+    """Vista de gestores de bajas de inventario con tabs para cada entidad."""
+    template_name = 'bajas_inventario/gestores_bajas.html'
+    permission_required = 'bajas_inventario.view_motivobaja'
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context['motivos'] = MotivoBaja.objects.filter(eliminado=False).order_by('codigo')
+        return context
+
+
+# ── Exportaciones Excel (Gestores Bajas) ─────────────────────────────────────
+from openpyxl import Workbook as _BWWB
+from openpyxl.styles import Font as _BFont, PatternFill as _BPF, Alignment as _BAlign
+from openpyxl.utils import get_column_letter as _bgcl
+from io import BytesIO as _BBytesIO
+
+
+def _bajas_wb(titulo, headers_widths, rows_data):
+    wb = _BWWB(); ws = wb.active; ws.title = titulo[:31]
+    hf = _BPF("solid", fgColor="1F3864"); hfont = _BFont(bold=True, color="FFFFFF", size=10)
+    center = _BAlign(horizontal="center", vertical="center"); left = _BAlign(horizontal="left", vertical="center")
+    odd = _BPF("solid", fgColor="EBF0F8")
+    for col, (h, w) in enumerate(headers_widths, 1):
+        c = ws.cell(row=1, column=col, value=h); c.font = hfont; c.fill = hf; c.alignment = center
+        ws.column_dimensions[_bgcl(col)].width = w
+    ws.freeze_panes = "A2"
+    for ri, fila in enumerate(rows_data, 2):
+        f = odd if ri % 2 == 0 else None
+        for ci, v in enumerate(fila, 1):
+            c = ws.cell(row=ri, column=ci, value=v)
+            if f: c.fill = f
+            c.alignment = center if ci >= len(fila) else left
+    out = _BBytesIO(); wb.save(out); out.seek(0); return out.read()
+
+
+def _bajas_excel_resp(data, filename):
+    resp = HttpResponse(data, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    resp['Content-Disposition'] = f'attachment; filename="{filename}"'; return resp
+
+
+@login_required
+def motivo_baja_exportar_excel(request):
+    rows = [(m.codigo, m.nombre, m.descripcion or "")
+            for m in MotivoBaja.objects.filter(eliminado=False).order_by("codigo")]
+    hdrs = [("Código", 15), ("Nombre", 35), ("Descripción", 50)]
+    return _bajas_excel_resp(_bajas_wb("Motivos de Baja", hdrs, rows), "motivos_baja.xlsx")
+
+
+@login_required
+def motivo_baja_descargar_plantilla(request):
+    from apps.bodega.excel_services.importacion_excel import ImportacionExcelService
+    contenido = ImportacionExcelService.generar_plantilla_motivos_baja()
+    response = HttpResponse(contenido, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response["Content-Disposition"] = 'attachment; filename="plantilla_motivos_baja.xlsx"'
+    return response
+
+
+@login_required
+def motivo_baja_importar_excel(request):
+    from apps.bodega.excel_services.importacion_excel import ImportacionExcelService
+    if request.method != "POST":
+        return JsonResponse({"success": False, "mensaje": "Método no permitido"}, status=405)
+    archivo = request.FILES.get("archivo")
+    valido, error = ImportacionExcelService.validar_archivo_excel(archivo)
+    if not valido:
+        return JsonResponse({"success": False, "mensaje": error})
+    try:
+        creadas, actualizadas, errores = ImportacionExcelService.importar_motivos_baja(archivo, request.user)
+        return JsonResponse({
+            "success": True,
+            "mensaje": f"Importación completada: {creadas} creados, {actualizadas} actualizados.",
+            "creadas": creadas,
+            "actualizadas": actualizadas,
+            "errores": errores[:10],
+        })
+    except Exception as e:
+        return JsonResponse({"success": False, "mensaje": str(e)})
