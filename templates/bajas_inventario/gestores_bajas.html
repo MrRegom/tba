@@ -1,0 +1,175 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}Gestores - Bajas de Inventario{% endblock %}
+
+{% block content %}
+<!-- Page Title -->
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0"><i class="ri-delete-bin-line me-2"></i>Gestores - Bajas de Inventario</h4>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'bajas_inventario:menu_bajas' %}">Bajas de Inventario</a></li>
+                    <li class="breadcrumb-item active">Gestores</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<!-- Tabs Navigation -->
+<div class="row">
+    <div class="col-lg-12">
+        <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="motivos-tab" data-bs-toggle="pill"
+                    data-bs-target="#motivos" type="button" role="tab"
+                    aria-controls="motivos" aria-selected="true">
+                    <i class="ri-file-list-3-line me-1"></i>Motivos
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="pills-tabContent">
+
+            <!-- ============ MOTIVOS TAB ============ -->
+            <div class="tab-pane fade show active" id="motivos" role="tabpanel" aria-labelledby="motivos-tab">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center gap-2">
+                        <h4 class="card-title flex-grow-1 mb-0">Gestión de Motivos de Baja</h4>
+                        <a href="{% url 'bajas_inventario:motivo_baja_exportar_excel' %}" class="btn btn-outline-success btn-sm">
+                            <i class="ri-file-excel-line me-1"></i>Exportar
+                        </a>
+                        {% if perms.bajas_inventario.add_motivobaja %}
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalImportarMotivoBaja">
+                            <i class="ri-upload-line me-1"></i>Importar
+                        </button>
+                        <button type="button" class="btn btn-primary btn-sm btn-modal-bajas"
+                            data-url="{% url 'bajas_inventario:crear_motivo' %}">
+                            <i class="ri-add-line me-1"></i>Nuevo Motivo
+                        </button>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nombre</th>
+                                        <th>Descripción</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for motivo in motivos %}
+                                    <tr>
+                                        <td><code>{{ motivo.codigo }}</code></td>
+                                        <td>{{ motivo.nombre }}</td>
+                                        <td>{{ motivo.descripcion|default:"-"|truncatechars:60 }}</td>
+                                        <td>
+                                            {% if perms.bajas_inventario.change_motivobaja %}
+                                            <button type="button" class="btn btn-sm btn-soft-primary btn-modal-bajas"
+                                                data-url="{% url 'bajas_inventario:editar_motivo' motivo.pk %}"
+                                                title="Editar">
+                                                <i class="ri-pencil-line"></i>
+                                            </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">No hay motivos de baja registrados</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% include 'partials/modal_importar_excel.html' with nombre_modal='MotivoBaja' titulo='Motivos de Baja' url_descargar_plantilla='bajas_inventario:motivo_baja_descargar_plantilla' url_importar='bajas_inventario:motivo_baja_importar_excel' %}
+
+<!-- Modal genérico para gestores de bajas -->
+<div class="modal fade" id="bajasModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content" id="bajasModalContent">
+            <div class="modal-body text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modalEl = document.getElementById('bajasModal');
+    const modalContent = document.getElementById('bajasModalContent');
+    const modal = new bootstrap.Modal(modalEl);
+
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.btn-modal-bajas');
+        if (!btn) return;
+
+        const url = btn.dataset.url;
+
+        modalContent.innerHTML = '<div class="modal-body text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div></div>';
+        modal.show();
+
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(response => response.text())
+            .then(html => {
+                modalContent.innerHTML = html;
+                const form = modalContent.querySelector('form');
+                if (form) {
+                    form.addEventListener('submit', function(ev) {
+                        ev.preventDefault();
+                        const formData = new FormData(form);
+                        fetch(form.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        })
+                        .then(resp => {
+                            if (resp.headers.get('content-type')?.includes('application/json')) {
+                                return resp.json().then(data => {
+                                    if (data.success) {
+                                        modal.hide();
+                                        location.reload();
+                                    }
+                                });
+                            } else {
+                                return resp.text().then(html => {
+                                    modalContent.innerHTML = html;
+                                });
+                            }
+                        });
+                    });
+                }
+            });
+    });
+});
+</script>
+{% endblock %}
