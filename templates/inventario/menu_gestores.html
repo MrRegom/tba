@@ -35,6 +35,9 @@
     .gestores-menu-card.organizacion { border-left-color: #06b6d4; }
     .gestores-menu-card.organizacion:hover { border-left-color: #0891b2; background-color: #ecfeff; }
     
+    .gestores-menu-card.bajas { border-left-color: #f43f5e; }
+    .gestores-menu-card.bajas:hover { border-left-color: #e11d48; background-color: #fff1f2; }
+
     .gestores-menu-card.usuarios { border-left-color: #6366f1; }
     .gestores-menu-card.usuarios:hover { border-left-color: #4f46e5; background-color: #eef2ff; }
     
@@ -55,6 +58,7 @@
     .gestores-icon.bodega { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
     .gestores-icon.inventario { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
     .gestores-icon.organizacion { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); }
+    .gestores-icon.bajas { background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); }
     .gestores-icon.usuarios { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
     
     .gestores-menu-card .card-body {
@@ -216,6 +220,26 @@
                                 <div class="flex-grow-1 ms-3">
                                     <h5 class="gestores-menu-title">Inventario</h5>
                                     <p class="gestores-menu-desc">Activos fijos, categorías, estados y tipos de movimiento</p>
+                                </div>
+                                <div class="gestores-arrow">
+                                    <i class="ri-arrow-right-s-line"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Bajas de Inventario -->
+                <a href="{% url 'bajas_inventario:gestores_bajas' %}" class="text-decoration-none">
+                    <div class="card gestores-menu-card bajas mb-3">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="gestores-icon bajas flex-shrink-0">
+                                    <i class="ri-delete-bin-line"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h5 class="gestores-menu-title">Bajas de Inventario</h5>
+                                    <p class="gestores-menu-desc">Motivos de baja y catálogos del módulo de bajas</p>
                                 </div>
                                 <div class="gestores-arrow">
                                     <i class="ri-arrow-right-s-line"></i>
