@@ -118,6 +118,12 @@ class BajaInventarioListView(BaseAuditedViewMixin, PaginatedListMixin, ListView)
         context = super().get_context_data(**kwargs)
         context['titulo'] = 'Bajas de Inventario'
         context['form'] = FiltroBajasForm(self.request.GET)
+        user = self.request.user
+        context['permisos'] = {
+            'puede_crear': user.has_perm('bajas_inventario.add_bajainventario'),
+            'puede_editar': user.has_perm('bajas_inventario.change_bajainventario'),
+            'puede_eliminar': user.has_perm('bajas_inventario.delete_bajainventario'),
+        }
         return context
 
 
