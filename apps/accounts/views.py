@@ -2105,37 +2105,35 @@ def cambiar_password_usuario_ajax(request, pk):
 
 
 @login_required
-@require_http_methods(["POST"])
 def gestionar_pin_usuario_ajax(request, pk):
-    """
-    Vista AJAX para gestionar PIN de un usuario mediante modal.
-    
-    Permite que administradores configuren/cambien el PIN de otros usuarios.
-    """
+    """Vista AJAX para gestionar PIN de un usuario mediante modal."""
     usuario = get_object_or_404(User, pk=pk)
-    
-    # Verificar permisos
+
     if not request.user.has_perm('auth.change_user'):
-        return JsonResponse({
-            'success': False,
-            'message': 'No tiene permisos para gestionar PINs.'
-        }, status=403)
-    
+        return JsonResponse({'success': False, 'message': 'Sin permisos.'}, status=403)
+
     from .models import UserSecure, AuditoriaPin
-    
-    # Obtener o crear UserSecure
+
     user_secure, created = UserSecure.objects.get_or_create(
-        user=usuario,
-        defaults={'activo': True, 'eliminado': False}
+        user=usuario, defaults={'activo': True, 'eliminado': False}
     )
-    
     if not created and user_secure.eliminado:
         user_secure.eliminado = False
         user_secure.activo = True
         user_secure.save()
-    
+
     tiene_pin = bool(user_secure.pin)
-    
+
+    # GET → devolver HTML del modal
+    if request.method == 'GET':
+        form = PINForm()
+        return render(request, 'account/gestion_usuarios/modal_pin.html', {
+            'form': form,
+            'usuario': usuario,
+            'tiene_pin': tiene_pin,
+            'action_url': request.path,
+        })
+
     form = PINForm(request.POST)
     if form.is_valid():
         pin_texto = form.cleaned_data['pin']

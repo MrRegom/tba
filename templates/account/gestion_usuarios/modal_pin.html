@@ -1,0 +1,36 @@
+{% load static %}
+<div class="modal-header">
+    <h5 class="modal-title">
+        <i class="ri-lock-password-line me-2"></i>Configurar PIN — {{ usuario.username }}
+    </h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+    {% if tiene_pin %}
+    <div class="alert alert-info py-2 small">
+        <i class="ri-information-line me-1"></i>Este usuario ya tiene PIN. Ingresa uno nuevo para reemplazarlo.
+    </div>
+    {% endif %}
+    <form id="formPinUsuario" method="post" action="{{ action_url }}">
+        {% csrf_token %}
+        <div class="row g-3">
+            <div class="col-6">
+                <label class="form-label">{{ form.pin.label }} <span class="text-danger">*</span></label>
+                {{ form.pin }}
+                {% if form.pin.errors %}<div class="text-danger small mt-1">{{ form.pin.errors }}</div>{% endif %}
+            </div>
+            <div class="col-6">
+                <label class="form-label">{{ form.pin_confirmacion.label }} <span class="text-danger">*</span></label>
+                {{ form.pin_confirmacion }}
+                {% if form.pin_confirmacion.errors %}<div class="text-danger small mt-1">{{ form.pin_confirmacion.errors }}</div>{% endif %}
+            </div>
+        </div>
+        <div id="resultadoPin" class="mt-3 d-none"></div>
+    </form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+    <button type="submit" form="formPinUsuario" class="btn btn-primary">
+        <i class="ri-save-line me-1"></i>Guardar PIN
+    </button>
+</div>

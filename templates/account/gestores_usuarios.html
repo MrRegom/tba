@@ -85,13 +85,21 @@
                         {% endif %}
                     </div>
                     <div class="card-body">
+                        <!-- Buscador -->
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="ri-search-line"></i></span>
+                                <input type="text" id="buscarUsuario" class="form-control"
+                                       placeholder="Buscar por usuario, nombre o email...">
+                            </div>
+                        </div>
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <small class="text-muted">
+                            <small class="text-muted" id="contadorUsuarios">
                                 Mostrando {{ page_obj_usuarios.start_index }}–{{ page_obj_usuarios.end_index }} de {{ page_obj_usuarios.paginator.count }} usuarios
                             </small>
                         </div>
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
+                            <table class="table table-hover align-middle mb-0" id="tablaUsuarios">
                                 <thead class="table-light">
                                     <tr>
                                         <th>Usuario</th>
@@ -104,7 +112,7 @@
                                 </thead>
                                 <tbody>
                                     {% for usuario in usuarios %}
-                                    <tr>
+                                    <tr data-fila="{{ usuario.username|lower }} {{ usuario.get_full_name|lower }} {{ usuario.email|lower }}">
                                         <td><code>{{ usuario.username }}</code></td>
                                         <td>{{ usuario.get_full_name|default:"-" }}</td>
                                         <td>{{ usuario.email|default:"-" }}</td>
@@ -390,6 +398,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const modalEl = document.getElementById('usuariosModal');
     const modalContent = document.getElementById('usuariosModalContent');
     const modal = new bootstrap.Modal(modalEl);
+
+    // ── Buscador de usuarios (filtro en tiempo real) ──
+    const inputBuscar = document.getElementById('buscarUsuario');
+    if (inputBuscar) {
+        inputBuscar.addEventListener('input', function() {
+            const q = this.value.toLowerCase().trim();
+            const filas = document.querySelectorAll('#tablaUsuarios tbody tr[data-fila]');
+            let visibles = 0;
+            filas.forEach(function(fila) {
+                const texto = fila.dataset.fila || '';
+                const mostrar = !q || texto.includes(q);
+                fila.style.display = mostrar ? '' : 'none';
+                if (mostrar) visibles++;
+            });
+            const contador = document.getElementById('contadorUsuarios');
+            if (contador) contador.textContent = `Mostrando ${visibles} resultado(s)`;
+        });
+    }
 
     // ── Nuevo Usuario (modal AJAX) ──
     document.addEventListener('click', function(e) {
