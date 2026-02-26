@@ -9,7 +9,7 @@ El comando lee el archivo personas.xlsx de la raíz del proyecto e importa:
 - Personas en tba_persona (vinculadas a auth_user)
 """
 from django.core.management.base import BaseCommand
-from django.db import transaction
+from django.db import transaction, connection
 from django.contrib.auth import get_user_model
 from openpyxl import load_workbook
 from datetime import date
@@ -202,6 +202,13 @@ class Command(BaseCommand):
             if actualizar:
                 self.stdout.write(f'Personas actualizadas: {actualizadas}')
             self.stdout.write(f'Errores: {errores}')
+
+            # Resincronizar sequence para evitar IntegrityError al crear usuarios manualmente
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT setval(pg_get_serial_sequence('auth_user','id'), "
+                    "COALESCE((SELECT MAX(id) FROM auth_user), 1));"
+                )
             self.stdout.write(self.style.SUCCESS('\nImportación completada.'))
 
         except FileNotFoundError:

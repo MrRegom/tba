@@ -5,7 +5,7 @@ from django.views.generic import TemplateView, ListView, CreateView, UpdateView,
 from django.contrib import messages
 from django.db.models import Q, Count
 from django.contrib.auth.models import User, Group, Permission
-from django.db import transaction
+from django.db import transaction, connection, IntegrityError
 from django.urls import reverse_lazy
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
@@ -180,67 +180,88 @@ def detalle_usuario(request, pk):
 
 
 @login_required
+def _reset_auth_user_sequence():
+    """Resincroniza el sequence de auth_user con el max(id) real de la tabla."""
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT setval(pg_get_serial_sequence('auth_user','id'), "
+            "COALESCE((SELECT MAX(id) FROM auth_user), 1));"
+        )
+
+
+@login_required
 @permission_required('auth.add_user', raise_exception=True)
-@transaction.atomic
 def crear_usuario(request):
     """Crear un nuevo usuario con datos de Persona"""
     if request.method == 'POST':
         form = UserCreateForm(request.POST, request.FILES)
         if form.is_valid():
-            usuario = form.save()
+            try:
+                with transaction.atomic():
+                    usuario = form.save()
 
-            # Crear registro de Persona
-            from .models import Persona
-            documento_identidad = f'TEMP-{usuario.username}'  # Temporal, puede actualizarse después
-            persona = Persona.objects.create(
-                user=usuario,
-                documento_identidad=documento_identidad,
-                nombres=form.cleaned_data['nombres'],
-                apellido1=form.cleaned_data['apellido1'],
-                apellido2=form.cleaned_data.get('apellido2', ''),
-                sexo=form.cleaned_data['sexo'],
-                fecha_nacimiento=form.cleaned_data['fecha_nacimiento'],
-                talla=form.cleaned_data.get('talla', ''),
-                numero_zapato=form.cleaned_data.get('numero_zapato', ''),
-                foto_perfil=form.cleaned_data.get('foto_perfil'),
-                activo=form.cleaned_data.get('activo_persona', True),
-                eliminado=False,
-            )
+                    # Crear registro de Persona
+                    from .models import Persona
+                    documento_identidad = f'TEMP-{usuario.username}'
+                    Persona.objects.create(
+                        user=usuario,
+                        documento_identidad=documento_identidad,
+                        nombres=form.cleaned_data['nombres'],
+                        apellido1=form.cleaned_data['apellido1'],
+                        apellido2=form.cleaned_data.get('apellido2', ''),
+                        sexo=form.cleaned_data['sexo'],
+                        fecha_nacimiento=form.cleaned_data['fecha_nacimiento'],
+                        talla=form.cleaned_data.get('talla', ''),
+                        numero_zapato=form.cleaned_data.get('numero_zapato', ''),
+                        foto_perfil=form.cleaned_data.get('foto_perfil'),
+                        activo=form.cleaned_data.get('activo_persona', True),
+                        eliminado=False,
+                    )
 
-            # Configurar PIN si se proporcionó
-            pin_texto = form.cleaned_data.get('pin', '').strip()
-            if pin_texto:
-                from .models import UserSecure, AuditoriaPin
-                user_secure, created = UserSecure.objects.get_or_create(
-                    user=usuario,
-                    defaults={'activo': True, 'eliminado': False}
+                    # Configurar PIN si se proporcionó
+                    pin_texto = form.cleaned_data.get('pin', '').strip()
+                    if pin_texto:
+                        from .models import UserSecure, AuditoriaPin
+                        user_secure, _ = UserSecure.objects.get_or_create(
+                            user=usuario,
+                            defaults={'activo': True, 'eliminado': False}
+                        )
+                        user_secure.set_pin(pin_texto)
+                        user_secure.save()
+                        AuditoriaPin.objects.create(
+                            usuario=usuario,
+                            accion='CONFIRMACION_ENTREGA',
+                            exitoso=True,
+                            ip_address=request.META.get('REMOTE_ADDR'),
+                            user_agent=request.META.get('HTTP_USER_AGENT', ''),
+                            detalles={'accion': 'PIN configurado al crear usuario'},
+                        )
+                    else:
+                        pin_texto = ''
+
+                # Registrar log fuera de la transacción atómica
+                registrar_log_auditoria(
+                    request.user,
+                    'CREAR',
+                    f'Usuario creado: {usuario.username}',
+                    request
                 )
-                user_secure.set_pin(pin_texto)
-                user_secure.save()
-                
-                # Registrar en auditoría
-                AuditoriaPin.objects.create(
-                    usuario=usuario,
-                    accion='CONFIRMACION_ENTREGA',
-                    exitoso=True,
-                    ip_address=request.META.get('REMOTE_ADDR'),
-                    user_agent=request.META.get('HTTP_USER_AGENT', ''),
-                    detalles={'accion': 'PIN configurado al crear usuario'},
+
+                mensaje = f'Usuario {usuario.username} creado exitosamente.'
+                if pin_texto:
+                    mensaje += ' PIN configurado correctamente.'
+                messages.success(request, mensaje)
+                return redirect('accounts:detalle_usuario', pk=usuario.pk)
+
+            except IntegrityError:
+                # El sequence quedó desincronizado tras una importación masiva.
+                # Resincronizamos y mostramos error amigable para que el usuario reintente.
+                _reset_auth_user_sequence()
+                messages.error(
+                    request,
+                    'Ocurrió un conflicto al asignar el ID del usuario. '
+                    'El sistema fue corregido automáticamente. Por favor intente nuevamente.'
                 )
-
-            # Registrar log
-            registrar_log_auditoria(
-                request.user,
-                'CREAR',
-                f'Usuario creado: {usuario.username}',
-                request
-            )
-
-            mensaje = f'Usuario {usuario.username} creado exitosamente.'
-            if pin_texto:
-                mensaje += ' PIN configurado correctamente.'
-            messages.success(request, mensaje)
-            return redirect('accounts:detalle_usuario', pk=usuario.pk)
     else:
         form = UserCreateForm()
 
@@ -248,8 +269,8 @@ def crear_usuario(request):
         'titulo': 'Crear Usuario',
         'form': form,
         'action': 'Crear',
-        'usuario_detalle': None,  # No hay usuario al crear
-        'tiene_pin': False,  # No hay PIN al crear
+        'usuario_detalle': None,
+        'tiene_pin': False,
     }
 
     return render(request, 'account/gestion_usuarios/form_usuario.html', context)
