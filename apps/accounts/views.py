@@ -227,7 +227,6 @@ def detalle_usuario(request, pk):
     return render(request, 'account/gestion_usuarios/detalle_usuario.html', context)
 
 
-@login_required
 def _reset_auth_user_sequence():
     """Resincroniza el sequence de auth_user con el max(id) real de la tabla."""
     with connection.cursor() as cursor:
