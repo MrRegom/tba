@@ -336,78 +336,114 @@ def crear_usuario(request):
 @permission_required('auth.change_user', raise_exception=True)
 @transaction.atomic
 def editar_usuario(request, pk):
-    """Editar un usuario existente"""
+    """Editar un usuario existente (User + Persona)."""
+    from .models import Persona, UserSecure, AuditoriaPin
     usuario = get_object_or_404(User, pk=pk)
 
+    # Cargar Persona si existe
+    try:
+        persona = Persona.objects.get(user=usuario, eliminado=False)
+    except Persona.DoesNotExist:
+        persona = None
+
+    # Datos iniciales de Persona para prellenar el formulario
+    initial_persona = {}
+    if persona:
+        initial_persona = {
+            'documento_identidad': persona.documento_identidad,
+            'nombres': persona.nombres,
+            'apellido1': persona.apellido1,
+            'apellido2': persona.apellido2 or '',
+            'sexo': persona.sexo,
+            'fecha_nacimiento': persona.fecha_nacimiento,
+            'talla': persona.talla or '',
+            'numero_zapato': persona.numero_zapato or '',
+        }
+
     if request.method == 'POST':
-        form = UserUpdateForm(request.POST, instance=usuario)
+        form = UserUpdateForm(request.POST, request.FILES, instance=usuario)
         if form.is_valid():
-            usuario = form.save()
+            with transaction.atomic():
+                # Guardar User — sincronizar first_name/last_name
+                usuario = form.save(commit=False)
+                usuario.first_name = form.cleaned_data['nombres']
+                usuario.last_name = form.cleaned_data['apellido1']
+                usuario.save()
 
-            # Actualizar PIN si se proporcionó
-            pin_texto = form.cleaned_data.get('pin', '').strip()
-            if pin_texto:
-                from .models import UserSecure, AuditoriaPin
-                user_secure, created = UserSecure.objects.get_or_create(
-                    user=usuario,
-                    defaults={'activo': True, 'eliminado': False}
-                )
-                
-                if not created and user_secure.eliminado:
-                    user_secure.eliminado = False
-                    user_secure.activo = True
-                
-                tiene_pin_anterior = bool(user_secure.pin)
-                user_secure.set_pin(pin_texto)
-                user_secure.intentos_fallidos = 0
-                user_secure.bloqueado = False
-                user_secure.save()
-                
-                # Registrar en auditoría
-                AuditoriaPin.objects.create(
-                    usuario=usuario,
-                    accion='CONFIRMACION_ENTREGA',
-                    exitoso=True,
-                    ip_address=request.META.get('REMOTE_ADDR'),
-                    user_agent=request.META.get('HTTP_USER_AGENT', ''),
-                    detalles={'accion': 'PIN configurado' if not tiene_pin_anterior else 'PIN cambiado desde edición'},
-                )
+                # Guardar Persona
+                persona_data = {
+                    'nombres': form.cleaned_data['nombres'],
+                    'apellido1': form.cleaned_data['apellido1'],
+                    'apellido2': form.cleaned_data.get('apellido2', '') or '',
+                    'sexo': form.cleaned_data['sexo'],
+                    'fecha_nacimiento': form.cleaned_data.get('fecha_nacimiento'),
+                    'talla': form.cleaned_data.get('talla', '') or '',
+                    'numero_zapato': form.cleaned_data.get('numero_zapato', '') or '',
+                    'eliminado': False,
+                }
+                doc = form.cleaned_data.get('documento_identidad', '').strip() or f'TEMP-{usuario.username}'
+                foto = form.cleaned_data.get('foto_perfil')
 
-            # Registrar log
-            registrar_log_auditoria(
-                request.user,
-                'ACTUALIZAR',
-                f'Usuario actualizado: {usuario.username}',
-                request
-            )
+                if persona:
+                    for k, v in persona_data.items():
+                        setattr(persona, k, v)
+                    persona.documento_identidad = doc
+                    if foto:
+                        persona.foto_perfil = foto
+                    persona.save()
+                else:
+                    persona_data['documento_identidad'] = doc
+                    if foto:
+                        persona_data['foto_perfil'] = foto
+                    Persona.objects.create(user=usuario, **persona_data)
 
+                # Actualizar PIN si se proporcionó
+                pin_texto = form.cleaned_data.get('pin', '').strip()
+                if pin_texto:
+                    user_secure, created = UserSecure.objects.get_or_create(
+                        user=usuario, defaults={'activo': True, 'eliminado': False}
+                    )
+                    if not created and user_secure.eliminado:
+                        user_secure.eliminado = False
+                        user_secure.activo = True
+                    tiene_pin_anterior = bool(user_secure.pin)
+                    user_secure.set_pin(pin_texto)
+                    user_secure.intentos_fallidos = 0
+                    user_secure.bloqueado = False
+                    user_secure.save()
+                    AuditoriaPin.objects.create(
+                        usuario=usuario, accion='CONFIRMACION_ENTREGA', exitoso=True,
+                        ip_address=request.META.get('REMOTE_ADDR'),
+                        user_agent=request.META.get('HTTP_USER_AGENT', ''),
+                        detalles={'accion': 'PIN configurado' if not tiene_pin_anterior else 'PIN cambiado'},
+                    )
+                    pin_texto = pin_texto
+                else:
+                    pin_texto = ''
+
+            registrar_log_auditoria(request.user, 'ACTUALIZAR', f'Usuario actualizado: {usuario.username}', request)
             mensaje = f'Usuario {usuario.username} actualizado exitosamente.'
             if pin_texto:
-                mensaje += ' PIN actualizado correctamente.'
+                mensaje += ' PIN actualizado.'
             messages.success(request, mensaje)
-            return redirect('accounts:detalle_usuario', pk=usuario.pk)
+            return redirect('accounts:gestores_usuarios')
     else:
-        form = UserUpdateForm(instance=usuario)
+        form = UserUpdateForm(instance=usuario, initial=initial_persona)
 
-    # Obtener información del PIN para mostrar en el template
-    from .models import UserSecure
     try:
         user_secure = UserSecure.objects.get(user=usuario, eliminado=False)
         tiene_pin = bool(user_secure.pin)
     except UserSecure.DoesNotExist:
-        user_secure = None
         tiene_pin = False
 
     context = {
         'titulo': f'Editar Usuario: {usuario.username}',
         'form': form,
-        'action': 'Actualizar',
-        'usuario_detalle': usuario,
-        'user_secure': user_secure,
+        'usuario_obj': usuario,
+        'persona': persona,
         'tiene_pin': tiene_pin,
     }
-
-    return render(request, 'account/gestion_usuarios/form_usuario.html', context)
+    return render(request, 'account/gestion_usuarios/editar_usuario.html', context)
 
 
 @login_required

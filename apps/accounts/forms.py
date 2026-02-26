@@ -323,55 +323,71 @@ class UserCreateForm(forms.ModelForm):
 
 
 class UserUpdateForm(forms.ModelForm):
-    """Formulario para actualizar usuarios del sistema."""
+    """Formulario para actualizar usuarios del sistema (User + Persona)."""
+
+    # ── Campos de Persona ──────────────────────────────────────────────────────
+    documento_identidad = forms.CharField(
+        label='RUT / Documento', max_length=20, required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: 12345678-9'})
+    )
+    nombres = forms.CharField(
+        label='Nombres', max_length=100, required=True,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    apellido1 = forms.CharField(
+        label='Apellido 1', max_length=100, required=True,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    apellido2 = forms.CharField(
+        label='Apellido 2', max_length=100, required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Opcional'})
+    )
+    sexo = forms.ChoiceField(
+        label='Sexo',
+        choices=[('', 'Seleccione...'), ('M', 'Masculino'), ('F', 'Femenino'), ('O', 'Otro')],
+        required=True,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    fecha_nacimiento = forms.DateField(
+        label='Fecha de Nacimiento', required=False,
+        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'})
+    )
+    talla = forms.CharField(
+        label='Talla', max_length=10, required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'XS, S, M, L, XL…'})
+    )
+    numero_zapato = forms.CharField(
+        label='N° Zapato', max_length=5, required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    foto_perfil = forms.ImageField(
+        label='Foto de Perfil', required=False,
+        widget=forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'})
+    )
+
+    # ── PIN (opcional) ─────────────────────────────────────────────────────────
     pin = forms.CharField(
-        label='PIN (Opcional)',
-        max_length=4,
-        min_length=4,
-        required=False,
+        label='Nuevo PIN', max_length=4, min_length=4, required=False,
         widget=forms.PasswordInput(attrs={
-            'class': 'form-control',
-            'placeholder': '4 dígitos (opcional)',
-            'maxlength': '4',
-            'pattern': '[0-9]{4}',
-            'inputmode': 'numeric'
+            'class': 'form-control', 'placeholder': '4 dígitos (vacío = sin cambio)',
+            'maxlength': '4', 'pattern': '[0-9]{4}', 'inputmode': 'numeric'
         }),
-        help_text='Dejar vacío para mantener el PIN actual. Ingrese nuevo PIN para cambiarlo.'
+        help_text='Dejar vacío para mantener el PIN actual.'
     )
     pin_confirmacion = forms.CharField(
-        label='Confirmar PIN',
-        max_length=4,
-        min_length=4,
-        required=False,
+        label='Confirmar PIN', max_length=4, min_length=4, required=False,
         widget=forms.PasswordInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Confirme el PIN',
-            'maxlength': '4',
-            'pattern': '[0-9]{4}',
-            'inputmode': 'numeric'
+            'class': 'form-control', 'placeholder': 'Confirme el PIN',
+            'maxlength': '4', 'pattern': '[0-9]{4}', 'inputmode': 'numeric'
         })
     )
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'first_name', 'last_name', 'is_active', 'is_staff', 'is_superuser']
+        fields = ['username', 'email', 'is_active', 'is_staff', 'is_superuser']
         widgets = {
-            'username': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Nombre de usuario'
-            }),
-            'email': forms.EmailInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Correo electrónico'
-            }),
-            'first_name': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Nombre'
-            }),
-            'last_name': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Apellido'
-            }),
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'is_staff': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'is_superuser': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
