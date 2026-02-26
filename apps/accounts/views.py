@@ -1764,14 +1764,23 @@ class GestoresUsuariosView(BaseAuditedViewMixin, TemplateView):
         from .models import Cargo
         from django.core.paginator import Paginator
 
-        # Paginación de usuarios (15 por página)
+        # Búsqueda + paginación de usuarios (15 por página)
+        buscar = self.request.GET.get('q_usuarios', '').strip()
         usuarios_qs = User.objects.prefetch_related('groups').all().order_by('username')
+        if buscar:
+            usuarios_qs = usuarios_qs.filter(
+                Q(username__icontains=buscar) |
+                Q(first_name__icontains=buscar) |
+                Q(last_name__icontains=buscar) |
+                Q(email__icontains=buscar)
+            )
         paginator = Paginator(usuarios_qs, 15)
         page_number = self.request.GET.get('page_usuarios', 1)
         page_obj = paginator.get_page(page_number)
 
         context['page_obj_usuarios'] = page_obj
         context['usuarios'] = page_obj
+        context['q_usuarios'] = buscar
         context['cargos'] = Cargo.objects.filter(eliminado=False).order_by('codigo')
         context['roles'] = Group.objects.all().order_by('name')
         context['permisos'] = Permission.objects.select_related('content_type').order_by('content_type__app_label', 'codename')

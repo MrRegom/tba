@@ -85,17 +85,28 @@
                         {% endif %}
                     </div>
                     <div class="card-body">
-                        <!-- Buscador -->
-                        <div class="mb-3">
+                        <!-- Buscador servidor -->
+                        <form method="get" class="mb-3" id="formBuscarUsuarios">
                             <div class="input-group">
                                 <span class="input-group-text"><i class="ri-search-line"></i></span>
-                                <input type="text" id="buscarUsuario" class="form-control"
-                                       placeholder="Buscar por usuario, nombre o email...">
+                                <input type="text" name="q_usuarios" id="buscarUsuario" class="form-control"
+                                       placeholder="Buscar por usuario, nombre o email..."
+                                       value="{{ q_usuarios }}">
+                                {% if q_usuarios %}
+                                <a href="?" class="btn btn-outline-secondary" title="Limpiar búsqueda">
+                                    <i class="ri-close-line"></i>
+                                </a>
+                                {% endif %}
+                                <button type="submit" class="btn btn-primary">Buscar</button>
                             </div>
-                        </div>
+                        </form>
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <small class="text-muted" id="contadorUsuarios">
-                                Mostrando {{ page_obj_usuarios.start_index }}–{{ page_obj_usuarios.end_index }} de {{ page_obj_usuarios.paginator.count }} usuarios
+                            <small class="text-muted">
+                                {% if q_usuarios %}
+                                    {{ page_obj_usuarios.paginator.count }} resultado(s) para "<strong>{{ q_usuarios }}</strong>"
+                                {% else %}
+                                    Mostrando {{ page_obj_usuarios.start_index }}–{{ page_obj_usuarios.end_index }} de {{ page_obj_usuarios.paginator.count }} usuarios
+                                {% endif %}
                             </small>
                         </div>
                         <div class="table-responsive">
@@ -183,7 +194,7 @@
                             <ul class="pagination pagination-sm justify-content-center mb-0">
                                 {% if page_obj_usuarios.has_previous %}
                                 <li class="page-item">
-                                    <a class="page-link" href="?page_usuarios={{ page_obj_usuarios.previous_page_number }}#usuarios-tab">
+                                    <a class="page-link" href="?{% if q_usuarios %}q_usuarios={{ q_usuarios }}&{% endif %}page_usuarios={{ page_obj_usuarios.previous_page_number }}#usuarios-tab">
                                         <i class="ri-arrow-left-s-line"></i>
                                     </a>
                                 </li>
@@ -196,14 +207,14 @@
                                     <li class="page-item active"><span class="page-link">{{ num }}</span></li>
                                     {% elif num > page_obj_usuarios.number|add:"-3" and num < page_obj_usuarios.number|add:"3" %}
                                     <li class="page-item">
-                                        <a class="page-link" href="?page_usuarios={{ num }}#usuarios-tab">{{ num }}</a>
+                                        <a class="page-link" href="?{% if q_usuarios %}q_usuarios={{ q_usuarios }}&{% endif %}page_usuarios={{ num }}#usuarios-tab">{{ num }}</a>
                                     </li>
                                     {% endif %}
                                 {% endfor %}
 
                                 {% if page_obj_usuarios.has_next %}
                                 <li class="page-item">
-                                    <a class="page-link" href="?page_usuarios={{ page_obj_usuarios.next_page_number }}#usuarios-tab">
+                                    <a class="page-link" href="?{% if q_usuarios %}q_usuarios={{ q_usuarios }}&{% endif %}page_usuarios={{ page_obj_usuarios.next_page_number }}#usuarios-tab">
                                         <i class="ri-arrow-right-s-line"></i>
                                     </a>
                                 </li>
@@ -398,24 +409,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const modalEl = document.getElementById('usuariosModal');
     const modalContent = document.getElementById('usuariosModalContent');
     const modal = new bootstrap.Modal(modalEl);
-
-    // ── Buscador de usuarios (filtro en tiempo real) ──
-    const inputBuscar = document.getElementById('buscarUsuario');
-    if (inputBuscar) {
-        inputBuscar.addEventListener('input', function() {
-            const q = this.value.toLowerCase().trim();
-            const filas = document.querySelectorAll('#tablaUsuarios tbody tr[data-fila]');
-            let visibles = 0;
-            filas.forEach(function(fila) {
-                const texto = fila.dataset.fila || '';
-                const mostrar = !q || texto.includes(q);
-                fila.style.display = mostrar ? '' : 'none';
-                if (mostrar) visibles++;
-            });
-            const contador = document.getElementById('contadorUsuarios');
-            if (contador) contador.textContent = `Mostrando ${visibles} resultado(s)`;
-        });
-    }
 
     // ── Nuevo Usuario (modal AJAX) ──
     document.addEventListener('click', function(e) {
