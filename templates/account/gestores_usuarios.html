@@ -121,11 +121,43 @@
                                             {% endif %}
                                         </td>
                                         <td>
-                                            {% if perms.auth.change_user %}
-                                            <a href="{% url 'accounts:editar_usuario' usuario.pk %}" class="btn btn-sm btn-soft-primary" title="Editar">
-                                                <i class="ri-pencil-line"></i>
-                                            </a>
-                                            {% endif %}
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-soft-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="ri-more-fill"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    <li>
+                                                        <a class="dropdown-item" href="{% url 'accounts:detalle_usuario' usuario.pk %}">
+                                                            <i class="ri-eye-line me-2"></i>Ver Detalle
+                                                        </a>
+                                                    </li>
+                                                    {% if perms.auth.change_user %}
+                                                    <li>
+                                                        <a class="dropdown-item" href="{% url 'accounts:editar_usuario' usuario.pk %}">
+                                                            <i class="ri-pencil-line me-2"></i>Editar
+                                                        </a>
+                                                    </li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <a class="dropdown-item" href="{% url 'accounts:asignar_grupos_usuario' usuario.pk %}">
+                                                            <i class="ri-shield-user-line me-2"></i>Asignar Roles
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item" href="{% url 'accounts:asignar_permisos_usuario' usuario.pk %}">
+                                                            <i class="ri-key-line me-2"></i>Asignar Permisos
+                                                        </a>
+                                                    </li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <button type="button" class="dropdown-item btn-pin-usuario"
+                                                                data-url="{% url 'accounts:gestionar_pin_usuario_ajax' usuario.pk %}">
+                                                            <i class="ri-lock-password-line me-2"></i>Configurar PIN
+                                                        </button>
+                                                    </li>
+                                                    {% endif %}
+                                                </ul>
+                                            </div>
                                         </td>
                                     </tr>
                                     {% empty %}
@@ -403,6 +435,42 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
         }
+    });
+
+    // ── Configurar PIN (modal AJAX) ──
+    document.addEventListener('click', function(e) {
+        const btnPin = e.target.closest('.btn-pin-usuario');
+        if (!btnPin) return;
+        const url = btnPin.dataset.url;
+        modalContent.innerHTML = '<div class="modal-body text-center py-5"><div class="spinner-border text-primary" role="status"></div></div>';
+        modal.show();
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(r => r.text())
+            .then(html => {
+                modalContent.innerHTML = html;
+                const form = modalContent.querySelector('form');
+                if (form) {
+                    form.addEventListener('submit', function(ev) {
+                        ev.preventDefault();
+                        fetch(form.action, {
+                            method: 'POST',
+                            body: new FormData(form),
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        })
+                        .then(resp => {
+                            const ct = resp.headers.get('content-type') || '';
+                            if (ct.includes('application/json')) {
+                                return resp.json().then(data => {
+                                    if (data.success) { modal.hide(); location.reload(); }
+                                    else { return resp.text().then(h => { modalContent.innerHTML = h; }); }
+                                });
+                            } else {
+                                return resp.text().then(h => { modalContent.innerHTML = h; });
+                            }
+                        });
+                    });
+                }
+            });
     });
 
     // ── Editar Cargo (modal AJAX) ──
