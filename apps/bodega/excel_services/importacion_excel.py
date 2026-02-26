@@ -1766,6 +1766,133 @@ class ImportacionExcelService:
                     errores.append(f"Fila {idx}: {str(e)}")
         return creadas, actualizadas, errores
 
+    # ==================== MÉTODOS PARA USUARIOS ====================
+
+    @staticmethod
+    def generar_plantilla_usuarios() -> bytes:
+        from openpyxl import Workbook
+        from openpyxl.styles import Font, Alignment
+        from io import BytesIO
+        from django.contrib.auth.models import User
+        from apps.accounts.models import Persona
+        wb = Workbook()
+        ws = wb.active
+        ws.title = 'Usuarios'
+        encabezados = ['Username', 'Password', 'Email', 'Nombres', 'Apellido1', 'Apellido2', 'DocumentoIdentidad', 'Sexo', 'FechaNacimiento', 'Activo']
+        for col_idx, enc in enumerate(encabezados, start=1):
+            cell = ws.cell(row=1, column=col_idx, value=enc)
+            cell.font = Font(bold=True)
+            cell.alignment = Alignment(horizontal='center')
+        # Ejemplos con datos de usuarios existentes
+        qs = User.objects.select_related('persona').filter(persona__isnull=False).order_by('id')[:5]
+        for row_idx, u in enumerate(qs, start=2):
+            p = u.persona
+            ws.cell(row=row_idx, column=1, value=u.username)
+            ws.cell(row=row_idx, column=2, value='')
+            ws.cell(row=row_idx, column=3, value=u.email)
+            ws.cell(row=row_idx, column=4, value=p.nombres)
+            ws.cell(row=row_idx, column=5, value=p.apellido1)
+            ws.cell(row=row_idx, column=6, value=p.apellido2 or '')
+            ws.cell(row=row_idx, column=7, value=p.documento_identidad)
+            ws.cell(row=row_idx, column=8, value=p.sexo)
+            ws.cell(row=row_idx, column=9, value=p.fecha_nacimiento.strftime('%d/%m/%Y') if p.fecha_nacimiento else '')
+            ws.cell(row=row_idx, column=10, value='SI' if u.is_active else 'NO')
+        widths = [20, 20, 30, 20, 20, 20, 20, 8, 15, 8]
+        for i, w in enumerate(widths, start=1):
+            ws.column_dimensions[ws.cell(row=1, column=i).column_letter].width = w
+        output = BytesIO()
+        wb.save(output)
+        output.seek(0)
+        contenido = output.read()
+        output.close()
+        return contenido
+
+    @staticmethod
+    def importar_usuarios(archivo, usuario_solicitante):
+        from django.contrib.auth.models import User
+        from apps.accounts.models import Persona
+        from django.db import connection
+        from datetime import datetime
+        columnas_esperadas = ['Username', 'Password', 'Email', 'Nombres', 'Apellido1', 'Apellido2', 'DocumentoIdentidad', 'Sexo', 'FechaNacimiento', 'Activo']
+        datos = ImportacionExcelService.leer_datos_desde_excel(archivo, columnas_esperadas)
+        creadas = 0
+        actualizadas = 0
+        errores = []
+        with transaction.atomic():
+            for idx, fila in enumerate(datos, start=2):
+                try:
+                    username = str(fila.get('Username', '') or '').strip()
+                    if not username:
+                        errores.append(f"Fila {idx}: Username es obligatorio")
+                        continue
+                    nombres = str(fila.get('Nombres', '') or '').strip()
+                    apellido1 = str(fila.get('Apellido1', '') or '').strip()
+                    documento = str(fila.get('DocumentoIdentidad', '') or '').strip() or f'TEMP-{username}'
+                    sexo = str(fila.get('Sexo', 'M') or 'M').strip().upper()
+                    if sexo not in ('M', 'F', 'O'):
+                        sexo = 'M'
+                    fecha_str = str(fila.get('FechaNacimiento', '') or '').strip()
+                    fecha_nac = None
+                    for fmt in ('%d/%m/%Y', '%Y-%m-%d', '%d-%m-%Y'):
+                        try:
+                            fecha_nac = datetime.strptime(fecha_str, fmt).date()
+                            break
+                        except Exception:
+                            pass
+                    activo = str(fila.get('Activo', 'SI') or 'SI').strip().upper() in ('SI', 'S', 'TRUE', '1', 'ACTIVO')
+                    email = str(fila.get('Email', '') or '').strip()
+                    password = str(fila.get('Password', '') or '').strip()
+
+                    user_exists = User.objects.filter(username=username).first()
+                    if user_exists:
+                        # Actualizar datos básicos
+                        user_exists.email = email or user_exists.email
+                        user_exists.first_name = nombres
+                        user_exists.last_name = apellido1
+                        user_exists.is_active = activo
+                        if password:
+                            user_exists.set_password(password)
+                        user_exists.save()
+                        # Actualizar Persona si existe
+                        if hasattr(user_exists, 'persona'):
+                            p = user_exists.persona
+                            p.nombres = nombres or p.nombres
+                            p.apellido1 = apellido1 or p.apellido1
+                            p.apellido2 = str(fila.get('Apellido2', '') or '').strip() or p.apellido2
+                            p.sexo = sexo
+                            if fecha_nac:
+                                p.fecha_nacimiento = fecha_nac
+                            p.save()
+                        actualizadas += 1
+                    else:
+                        u = User(username=username, email=email, first_name=nombres, last_name=apellido1, is_active=activo)
+                        if password:
+                            u.set_password(password)
+                        else:
+                            u.set_unusable_password()
+                        u.save()
+                        Persona.objects.create(
+                            user=u,
+                            documento_identidad=documento,
+                            nombres=nombres,
+                            apellido1=apellido1,
+                            apellido2=str(fila.get('Apellido2', '') or '').strip(),
+                            sexo=sexo,
+                            fecha_nacimiento=fecha_nac,
+                            activo=activo,
+                            eliminado=False,
+                        )
+                        creadas += 1
+                except Exception as e:
+                    errores.append(f"Fila {idx}: {str(e)}")
+        # Resincronizar sequence para evitar IntegrityError posterior
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT setval(pg_get_serial_sequence('auth_user','id'), "
+                "COALESCE((SELECT MAX(id) FROM auth_user), 1));"
+            )
+        return creadas, actualizadas, errores
+
     # ==================== MÉTODOS PARA MOTIVOS DE BAJA ====================
 
     @staticmethod

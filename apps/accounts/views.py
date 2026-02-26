@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView
@@ -125,14 +126,61 @@ def lista_usuarios(request):
         'puede_cambiar_password': request.user.has_perm('auth.change_user'),
     }
 
+    # Paginación
+    paginator = Paginator(usuarios, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Parámetros de filtro sin 'page' para construir URLs de paginación
+    query_params = request.GET.copy()
+    query_params.pop('page', None)
+    filter_query = query_params.urlencode()
+
     context = {
         'titulo': 'Listado de Usuarios',
-        'usuarios': usuarios,
+        'usuarios': page_obj,
+        'page_obj': page_obj,
+        'filter_query': filter_query,
         'form': form,
         'permisos': permisos,
     }
 
     return render(request, 'account/gestion_usuarios/lista_usuarios.html', context)
+
+
+@login_required
+@permission_required('auth.add_user', raise_exception=True)
+def usuarios_descargar_plantilla(request):
+    from apps.bodega.excel_services.importacion_excel import ImportacionExcelService
+    from django.http import HttpResponse
+    contenido = ImportacionExcelService.generar_plantilla_usuarios()
+    response = HttpResponse(contenido, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="plantilla_usuarios.xlsx"'
+    return response
+
+
+@login_required
+@permission_required('auth.add_user', raise_exception=True)
+def usuarios_importar_excel(request):
+    from apps.bodega.excel_services.importacion_excel import ImportacionExcelService
+    from django.http import JsonResponse
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'mensaje': 'Método no permitido'}, status=405)
+    archivo = request.FILES.get('archivo')
+    valido, error = ImportacionExcelService.validar_archivo_excel(archivo)
+    if not valido:
+        return JsonResponse({'success': False, 'mensaje': error})
+    try:
+        creadas, actualizadas, errores = ImportacionExcelService.importar_usuarios(archivo, request.user)
+        return JsonResponse({
+            'success': True,
+            'mensaje': f'Importación completada: {creadas} creados, {actualizadas} actualizados.',
+            'creadas': creadas,
+            'actualizadas': actualizadas,
+            'errores': errores[:10],
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'mensaje': str(e)})
 
 
 @login_required

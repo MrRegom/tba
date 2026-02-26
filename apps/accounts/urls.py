@@ -97,6 +97,8 @@ urlpatterns = [
     path('organizacion/areas/exportar/', views.area_exportar_excel, name='area_exportar_excel'),
     # Usuarios
     path('usuarios/exportar/', views.usuarios_exportar_excel, name='usuarios_exportar_excel'),
+    path('usuarios/plantilla/', views.usuarios_descargar_plantilla, name='usuarios_descargar_plantilla'),
+    path('usuarios/importar/', views.usuarios_importar_excel, name='usuarios_importar_excel'),
     path('cargos/exportar/', views.cargo_exportar_excel, name='cargo_exportar_excel'),
     path('ubicaciones/plantilla/', views.ubicacion_descargar_plantilla, name='ubicacion_descargar_plantilla'),
     path('ubicaciones/importar/', views.ubicacion_importar_excel, name='ubicacion_importar_excel'),
