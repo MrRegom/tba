@@ -240,22 +240,29 @@ def _reset_auth_user_sequence():
 @login_required
 @permission_required('auth.add_user', raise_exception=True)
 def crear_usuario(request):
-    """Crear un nuevo usuario con datos de Persona"""
+    """Crear un nuevo usuario con datos de Persona. Soporta AJAX para modal."""
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
     if request.method == 'POST':
         form = UserCreateForm(request.POST, request.FILES)
         if form.is_valid():
             try:
                 with transaction.atomic():
-                    usuario = form.save()
+                    usuario = form.save(commit=False)
+                    # Sincronizar first_name/last_name de auth_user con los datos de Persona
+                    nombres = form.cleaned_data['nombres']
+                    apellido1 = form.cleaned_data['apellido1']
+                    usuario.first_name = nombres
+                    usuario.last_name = apellido1
+                    usuario.save()
 
                     # Crear registro de Persona
                     from .models import Persona
-                    documento_identidad = f'TEMP-{usuario.username}'
                     Persona.objects.create(
                         user=usuario,
-                        documento_identidad=documento_identidad,
-                        nombres=form.cleaned_data['nombres'],
-                        apellido1=form.cleaned_data['apellido1'],
+                        documento_identidad=f'TEMP-{usuario.username}',
+                        nombres=nombres,
+                        apellido1=apellido1,
                         apellido2=form.cleaned_data.get('apellido2', ''),
                         sexo=form.cleaned_data['sexo'],
                         fecha_nacimiento=form.cleaned_data['fecha_nacimiento'],
@@ -287,31 +294,34 @@ def crear_usuario(request):
                     else:
                         pin_texto = ''
 
-                # Registrar log fuera de la transacción atómica
-                registrar_log_auditoria(
-                    request.user,
-                    'CREAR',
-                    f'Usuario creado: {usuario.username}',
-                    request
-                )
+                registrar_log_auditoria(request.user, 'CREAR', f'Usuario creado: {usuario.username}', request)
 
                 mensaje = f'Usuario {usuario.username} creado exitosamente.'
                 if pin_texto:
                     mensaje += ' PIN configurado correctamente.'
+
+                if is_ajax:
+                    return JsonResponse({'success': True, 'mensaje': mensaje})
+
                 messages.success(request, mensaje)
                 return redirect('accounts:detalle_usuario', pk=usuario.pk)
 
             except IntegrityError:
-                # El sequence quedó desincronizado tras una importación masiva.
-                # Resincronizamos y mostramos error amigable para que el usuario reintente.
                 _reset_auth_user_sequence()
-                messages.error(
-                    request,
-                    'Ocurrió un conflicto al asignar el ID del usuario. '
-                    'El sistema fue corregido automáticamente. Por favor intente nuevamente.'
-                )
+                error_msg = ('Ocurrió un conflicto al asignar el ID del usuario. '
+                             'El sistema fue corregido automáticamente. Por favor intente nuevamente.')
+                if is_ajax:
+                    return JsonResponse({'success': False, 'mensaje': error_msg})
+                messages.error(request, error_msg)
+        else:
+            if is_ajax:
+                # Devolver HTML del formulario con errores para reemplazar en el modal
+                return render(request, 'account/gestion_usuarios/modal_crear_usuario.html', {'form': form})
     else:
         form = UserCreateForm()
+
+    if is_ajax:
+        return render(request, 'account/gestion_usuarios/modal_crear_usuario.html', {'form': form})
 
     context = {
         'titulo': 'Crear Usuario',
@@ -320,7 +330,6 @@ def crear_usuario(request):
         'usuario_detalle': None,
         'tiene_pin': False,
     }
-
     return render(request, 'account/gestion_usuarios/form_usuario.html', context)
 
 

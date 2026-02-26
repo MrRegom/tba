@@ -1,0 +1,94 @@
+{% load static %}
+<div class="modal-header">
+    <h5 class="modal-title"><i class="ri-user-add-line me-2"></i>Nuevo Usuario</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+    <form id="formCrearUsuario" method="post" enctype="multipart/form-data"
+          action="{% url 'accounts:crear_usuario' %}">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <!-- Credenciales -->
+        <h6 class="text-muted mb-2"><i class="ri-key-line me-1"></i>Credenciales</h6>
+        <div class="row g-2 mb-3">
+            <div class="col-md-6">
+                <label class="form-label">{{ form.username.label }} <span class="text-danger">*</span></label>
+                {{ form.username }}
+                {% if form.username.errors %}<div class="text-danger small">{{ form.username.errors }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">{{ form.email.label }}</label>
+                {{ form.email }}
+                {% if form.email.errors %}<div class="text-danger small">{{ form.email.errors }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">{{ form.password1.label }} <span class="text-danger">*</span></label>
+                {{ form.password1 }}
+                {% if form.password1.errors %}<div class="text-danger small">{{ form.password1.errors }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">{{ form.password2.label }} <span class="text-danger">*</span></label>
+                {{ form.password2 }}
+                {% if form.password2.errors %}<div class="text-danger small">{{ form.password2.errors }}</div>{% endif %}
+            </div>
+        </div>
+
+        <hr class="my-2">
+
+        <!-- Datos personales (una sola vez) -->
+        <h6 class="text-muted mb-2"><i class="ri-user-line me-1"></i>Datos Personales</h6>
+        <div class="row g-2 mb-3">
+            <div class="col-md-6">
+                <label class="form-label">{{ form.nombres.label }} <span class="text-danger">*</span></label>
+                {{ form.nombres }}
+                {% if form.nombres.errors %}<div class="text-danger small">{{ form.nombres.errors }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">{{ form.apellido1.label }} <span class="text-danger">*</span></label>
+                {{ form.apellido1 }}
+                {% if form.apellido1.errors %}<div class="text-danger small">{{ form.apellido1.errors }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">{{ form.apellido2.label }}</label>
+                {{ form.apellido2 }}
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">{{ form.sexo.label }} <span class="text-danger">*</span></label>
+                {{ form.sexo }}
+                {% if form.sexo.errors %}<div class="text-danger small">{{ form.sexo.errors }}</div>{% endif %}
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">{{ form.fecha_nacimiento.label }} <span class="text-danger">*</span></label>
+                {{ form.fecha_nacimiento }}
+                {% if form.fecha_nacimiento.errors %}<div class="text-danger small">{{ form.fecha_nacimiento.errors }}</div>{% endif %}
+            </div>
+        </div>
+
+        <hr class="my-2">
+
+        <!-- Permisos -->
+        <h6 class="text-muted mb-2"><i class="ri-shield-line me-1"></i>Acceso</h6>
+        <div class="d-flex gap-4 mb-2">
+            <div class="form-check">
+                {{ form.is_active }}
+                <label class="form-check-label">{{ form.is_active.label }}</label>
+            </div>
+            <div class="form-check">
+                {{ form.is_staff }}
+                <label class="form-check-label">{{ form.is_staff.label }}</label>
+            </div>
+        </div>
+
+        <div id="resultadoCrearUsuario" class="mt-2 d-none"></div>
+    </form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+    <button type="submit" form="formCrearUsuario" class="btn btn-primary">
+        <i class="ri-save-line me-1"></i>Crear Usuario
+    </button>
+</div>
