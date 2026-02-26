@@ -1718,8 +1718,16 @@ class GestoresUsuariosView(BaseAuditedViewMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         from .models import Cargo
+        from django.core.paginator import Paginator
 
-        context['usuarios'] = User.objects.all().order_by('username')
+        # Paginación de usuarios (15 por página)
+        usuarios_qs = User.objects.prefetch_related('groups').all().order_by('username')
+        paginator = Paginator(usuarios_qs, 15)
+        page_number = self.request.GET.get('page_usuarios', 1)
+        page_obj = paginator.get_page(page_number)
+
+        context['page_obj_usuarios'] = page_obj
+        context['usuarios'] = page_obj
         context['cargos'] = Cargo.objects.filter(eliminado=False).order_by('codigo')
         context['roles'] = Group.objects.all().order_by('name')
         context['permisos'] = Permission.objects.select_related('content_type').order_by('content_type__app_label', 'codename')
