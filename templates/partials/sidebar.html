@@ -293,6 +293,54 @@
                 </li>
                 {% endif %}
 
+                <!-- Auditoría (solo administradores) -->
+                {% if request.user.is_staff or request.user.is_superuser %}
+                <li class="nav-item">
+                    <a class="nav-link menu-link {% if '/auditoria/' in request.path %}active{% endif %}"
+                       href="#sidebarAuditoria"
+                       data-bs-toggle="collapse" role="button"
+                       aria-expanded="{% if '/auditoria/' in request.path %}true{% else %}false{% endif %}"
+                       aria-controls="sidebarAuditoria">
+                        <i class="ri-shield-check-line"></i>
+                        <span>Auditoría</span>
+                    </a>
+                    <div class="collapse menu-dropdown {% if '/auditoria/' in request.path %}show{% endif %}" id="sidebarAuditoria">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{% url 'auditoria:dashboard' %}"
+                                   class="nav-link {% if request.path == '/auditoria/' %}active{% endif %}">
+                                    Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'auditoria:lista_registros' %}"
+                                   class="nav-link {% if '/auditoria/registros/' in request.path %}active{% endif %}">
+                                    Registro CRUD
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'auditoria:lista_sesiones' %}"
+                                   class="nav-link {% if '/auditoria/sesiones/' in request.path %}active{% endif %}">
+                                    Sesiones
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'auditoria:lista_logs_sistema' %}"
+                                   class="nav-link {% if '/auditoria/logs-sistema/' in request.path %}active{% endif %}">
+                                    Logs del Sistema
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'auditoria:lista_auditoria_pin' %}"
+                                   class="nav-link {% if '/auditoria/pin/' in request.path %}active{% endif %}">
+                                    Auditoría PIN
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                {% endif %}
+
             </ul>
         </div>
     </div>

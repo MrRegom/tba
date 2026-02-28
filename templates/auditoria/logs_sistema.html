@@ -1,0 +1,135 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0">{{ titulo }}</h4>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'auditoria:dashboard' %}">Auditoría</a></li>
+                    <li class="breadcrumb-item active">Logs del Sistema</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Filtros ── -->
+<div class="card mb-3">
+    <div class="card-body py-2">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <input type="text" name="q" value="{{ filtros.q }}" class="form-control form-control-sm" placeholder="Usuario / IP / descripción...">
+            </div>
+            <div class="col-md-3">
+                <select name="accion_id" class="form-select form-select-sm">
+                    <option value="">Todas las acciones</option>
+                    {% for a in acciones %}
+                    <option value="{{ a.pk }}" {% if filtros.accion_id == a.pk|stringformat:"s" %}selected{% endif %}>{{ a.glosa }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="usuario_id" class="form-select form-select-sm">
+                    <option value="">Todos los usuarios</option>
+                    {% for u in usuarios %}
+                    <option value="{{ u.pk }}" {% if filtros.usuario_id == u.pk|stringformat:"s" %}selected{% endif %}>{{ u.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-1">
+                <input type="date" name="desde" value="{{ filtros.desde }}" class="form-control form-control-sm" title="Desde">
+            </div>
+            <div class="col-md-1">
+                <input type="date" name="hasta" value="{{ filtros.hasta }}" class="form-control form-control-sm" title="Hasta">
+            </div>
+            <div class="col-md-2 d-flex gap-1">
+                <button type="submit" class="btn btn-primary btn-sm"><i class="ri-search-line"></i></button>
+                <a href="{% url 'auditoria:lista_logs_sistema' %}" class="btn btn-light btn-sm"><i class="ri-refresh-line"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ── Tabla ── -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">
+            Logs del Sistema
+            <span class="badge bg-secondary ms-2">{{ page_obj.paginator.count }}</span>
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-sm mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Acción</th>
+                        <th>Usuario</th>
+                        <th>IP</th>
+                        <th>Descripción</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in page_obj %}
+                    <tr>
+                        <td class="text-muted small">{{ log.pk }}</td>
+                        <td>
+                            {% if log.accion %}
+                            <span class="badge bg-primary-subtle text-primary">{{ log.accion.glosa }}</span>
+                            {% else %}
+                            <span class="text-muted small">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="small">{{ log.usuario|default:"-" }}</td>
+                        <td class="small text-muted">{{ log.ip_usuario|default:"-" }}</td>
+                        <td class="small text-truncate" style="max-width:300px;">{{ log.descripcion|default:"-" }}</td>
+                        <td class="text-nowrap small text-muted">{{ log.fecha_creacion|date:"d/m/Y H:i:s" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">Sin resultados para los filtros aplicados.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <div class="card-footer">
+        <nav>
+            <ul class="pagination pagination-sm justify-content-end mb-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ filtros.q }}&accion_id={{ filtros.accion_id }}&usuario_id={{ filtros.usuario_id }}&desde={{ filtros.desde }}&hasta={{ filtros.hasta }}">&laquo;</a>
+                </li>
+                {% endif %}
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}&q={{ filtros.q }}&accion_id={{ filtros.accion_id }}&usuario_id={{ filtros.usuario_id }}&desde={{ filtros.desde }}&hasta={{ filtros.hasta }}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ filtros.q }}&accion_id={{ filtros.accion_id }}&usuario_id={{ filtros.usuario_id }}&desde={{ filtros.desde }}&hasta={{ filtros.hasta }}">&raquo;</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        <p class="text-muted small text-end mt-1 mb-0">
+            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }} — {{ page_obj.paginator.count }} registros
+        </p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

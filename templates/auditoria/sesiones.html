@@ -1,0 +1,146 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0">{{ titulo }}</h4>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'auditoria:dashboard' %}">Auditoría</a></li>
+                    <li class="breadcrumb-item active">Sesiones</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Filtros ── -->
+<div class="card mb-3">
+    <div class="card-body py-2">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <input type="text" name="q" value="{{ filtros.q }}" class="form-control form-control-sm" placeholder="Usuario / IP / nombre...">
+            </div>
+            <div class="col-md-2">
+                <select name="evento" class="form-select form-select-sm">
+                    <option value="">Todos los eventos</option>
+                    {% for val, lbl in eventos %}
+                    <option value="{{ val }}" {% if filtros.evento == val %}selected{% endif %}>{{ lbl }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="exitoso" class="form-select form-select-sm">
+                    <option value="">Todos</option>
+                    <option value="true" {% if filtros.exitoso == 'true' %}selected{% endif %}>Exitoso</option>
+                    <option value="false" {% if filtros.exitoso == 'false' %}selected{% endif %}>Fallido</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="desde" value="{{ filtros.desde }}" class="form-control form-control-sm" title="Desde">
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="hasta" value="{{ filtros.hasta }}" class="form-control form-control-sm" title="Hasta">
+            </div>
+            <div class="col-md-1 d-flex gap-1">
+                <button type="submit" class="btn btn-primary btn-sm"><i class="ri-search-line"></i></button>
+                <a href="{% url 'auditoria:lista_sesiones' %}" class="btn btn-light btn-sm"><i class="ri-refresh-line"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ── Tabla ── -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">
+            Sesiones
+            <span class="badge bg-secondary ms-2">{{ page_obj.paginator.count }}</span>
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-sm mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Username</th>
+                        <th>Usuario</th>
+                        <th>Evento</th>
+                        <th>Resultado</th>
+                        <th>IP</th>
+                        <th>Razón Fallo</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in page_obj %}
+                    <tr>
+                        <td class="text-muted small">{{ s.pk }}</td>
+                        <td class="small fw-medium">{{ s.username }}</td>
+                        <td class="small">{{ s.usuario|default:"-" }}</td>
+                        <td>
+                            {% if s.evento == 'LOGIN_EXITOSO' %}<span class="badge bg-success-subtle text-success">Login OK</span>
+                            {% elif s.evento == 'LOGIN_FALLIDO' %}<span class="badge bg-danger-subtle text-danger">Login Fallido</span>
+                            {% elif s.evento == 'LOGOUT' %}<span class="badge bg-secondary-subtle text-secondary">Logout</span>
+                            {% elif s.evento == 'CAMBIO_PASSWORD' %}<span class="badge bg-info-subtle text-info">Cambio Pass.</span>
+                            {% elif s.evento == 'RESETEO_PASSWORD' %}<span class="badge bg-warning-subtle text-warning">Reset Pass.</span>
+                            {% elif s.evento == 'SESION_EXPIRADA' %}<span class="badge bg-dark-subtle text-dark">Sesión Expirada</span>
+                            {% else %}<span class="badge bg-light text-muted">{{ s.get_evento_display }}</span>{% endif %}
+                        </td>
+                        <td>
+                            {% if s.exitoso %}
+                            <span class="badge bg-success"><i class="ri-check-line"></i></span>
+                            {% else %}
+                            <span class="badge bg-danger"><i class="ri-close-line"></i></span>
+                            {% endif %}
+                        </td>
+                        <td class="small text-muted">{{ s.ip_address|default:"-" }}</td>
+                        <td class="small text-muted">{{ s.razon_fallo|default:"-"|truncatechars:40 }}</td>
+                        <td class="text-nowrap small text-muted">{{ s.timestamp|date:"d/m/Y H:i:s" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="8" class="text-center text-muted py-4">Sin resultados para los filtros aplicados.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <div class="card-footer">
+        <nav>
+            <ul class="pagination pagination-sm justify-content-end mb-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ filtros.q }}&evento={{ filtros.evento }}&exitoso={{ filtros.exitoso }}&desde={{ filtros.desde }}&hasta={{ filtros.hasta }}">&laquo;</a>
+                </li>
+                {% endif %}
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}&q={{ filtros.q }}&evento={{ filtros.evento }}&exitoso={{ filtros.exitoso }}&desde={{ filtros.desde }}&hasta={{ filtros.hasta }}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ filtros.q }}&evento={{ filtros.evento }}&exitoso={{ filtros.exitoso }}&desde={{ filtros.desde }}&hasta={{ filtros.hasta }}">&raquo;</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        <p class="text-muted small text-end mt-1 mb-0">
+            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }} — {{ page_obj.paginator.count }} registros
+        </p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

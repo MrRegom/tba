@@ -1,0 +1,253 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0">{{ titulo }}</h4>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Auditoría</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Estadísticas ── -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="card card-animate">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="fw-medium text-muted mb-0">Total Registros</p>
+                        <h2 class="mt-2 ff-secondary fw-semibold">{{ stats.total_registros }}</h2>
+                        <p class="text-muted mt-2 mb-0"><span class="badge bg-light text-muted fs-xs">Histórico</span></p>
+                    </div>
+                    <div class="avatar-sm flex-shrink-0">
+                        <span class="avatar-title bg-primary-subtle rounded fs-3">
+                            <i class="ri-file-list-3-line text-primary"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="card card-animate">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="fw-medium text-muted mb-0">Registros 30d</p>
+                        <h2 class="mt-2 ff-secondary fw-semibold">{{ stats.registros_30d }}</h2>
+                        <p class="text-muted mt-2 mb-0"><span class="badge bg-success-subtle text-success fs-xs">Últimos 30 días</span></p>
+                    </div>
+                    <div class="avatar-sm flex-shrink-0">
+                        <span class="avatar-title bg-success-subtle rounded fs-3">
+                            <i class="ri-shield-check-line text-success"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="card card-animate">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="fw-medium text-muted mb-0">Sesiones 30d</p>
+                        <h2 class="mt-2 ff-secondary fw-semibold">{{ stats.sesiones_30d }}</h2>
+                        <p class="text-muted mt-2 mb-0"><span class="badge bg-info-subtle text-info fs-xs">Últimos 30 días</span></p>
+                    </div>
+                    <div class="avatar-sm flex-shrink-0">
+                        <span class="avatar-title bg-info-subtle rounded fs-3">
+                            <i class="ri-user-line text-info"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="card card-animate">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="fw-medium text-muted mb-0">Logins Fallidos</p>
+                        <h2 class="mt-2 ff-secondary fw-semibold">{{ stats.logins_fallidos_30d }}</h2>
+                        <p class="text-muted mt-2 mb-0"><span class="badge bg-danger-subtle text-danger fs-xs">Últimos 30 días</span></p>
+                    </div>
+                    <div class="avatar-sm flex-shrink-0">
+                        <span class="avatar-title bg-danger-subtle rounded fs-3">
+                            <i class="ri-lock-password-line text-danger"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="card card-animate">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="fw-medium text-muted mb-0">Logs Sistema</p>
+                        <h2 class="mt-2 ff-secondary fw-semibold">{{ stats.logs_sistema_30d }}</h2>
+                        <p class="text-muted mt-2 mb-0"><span class="badge bg-warning-subtle text-warning fs-xs">Últimos 30 días</span></p>
+                    </div>
+                    <div class="avatar-sm flex-shrink-0">
+                        <span class="avatar-title bg-warning-subtle rounded fs-3">
+                            <i class="ri-article-line text-warning"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="card card-animate">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="fw-medium text-muted mb-0">PIN Fallidos</p>
+                        <h2 class="mt-2 ff-secondary fw-semibold">{{ stats.pin_fallidos_30d }}</h2>
+                        <p class="text-muted mt-2 mb-0"><span class="badge bg-danger-subtle text-danger fs-xs">Últimos 30 días</span></p>
+                    </div>
+                    <div class="avatar-sm flex-shrink-0">
+                        <span class="avatar-title bg-danger-subtle rounded fs-3">
+                            <i class="ri-key-2-line text-danger"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Accesos rápidos ── -->
+<div class="row g-3 mb-4">
+    <div class="col-12">
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{% url 'auditoria:lista_registros' %}" class="btn btn-outline-primary">
+                <i class="ri-file-list-3-line me-1"></i>Registro de Auditoría
+            </a>
+            <a href="{% url 'auditoria:lista_sesiones' %}" class="btn btn-outline-info">
+                <i class="ri-user-line me-1"></i>Auditoría de Sesiones
+            </a>
+            <a href="{% url 'auditoria:lista_logs_sistema' %}" class="btn btn-outline-warning">
+                <i class="ri-article-line me-1"></i>Logs del Sistema
+            </a>
+            <a href="{% url 'auditoria:lista_auditoria_pin' %}" class="btn btn-outline-danger">
+                <i class="ri-key-2-line me-1"></i>Auditoría de PIN
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Últimas acciones CRUD -->
+    <div class="col-xl-7">
+        <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <h5 class="card-title mb-0"><i class="ri-file-list-3-line me-2"></i>Últimas Acciones (CRUD)</h5>
+                <a href="{% url 'auditoria:lista_registros' %}" class="btn btn-sm btn-light">Ver todos</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Acción</th>
+                                <th>Usuario</th>
+                                <th>Módulo / Objeto</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in ultimos_registros %}
+                            <tr>
+                                <td>
+                                    {% if r.accion == 'CREAR' %}<span class="badge bg-success">{{ r.get_accion_display }}</span>
+                                    {% elif r.accion == 'ELIMINAR' %}<span class="badge bg-danger">{{ r.get_accion_display }}</span>
+                                    {% elif r.accion == 'ACTUALIZAR' %}<span class="badge bg-warning text-dark">{{ r.get_accion_display }}</span>
+                                    {% else %}<span class="badge bg-secondary">{{ r.get_accion_display }}</span>{% endif %}
+                                </td>
+                                <td>{{ r.usuario|default:"-" }}</td>
+                                <td class="text-muted small">{{ r.content_type.app_label }} / #{{ r.object_id }}</td>
+                                <td class="text-muted small text-nowrap">{{ r.timestamp|date:"d/m/y H:i" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-center text-muted py-3">Sin registros</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones frecuentes + últimas sesiones -->
+    <div class="col-xl-5">
+        <!-- Top acciones -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="ri-bar-chart-line me-2"></i>Top Acciones (30 días)</h5>
+            </div>
+            <div class="card-body">
+                {% for a in top_acciones %}
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-primary-subtle text-primary me-2 px-2">{{ a.accion }}</span>
+                    <div class="flex-grow-1">
+                        <div class="progress" style="height:6px;">
+                            <div class="progress-bar" style="width:{{ a.total }}%;"></div>
+                        </div>
+                    </div>
+                    <span class="ms-2 text-muted small fw-semibold">{{ a.total }}</span>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center mb-0">Sin datos</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Últimas sesiones -->
+        <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <h5 class="card-title mb-0"><i class="ri-shield-keyhole-line me-2"></i>Últimas Sesiones</h5>
+                <a href="{% url 'auditoria:lista_sesiones' %}" class="btn btn-sm btn-light">Ver todas</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead class="table-light">
+                            <tr><th>Usuario</th><th>Evento</th><th>Fecha</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for s in ultimas_sesiones %}
+                            <tr>
+                                <td class="small">{{ s.username }}</td>
+                                <td>
+                                    {% if s.evento == 'LOGIN_EXITOSO' %}<span class="badge bg-success-subtle text-success">Login OK</span>
+                                    {% elif s.evento == 'LOGIN_FALLIDO' %}<span class="badge bg-danger-subtle text-danger">Fallido</span>
+                                    {% elif s.evento == 'LOGOUT' %}<span class="badge bg-secondary-subtle text-secondary">Logout</span>
+                                    {% else %}<span class="badge bg-info-subtle text-info">{{ s.get_evento_display }}</span>{% endif %}
+                                </td>
+                                <td class="text-muted small text-nowrap">{{ s.timestamp|date:"d/m/y H:i" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="text-center text-muted py-3">Sin sesiones</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

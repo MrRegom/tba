@@ -41,6 +41,9 @@ urlpatterns = [
     # Gestión de usuarios y permisos
     path('administracion/', include('apps.accounts.urls')),
 
+    # Auditoría del sistema (solo admins)
+    path('auditoria/', include('apps.auditoria.urls')),
+
     path(
         "account/password/change/",
         login_required(MyPasswordChangeView.as_view()),

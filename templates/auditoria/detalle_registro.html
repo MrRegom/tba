@@ -1,0 +1,120 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0">{{ titulo }}</h4>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'auditoria:dashboard' %}">Auditoría</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'auditoria:lista_registros' %}">Registros</a></li>
+                    <li class="breadcrumb-item active">#{{ registro.pk }}</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Información general -->
+    <div class="col-lg-5">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="ri-information-line me-2"></i>Información General</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-5 text-muted">ID:</dt>
+                    <dd class="col-7">{{ registro.pk }}</dd>
+
+                    <dt class="col-5 text-muted">Acción:</dt>
+                    <dd class="col-7">
+                        {% if registro.accion == 'CREAR' %}<span class="badge bg-success fs-xs">{{ registro.get_accion_display }}</span>
+                        {% elif registro.accion == 'ELIMINAR' %}<span class="badge bg-danger fs-xs">{{ registro.get_accion_display }}</span>
+                        {% elif registro.accion == 'ACTUALIZAR' %}<span class="badge bg-warning text-dark fs-xs">{{ registro.get_accion_display }}</span>
+                        {% elif registro.accion == 'ACTIVAR' %}<span class="badge bg-info fs-xs">{{ registro.get_accion_display }}</span>
+                        {% elif registro.accion == 'DESACTIVAR' %}<span class="badge bg-secondary fs-xs">{{ registro.get_accion_display }}</span>
+                        {% else %}<span class="badge bg-light text-dark fs-xs">{{ registro.get_accion_display }}</span>{% endif %}
+                    </dd>
+
+                    <dt class="col-5 text-muted">Módulo:</dt>
+                    <dd class="col-7">{{ registro.content_type.app_label }}</dd>
+
+                    <dt class="col-5 text-muted">Modelo:</dt>
+                    <dd class="col-7">{{ registro.content_type.model }}</dd>
+
+                    <dt class="col-5 text-muted">Objeto ID:</dt>
+                    <dd class="col-7">#{{ registro.object_id }}</dd>
+
+                    <dt class="col-5 text-muted">Usuario:</dt>
+                    <dd class="col-7">{{ registro.usuario|default:"(sistema)" }}</dd>
+
+                    <dt class="col-5 text-muted">IP:</dt>
+                    <dd class="col-7">{{ registro.ip_address|default:"-" }}</dd>
+
+                    <dt class="col-5 text-muted">Fecha/Hora:</dt>
+                    <dd class="col-7">{{ registro.timestamp|date:"d/m/Y H:i:s" }}</dd>
+
+                    {% if registro.descripcion %}
+                    <dt class="col-5 text-muted">Descripción:</dt>
+                    <dd class="col-7">{{ registro.descripcion }}</dd>
+                    {% endif %}
+
+                    {% if registro.user_agent %}
+                    <dt class="col-5 text-muted">User Agent:</dt>
+                    <dd class="col-7 small text-muted text-break">{{ registro.user_agent }}</dd>
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <!-- Diff de datos -->
+    <div class="col-lg-7">
+        <div class="row g-3 h-100">
+            <!-- Datos anteriores -->
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header py-2">
+                        <h6 class="card-title mb-0 text-danger"><i class="ri-arrow-left-circle-line me-1"></i>Datos Anteriores</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if registro.datos_anteriores %}
+                        <pre class="m-0 p-3 bg-danger-subtle rounded-bottom small" style="max-height:280px;overflow:auto;">{{ registro.datos_anteriores|pprint }}</pre>
+                        {% else %}
+                        <p class="text-muted text-center py-3 mb-0 small">Sin datos anteriores (acción de creación o no disponible)</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Datos nuevos -->
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header py-2">
+                        <h6 class="card-title mb-0 text-success"><i class="ri-arrow-right-circle-line me-1"></i>Datos Nuevos</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if registro.datos_nuevos %}
+                        <pre class="m-0 p-3 bg-success-subtle rounded-bottom small" style="max-height:280px;overflow:auto;">{{ registro.datos_nuevos|pprint }}</pre>
+                        {% else %}
+                        <p class="text-muted text-center py-3 mb-0 small">Sin datos nuevos (eliminación o no disponible)</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a href="{% url 'auditoria:lista_registros' %}" class="btn btn-light">
+        <i class="ri-arrow-left-line me-1"></i>Volver a Registros
+    </a>
+</div>
+{% endblock %}
