@@ -1,4 +1,5 @@
-{% extends "index.html" %}
+{% extends "partials/base.html" %}
+
 {% load static %}
 
 {% block title %}{{ titulo }}{% endblock title %}
@@ -40,17 +41,18 @@
                 <div class="row g-3" id="modulos-lista">
                     {% for mod in modulos_disponibles %}
                     <div class="col-md-6 col-lg-4">
-                        <div class="reporte-card {% if mod.tipo == 'auditoria' %}reporte-card-auditoria{% endif %}" 
-                             data-modulo-codigo="{{ mod.codigo }}"
-                             data-modulo-tipo="{{ mod.tipo }}"
-                             onclick="seleccionarModulo('{{ mod.codigo }}', '{{ mod.tipo }}')">
-                            <div class="reporte-card-icon {% if mod.tipo == 'auditoria' %}reporte-card-icon-auditoria{% endif %}">
+                        <div class="reporte-card {% if mod.tipo == 'auditoria' %}reporte-card-auditoria{% endif %}"
+                            data-modulo-codigo="{{ mod.codigo }}" data-modulo-tipo="{{ mod.tipo }}"
+                            onclick="seleccionarModulo('{{ mod.codigo }}', '{{ mod.tipo }}')">
+                            <div
+                                class="reporte-card-icon {% if mod.tipo == 'auditoria' %}reporte-card-icon-auditoria{% endif %}">
                                 <i class="{{ mod.icono }}"></i>
                             </div>
                             <div class="reporte-card-content">
                                 <h6 class="reporte-card-title">{{ mod.nombre }}</h6>
                                 <p class="reporte-card-desc">{{ mod.descripcion }}</p>
-                                <span class="badge {% if mod.tipo == 'auditoria' %}bg-warning-subtle text-warning{% else %}bg-primary-subtle text-primary{% endif %}">
+                                <span
+                                    class="badge {% if mod.tipo == 'auditoria' %}bg-warning-subtle text-warning{% else %}bg-primary-subtle text-primary{% endif %}">
                                     {% if mod.tipo == 'auditoria' %}Auditoria{% else %}Modulo{% endif %}
                                 </span>
                             </div>
@@ -84,9 +86,8 @@
                 <div class="row g-3" id="reportes-lista">
                     {% for reporte in reportes_disponibles %}
                     <div class="col-md-6 col-lg-4">
-                        <div class="reporte-card" 
-                             data-reporte-codigo="{{ reporte.codigo }}"
-                             onclick="seleccionarReporte('{{ reporte.codigo }}')">
+                        <div class="reporte-card" data-reporte-codigo="{{ reporte.codigo }}"
+                            onclick="seleccionarReporte('{{ reporte.codigo }}')">
                             <div class="reporte-card-icon">
                                 <i class="ri-bar-chart-2-line"></i>
                             </div>
@@ -125,47 +126,52 @@
                 <form method="get" action="{% url 'reportes:seleccionar_reporte_modulo' modulo %}" id="filtros-form">
                     <input type="hidden" name="reporte" value="{{ reporte_codigo }}">
                     <input type="hidden" name="crear_informe" value="1" id="crear-informe-flag">
-                    
+
                     <div class="row g-3">
                         {% for filtro_key, filtro_config in filtros_config.items %}
                         <div class="col-md-6 col-lg-4">
                             <label class="form-label">{{ filtro_config.label }}</label>
-                            
+
                             {% if filtro_config.tipo == 'date' %}
-                            <input type="date" 
-                                   name="{{ filtro_key }}" 
-                                   class="form-control"
-                                   {% if filtro_key == 'desde' %}value="{{ filtros_actuales.desde }}"{% elif filtro_key == 'hasta' %}value="{{ filtros_actuales.hasta }}"{% endif %}
-                                   {% if filtro_config.requerido %}required{% endif %}>
-                            
+                            {% if filtro_key == 'desde' %}
+                            <input type="date" name="{{ filtro_key }}" class="form-control"
+                                value="{{ filtros_actuales.desde }}" {{ filtro_config.requerido|yesno:"required," }}>
+                            {% elif filtro_key == 'hasta' %}
+                            <input type="date" name="{{ filtro_key }}" class="form-control"
+                                value="{{ filtros_actuales.hasta }}" {{ filtro_config.requerido|yesno:"required," }}>
+                            {% else %}
+                            <input type="date" name="{{ filtro_key }}" class="form-control" {{
+                                filtro_config.requerido|yesno:"required," }}>
+                            {% endif %}
                             {% elif filtro_config.tipo == 'select' %}
-                            <select name="{{ filtro_key }}" class="form-select">
+                            <select name="{{ filtro_key }}" class="form-select" {{
+                                filtro_config.requerido|yesno:"required," }}>
                                 <option value="">(Todos)</option>
                                 {% if filtro_key == 'bodega_id' %}
-                                    {% for b in bodegas %}
-                                    <option value="{{ b.id }}" {% if filtros_actuales.bodega_id|stringformat:'s' == b.id|stringformat:'s' %}selected{% endif %}>
-                                        {{ b.codigo }} - {{ b.nombre }}
-                                    </option>
-                                    {% endfor %}
+                                {% for b in bodegas %}
+                                <option value="{{ b.id }}" {% if
+                                    filtros_actuales.bodega_id|stringformat:'s'==b.id|stringformat:'s' %}selected{%
+                                    endif %}>{{ b.codigo }} - {{ b.nombre }}</option>
+                                {% endfor %}
                                 {% elif filtro_key == 'categoria_id' %}
-                                    {% for c in categorias %}
-                                    <option value="{{ c.id }}" {% if filtros_actuales.categoria_id|stringformat:'s' == c.id|stringformat:'s' %}selected{% endif %}>
-                                        {{ c.codigo }} - {{ c.nombre }}
-                                    </option>
-                                    {% endfor %}
+                                {% for c in categorias %}
+                                <option value="{{ c.id }}" {% if
+                                    filtros_actuales.categoria_id|stringformat:'s'==c.id|stringformat:'s' %}selected{%
+                                    endif %}>{{ c.codigo }} - {{ c.nombre }}</option>
+                                {% endfor %}
                                 {% elif filtro_key == 'proveedor_id' %}
-                                    {% for p in proveedores %}
-                                    <option value="{{ p.id }}" {% if filtros_actuales.proveedor_id|stringformat:'s' == p.id|stringformat:'s' %}selected{% endif %}>
-                                        {{ p.rut }} - {{ p.razon_social }}
-                                    </option>
-                                    {% endfor %}
+                                {% for p in proveedores %}
+                                <option value="{{ p.id }}" {% if
+                                    filtros_actuales.proveedor_id|stringformat:'s'==p.id|stringformat:'s' %}selected{%
+                                    endif %}>{{ p.rut }} - {{ p.razon_social }}</option>
+                                {% endfor %}
                                 {% endif %}
                             </select>
                             {% endif %}
                         </div>
                         {% endfor %}
                     </div>
-                    
+
                     <div class="row mt-3">
                         <div class="col-12">
                             <button type="submit" class="btn btn-primary">

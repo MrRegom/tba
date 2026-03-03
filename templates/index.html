@@ -18,18 +18,18 @@
 {% endblock extra_css %}
 
 {% block main_title %}
-
-<div class="page-title-box">
+<div class="page-title-box pb-0 pt-3">
     <div class="row align-items-center gy-3">
         <div class="col-md">
-            <h3 class="page-title text-capitalize fw-medium fs-3xl"><span class="text-gold">Bienvenido</span> <b
-                    class="text-gold">{{ user.get_full_name|default:user.username }}</b> 👋</h3>
-            <p class="mb-0 page-sub-title">Sistema de gestión de inventario del colegio.</p>
+            <!-- prettier-ignore -->
+            <h3 class="page-title text-capitalize fw-semibold fs-3xl mb-0" style="margin-top: -10px;">Bienvenido <b
+                    class="text-warning">{{ user.get_full_name|default:user.username }}</b> 👋</h3>
+            <p class="mb-0 page-sub-title text-muted mt-1">Sistema de gestión de inventario del colegio.</p>
         </div>
-
     </div>
 </div>
 {% endblock main_title %}
+
 
 {% block content %}
 

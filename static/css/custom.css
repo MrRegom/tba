@@ -27,7 +27,7 @@ File: Custom Css File
   --tb-black-rgb: 17, 17, 17;
   --tb-white: #FFFFFF;
   --tb-white-rgb: 255, 255, 255;
-  
+
   /* Otros colores del Framework */
   --tb-purple: #6633CC;
   --tb-purple-rgb: 102, 51, 204;
@@ -37,13 +37,13 @@ File: Custom Css File
   --tb-orange-light-rgb: 255, 161, 27;
   --tb-green: #2D717C;
   --tb-green-rgb: 45, 113, 124;
-  
+
   /* Configuraciones de énfasis y enlaces */
   --tb-primary-text-emphasis: #006FB3;
   --tb-secondary-text-emphasis: #FE6565;
   --tb-tertiary-text-emphasis: #0A132D;
   --tb-font-sans-serif: "Roboto", sans-serif;
-  --tb-font-monospace: "Roboto Mono", monospace;  
+  --tb-font-monospace: "Roboto Mono", monospace;
   --tb-link-color: #006FB3;
   --tb-link-color-rgb: 0, 111, 179;
   --tb-link-hover-color: #005a8f;
@@ -74,7 +74,7 @@ File: Custom Css File
   --tb-black-rgb: 17, 17, 17;
   --tb-white: #FFFFFF;
   --tb-white-rgb: 255, 255, 255;
-  
+
   /* Otros colores del Framework */
   --tb-purple: #6633CC;
   --tb-purple-rgb: 102, 51, 204;
@@ -84,13 +84,13 @@ File: Custom Css File
   --tb-orange-light-rgb: 255, 161, 27;
   --tb-green: #2D717C;
   --tb-green-rgb: 45, 113, 124;
-  
+
   /* Configuraciones de énfasis y enlaces */
   --tb-primary-text-emphasis: #006FB3;
   --tb-secondary-text-emphasis: #FE6565;
   --tb-tertiary-text-emphasis: #0A132D;
   --tb-font-sans-serif: "Roboto", sans-serif;
-  --tb-font-monospace: "Roboto Mono", monospace;  
+  --tb-font-monospace: "Roboto Mono", monospace;
   --tb-link-color: #006FB3;
   --tb-link-color-rgb: 0, 111, 179;
   --tb-link-hover-color: #005a8f;
@@ -101,36 +101,111 @@ File: Custom Css File
 }
 
 /* Clases de utilidad para color de texto según framework del gobierno */
-.text-primary { color: var(--tb-primary) !important; }
-.text-secondary { color: var(--tb-secondary) !important; }
-.text-tertiary { color: var(--tb-tertiary) !important; }
-.text-accent { color: var(--tb-accent) !important; }
-.text-gray-a { color: var(--tb-gray-a) !important; }
-.text-gray-b { color: var(--tb-gray-b) !important; }
-.text-purple { color: var(--tb-purple) !important; }
-.text-orange { color: var(--tb-orange) !important; }
-.text-orange-light { color: var(--tb-orange-light) !important; }
-.text-green { color: var(--tb-green) !important; }
+.text-primary {
+  color: var(--tb-primary) !important;
+}
+
+.text-secondary {
+  color: var(--tb-secondary) !important;
+}
+
+.text-tertiary {
+  color: var(--tb-tertiary) !important;
+}
+
+.text-accent {
+  color: var(--tb-accent) !important;
+}
+
+.text-gray-a {
+  color: var(--tb-gray-a) !important;
+}
+
+.text-gray-b {
+  color: var(--tb-gray-b) !important;
+}
+
+.text-purple {
+  color: var(--tb-purple) !important;
+}
+
+.text-orange {
+  color: var(--tb-orange) !important;
+}
+
+.text-orange-light {
+  color: var(--tb-orange-light) !important;
+}
+
+.text-green {
+  color: var(--tb-green) !important;
+}
 
 /* Clases de utilidad para fondo según framework del gobierno */
-.bg-primary { background-color: var(--tb-primary) !important; }
-.bg-secondary { background-color: var(--tb-secondary) !important; }
-.bg-tertiary { background-color: var(--tb-tertiary) !important; }
-.bg-accent { background-color: var(--tb-accent) !important; }
-.bg-neutral { background-color: var(--tb-neutral) !important; }
-.bg-gray-a { background-color: var(--tb-gray-a) !important; }
-.bg-gray-b { background-color: var(--tb-gray-b) !important; }
-.bg-black { background-color: var(--tb-black) !important; }
-.bg-purple { background-color: var(--tb-purple) !important; }
-.bg-orange { background-color: var(--tb-orange) !important; }
-.bg-orange-light { background-color: var(--tb-orange-light) !important; }
-.bg-green { background-color: var(--tb-green) !important; }
+.bg-primary {
+  background-color: var(--tb-primary) !important;
+}
+
+.bg-secondary {
+  background-color: var(--tb-secondary) !important;
+}
+
+.bg-tertiary {
+  background-color: var(--tb-tertiary) !important;
+}
+
+.bg-accent {
+  background-color: var(--tb-accent) !important;
+}
+
+.bg-neutral {
+  background-color: var(--tb-neutral) !important;
+}
+
+.bg-gray-a {
+  background-color: var(--tb-gray-a) !important;
+}
+
+.bg-gray-b {
+  background-color: var(--tb-gray-b) !important;
+}
+
+.bg-black {
+  background-color: var(--tb-black) !important;
+}
+
+.bg-purple {
+  background-color: var(--tb-purple) !important;
+}
+
+.bg-orange {
+  background-color: var(--tb-orange) !important;
+}
+
+.bg-orange-light {
+  background-color: var(--tb-orange-light) !important;
+}
+
+.bg-green {
+  background-color: var(--tb-green) !important;
+}
 
 /* Bordes */
-.border-primary { border-color: var(--tb-primary) !important; }
-.border-secondary { border-color: var(--tb-secondary) !important; }
-.border-tertiary { border-color: var(--tb-tertiary) !important; }
-.border-accent { border-color: var(--tb-accent) !important; }
+.border-primary {
+  border-color: var(--tb-primary) !important;
+}
+
+.border-secondary {
+  border-color: var(--tb-secondary) !important;
+}
+
+.border-tertiary {
+  border-color: var(--tb-tertiary) !important;
+}
+
+.border-accent {
+  border-color: var(--tb-accent) !important;
+}
 
 /* Estilos para tarjetas con barra lateral de colores de la bandera chilena */
 .card-gob {
@@ -208,17 +283,20 @@ File: Custom Css File
   size: 150mm 100mm;
   margin: 0;
 }
+
 body {
   margin: 0;
   padding: 0;
   font-family: Arial, sans-serif;
 }
+
 .page-container {
   width: 150mm;
   height: 100mm;
   page-break-after: always;
   position: relative;
 }
+
 .etiqueta {
   width: 150mm;
   height: 100mm;
@@ -226,40 +304,49 @@ body {
   padding: 5mm;
   position: relative;
 }
+
 /* Estilo para etiqueta frontal */
 .titulo {
   font-size: 20pt;
   font-weight: normal;
   margin-bottom: 5mm;
 }
+
 .titulo-ficha {
   font-size: 20pt;
   font-weight: normal;
   color: black;
 }
+
 .titulo-numero {
   font-weight: bold;
 }
+
 .membrete {
   font-size: 7pt;
   line-height: 1.2;
   margin-bottom: 5mm;
 }
+
 .nombre-label {
   font-size: 16pt;
   margin-top: 5mm;
 }
+
 .nombre-valor {
   font-size: 16pt;
   font-weight: bold;
 }
+
 .social-label {
   font-size: 16pt;
   margin-top: 5mm;
 }
+
 .social-valor {
   font-size: 14pt;
 }
+
 .rut-label {
   font-size: 16pt;
   margin-top: 5mm;
@@ -267,14 +354,17 @@ body {
   justify-content: space-between;
   align-items: center;
 }
+
 .rut-valor {
   font-size: 16pt;
   font-weight: bold;
 }
+
 .ficha-gruesa-container {
   font-size: 20pt;
   font-weight: bold;
 }
+
 .info-adicional {
   font-size: 11pt;
   margin-top: 5mm;
@@ -285,32 +375,39 @@ body {
 .etiqueta-posterior {
   text-align: center;
 }
+
 .titulo-posterior {
   font-size: 20pt;
   text-align: right;
   margin-top: 10px;
   margin-bottom: 15px;
 }
+
 .nro-ficha-posterior {
-  font-size: 23pt; 
+  font-size: 23pt;
   font-weight: bold;
 }
+
 .datos-paciente {
   text-align: left;
   margin-top: 20px;
   margin-bottom: 20px;
 }
+
 .nombre-posterior {
   font-size: 16pt;
   margin-bottom: 10px;
 }
+
 .nombre-posterior-valor {
   font-weight: bold;
 }
+
 .social-posterior {
   font-size: 16pt;
   margin-bottom: 10px;
 }
+
 .ficha-posterior-bottom {
   text-align: right;
   font-size: 20pt;
@@ -323,11 +420,13 @@ body {
   top: 5mm;
   text-align: center;
 }
+
 .barcode-container-posterior {
   width: 100%;
   text-align: center;
   margin-bottom: 15px;
 }
+
 svg {
   max-width: 100%;
   height: auto;
@@ -435,15 +534,20 @@ svg {
 .kit-digital-tab.active {
   border-style: solid;
   border-width: 1px;
-  border-top-color: var(--tb-primary) !important;    /* Azul arriba */
-  border-left-color: var(--tb-primary) !important;   /* Azul izquierda */
-  border-right-color: var(--tb-secondary) !important; /* Rojo derecha */
-  border-bottom-color: var(--tb-secondary) !important; /* Rojo abajo */
+  border-top-color: var(--tb-primary) !important;
+  /* Azul arriba */
+  border-left-color: var(--tb-primary) !important;
+  /* Azul izquierda */
+  border-right-color: var(--tb-secondary) !important;
+  /* Rojo derecha */
+  border-bottom-color: var(--tb-secondary) !important;
+  /* Rojo abajo */
   border-radius: 6px;
   background-color: rgba(var(--tb-primary-rgb), 0.04) !important;
   color: var(--tb-primary) !important;
   font-weight: 700 !important;
-  padding: calc(0.5rem - 1px) calc(1rem - 1px); /* Ajustado para compensar el borde */
+  padding: calc(0.5rem - 1px) calc(1rem - 1px);
+  /* Ajustado para compensar el borde */
 }
 
 /* Icono en estado activo */
@@ -461,6 +565,7 @@ svg {
 .kit-digital-tab[aria-controls="todos"] i {
   color: var(--tb-gray-a);
 }
+
 .kit-digital-tab[aria-controls="todos"].active i,
 .kit-digital-tab[aria-controls="todos"]:hover i {
   color: var(--tb-primary) !important;
@@ -469,6 +574,7 @@ svg {
 .kit-digital-tab[aria-controls="enuso"] i {
   color: var(--tb-gray-a);
 }
+
 .kit-digital-tab[aria-controls="enuso"].active i,
 .kit-digital-tab[aria-controls="enuso"]:hover i {
   color: var(--tb-primary) !important;
@@ -477,6 +583,7 @@ svg {
 .kit-digital-tab[aria-controls="mantencion"] i {
   color: var(--tb-gray-a);
 }
+
 .kit-digital-tab[aria-controls="mantencion"].active i,
 .kit-digital-tab[aria-controls="mantencion"]:hover i {
   color: var(--tb-primary) !important;
@@ -485,6 +592,7 @@ svg {
 .kit-digital-tab[aria-controls="baja"] i {
   color: var(--tb-gray-a);
 }
+
 .kit-digital-tab[aria-controls="baja"].active i,
 .kit-digital-tab[aria-controls="baja"]:hover i {
   color: var(--tb-primary) !important;
@@ -496,7 +604,7 @@ svg {
     flex-wrap: wrap;
     gap: 0.25rem;
   }
-  
+
   .kit-digital-tab {
     flex: 1;
     min-width: 120px;
@@ -505,11 +613,11 @@ svg {
     justify-content: center;
     min-height: 2.25rem;
   }
-  
+
   .kit-digital-tab i {
     font-size: 0.9rem;
   }
-  
+
   .kit-digital-tab.active {
     padding: calc(0.5rem - 1px) calc(0.75rem - 1px);
   }
@@ -548,15 +656,20 @@ svg {
 .btn-kit-outline:hover {
   border-style: solid;
   border-width: 1px;
-  border-top-color: var(--tb-primary) !important;    /* Azul arriba */
-  border-left-color: var(--tb-primary) !important;   /* Azul izquierda */
-  border-right-color: var(--tb-secondary) !important; /* Rojo derecha */
-  border-bottom-color: var(--tb-secondary) !important; /* Rojo abajo */
+  border-top-color: var(--tb-primary) !important;
+  /* Azul arriba */
+  border-left-color: var(--tb-primary) !important;
+  /* Azul izquierda */
+  border-right-color: var(--tb-secondary) !important;
+  /* Rojo derecha */
+  border-bottom-color: var(--tb-secondary) !important;
+  /* Rojo abajo */
   border-radius: 6px;
   background-color: rgba(var(--tb-primary-rgb), 0.04) !important;
   color: var(--tb-primary) !important;
   font-weight: 700 !important;
-  padding: calc(0.5rem - 1px) calc(1rem - 1px); /* Ajustado para compensar el borde */
+  padding: calc(0.5rem - 1px) calc(1rem - 1px);
+  /* Ajustado para compensar el borde */
   transition: all 0.2s ease;
 }
 
@@ -600,6 +713,7 @@ svg {
 
 /* Responsive para botones */
 @media (max-width: 768px) {
+
   .btn-kit-primary,
   .btn-kit-secondary,
   .btn-kit-success,
@@ -608,7 +722,7 @@ svg {
     font-size: 0.85rem;
     min-height: 2.25rem;
   }
-  
+
   /* Hover en móviles con padding ajustado */
   .btn-kit-primary:hover,
   .btn-kit-secondary:hover,
@@ -616,7 +730,7 @@ svg {
   .btn-kit-outline:hover {
     padding: calc(0.5rem - 1px) calc(0.75rem - 1px);
   }
-  
+
   .btn-kit-primary i,
   .btn-kit-secondary i,
   .btn-kit-success i,
@@ -651,22 +765,26 @@ svg {
 
 /* Asegurar que el patrón SVG tenga más contraste */
 .wrapper-images svg path[stroke] {
-  stroke: rgba(0, 0, 0, 0.15) !important; /* Aumentado de 0.08 a 0.15 */
+  stroke: rgba(0, 0, 0, 0.15) !important;
+  /* Aumentado de 0.08 a 0.15 */
 }
 
 .wrapper-images svg path[fill] {
-  fill: rgba(0, 0, 0, 0.12) !important; /* Aumentado de 0.05 a 0.12 */
+  fill: rgba(0, 0, 0, 0.12) !important;
+  /* Aumentado de 0.05 a 0.12 */
 }
 
 /* Asegurar que el wrapper quede detrás de las cards */
 #layout-wrapper .wrapper-images {
-  z-index: 0 !important; /* Patrón detrás de todo */
+  z-index: 0 !important;
+  /* Patrón detrás de todo */
 }
 
 /* Asegurar que las cards queden encima del patrón */
 .modulo-card {
   position: relative;
-  z-index: 1 !important; /* Cards encima del patrón */
+  z-index: 1 !important;
+  /* Cards encima del patrón */
 }
 
 /* También para las cards de reportes */
@@ -693,11 +811,11 @@ svg {
 }
 
 /* Texto del navbar con buen contraste sobre gris claro */
-.navbar-header, 
+.navbar-header,
 .navbar-header .btn-topbar,
 .navbar-header .topbar-profile,
 #page-topbar .navbar-nav .nav-link,
-#page-topbar .navbar-nav .nav-item > a,
+#page-topbar .navbar-nav .nav-item>a,
 #page-topbar .dropdown-toggle,
 #page-topbar .navbar-brand,
 .navbar-header .d-flex a,
@@ -715,7 +833,7 @@ svg {
 
 /* Breadcrumbs oscuros */
 /* Para otros módulos (cuando page-title-box está dentro de page-content directamente) */
-.page-content > .container-fluid > .row > .col-12 > .page-title-box {
+.page-content>.container-fluid>.row>.col-12>.page-title-box {
   padding-top: 0 !important;
   margin-top: 0 !important;
   margin-bottom: 0.75rem !important;
@@ -747,9 +865,12 @@ svg {
 
 /* Colores institucionales del colegio */
 :root {
-  --colegio-azul: #1e3a8a;      /* Azul profundo del escudo */
-  --colegio-dorado: #D4AF37;    /* Dorado del escudo */
-  --colegio-azul-claro: #3b82f6; /* Azul más claro para hover */
+  --colegio-azul: #1e3a8a;
+  /* Azul profundo del escudo */
+  --colegio-dorado: #D4AF37;
+  /* Dorado del escudo */
+  --colegio-azul-claro: #3b82f6;
+  /* Azul más claro para hover */
 }
 
 /* Aplicación directa de colores institucionales */
@@ -781,7 +902,7 @@ svg {
 #page-topbar .navbar-header .btn-topbar,
 #page-topbar .navbar-header .topbar-profile,
 #page-topbar .navbar-nav .nav-link,
-#page-topbar .navbar-nav .nav-item > a,
+#page-topbar .navbar-nav .nav-item>a,
 #page-topbar .dropdown-toggle,
 #page-topbar .navbar-brand,
 #page-topbar .navbar-header .d-flex a,
@@ -1024,19 +1145,19 @@ svg {
 }
 
 /* Container fluid sin márgenes negativos para layout vertical limpio */
-.page-content > .container-fluid {
+.page-content>.container-fluid {
   padding-top: 0 !important;
   margin-top: 0 !important;
 }
 
 /* Row con márgenes negativos para subir el contenido principal */
-.page-content > .container-fluid > .row:first-child {
+.page-content>.container-fluid>.row:first-child {
   margin-top: -2.5rem !important;
 }
 
 /* Reduce el padding del título de página sin ocultarlo */
 /* Solo para módulos (cuando está dentro de page-content > container-fluid) */
-.page-content > .container-fluid > .row > .col-12 > .page-title-box {
+.page-content>.container-fluid>.row>.col-12>.page-title-box {
   padding-top: 0 !important;
   padding-bottom: 0.25rem !important;
   margin-top: -0.5rem !important;
@@ -1044,7 +1165,7 @@ svg {
 }
 
 /* Asegurar visibilidad de botones en page-title-box */
-.page-title-box > div:last-child {
+.page-title-box>div:last-child {
   display: flex !important;
   align-items: center !important;
   visibility: visible !important;
@@ -1071,7 +1192,12 @@ svg {
    ================================================== */
 
 /* Títulos minimalistas estilo Microsoft */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: 600 !important;
   letter-spacing: -0.01em;
   line-height: 1.3;
@@ -1277,7 +1403,7 @@ form .invalid-feedback {
 }
 
 /* Mejor espaciado entre campos */
-form .row.g-3 > * {
+form .row.g-3>* {
   margin-bottom: 1rem !important;
 }
 
@@ -1357,7 +1483,7 @@ form .alert-info {
 }
 
 /* Separación entre secciones de formulario */
-form .row + .row {
+form .row+.row {
   margin-top: 0.5rem !important;
 }
 
@@ -1419,6 +1545,7 @@ form .form-control[readonly] {
 .modal-backdrop {
   z-index: 2050 !important;
 }
+
 .modal {
   z-index: 2060 !important;
 }
@@ -1475,12 +1602,12 @@ form .form-control[readonly] {
     bottom: 0 !important;
     z-index: 1500 !important;
   }
-  
+
   /* Contenido principal sin transición de margen */
   .main-content {
     transition: none !important;
   }
-  
+
   /* Footer sin transición */
   .footer {
     transition: none !important;
@@ -1494,38 +1621,36 @@ form .form-control[readonly] {
 
 /* Colores institucionales del colegio */
 :root {
-  --colegio-azul:        #1e3a8a;
+  --colegio-azul: #1e3a8a;
   --colegio-azul-oscuro: #162456;
-  --colegio-dorado:      #D4AF37;
-  --colegio-dorado-claro:#f0cc5a;
+  --colegio-dorado: #D4AF37;
+  --colegio-dorado-claro: #f0cc5a;
 }
 
 /* ── Variables Velzon para el sidebar ── */
 /* El tema usa data-sidebar=dark, sobreescribimos sus colores */
 [data-sidebar=dark] {
-  --tb-vertical-menu-bg:                    #1a2f6f !important;
-  --tb-vertical-menu-title:                 #D4AF37 !important;
-  --tb-vertical-border-color:               rgba(212,175,55,0.25) !important;
+  --tb-vertical-menu-bg: #1a2f6f !important;
+  --tb-vertical-menu-title: #D4AF37 !important;
+  --tb-vertical-border-color: rgba(212, 175, 55, 0.25) !important;
 
   /* Links del menú principal */
-  --tb-vertical-item-color:                 rgba(255,255,255,0.75) !important;
-  --tb-vertical-item-hover-color:           #ffffff !important;
-  --tb-vertical-item-active-color:          #D4AF37 !important;
+  --tb-vertical-item-color: rgba(255, 255, 255, 0.75) !important;
+  --tb-vertical-item-hover-color: #ffffff !important;
+  --tb-vertical-item-active-color: #D4AF37 !important;
 
   /* Links del sub-menú */
-  --tb-vertical-sub-item-color:             rgba(255,255,255,0.55) !important;
-  --tb-vertical-sub-item-hover-color:       rgba(255,255,255,0.90) !important;
-  --tb-vertical-sub-item-active-color:      #D4AF37 !important;
+  --tb-vertical-sub-item-color: rgba(255, 255, 255, 0.55) !important;
+  --tb-vertical-sub-item-hover-color: rgba(255, 255, 255, 0.90) !important;
+  --tb-vertical-sub-item-active-color: #D4AF37 !important;
 }
 
 /* ── Sidebar fondo con gradiente del colegio ── */
 [data-sidebar=dark] .app-menu {
-  background: linear-gradient(
-    175deg,
-    #162456 0%,
-    #1e3a8a 45%,
-    #1a2f6f 100%
-  ) !important;
+  background: linear-gradient(175deg,
+      #162456 0%,
+      #1e3a8a 45%,
+      #1a2f6f 100%) !important;
   border-right: 2px solid rgba(212, 175, 55, 0.4) !important;
   box-shadow: 4px 0 24px rgba(10, 20, 60, 0.5) !important;
 }
@@ -1535,8 +1660,15 @@ form .form-control[readonly] {
   scrollbar-width: thin;
   scrollbar-color: rgba(212, 175, 55, 0.35) transparent;
 }
-[data-sidebar=dark] #scrollbar::-webkit-scrollbar { width: 4px; }
-[data-sidebar=dark] #scrollbar::-webkit-scrollbar-track { background: transparent; }
+
+[data-sidebar=dark] #scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+[data-sidebar=dark] #scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 [data-sidebar=dark] #scrollbar::-webkit-scrollbar-thumb {
   background: rgba(212, 175, 55, 0.35);
   border-radius: 4px;
@@ -1562,6 +1694,7 @@ form .form-control[readonly] {
   background-color: rgba(212, 175, 55, 0.1) !important;
   border-radius: 8px;
 }
+
 [data-sidebar=dark] .app-menu .navbar-nav .nav-link.menu-link:hover i {
   color: #D4AF37 !important;
 }
@@ -1574,6 +1707,7 @@ form .form-control[readonly] {
   box-shadow: inset 3px 0 0 #D4AF37 !important;
   font-weight: 600 !important;
 }
+
 [data-sidebar=dark] .app-menu .navbar-nav .nav-link.active i {
   color: #D4AF37 !important;
 }
@@ -1585,6 +1719,7 @@ form .form-control[readonly] {
   border-radius: 8px !important;
   color: #D4AF37 !important;
 }
+
 [data-sidebar=dark] .app-menu .navbar-nav .nav-link[aria-expanded=true] i {
   color: #D4AF37 !important;
 }
@@ -1594,10 +1729,12 @@ form .form-control[readonly] {
   border-radius: 6px;
   transition: all 0.15s ease;
 }
+
 [data-sidebar=dark] .app-menu .nav-sm .nav-link:hover {
   background-color: rgba(212, 175, 55, 0.08) !important;
   padding-left: 1.5rem;
 }
+
 [data-sidebar=dark] .app-menu .nav-sm .nav-link.active {
   background-color: rgba(212, 175, 55, 0.12) !important;
   box-shadow: inset 3px 0 0 #D4AF37 !important;
