@@ -77,6 +77,74 @@ class ReporteService:
             },
             'url_name': 'reportes:oc_atrasadas_por_proveedor',
             'service_class': 'OcAtrasadasPorProveedorService'
+        },
+        'fotocopiadora_consumo_interno': {
+            'codigo': 'fotocopiadora_consumo_interno',
+            'nombre': 'Consumo Interno Fotocopiadora',
+            'modulo': 'fotocopiadora',
+            'descripcion': 'Consumo interno de copias por area y departamento',
+            'filtros': {
+                'desde': {
+                    'tipo': 'date',
+                    'label': 'Fecha de Inicio',
+                    'requerido': False,
+                    'default': None
+                },
+                'hasta': {
+                    'tipo': 'date',
+                    'label': 'Fecha de Termino',
+                    'requerido': False,
+                    'default': None
+                },
+                'equipo_id': {
+                    'tipo': 'select',
+                    'label': 'Equipo',
+                    'requerido': False,
+                    'opciones': 'equipos_fotocopiadora'
+                },
+                'departamento_id': {
+                    'tipo': 'select',
+                    'label': 'Departamento',
+                    'requerido': False,
+                    'opciones': 'departamentos'
+                }
+            },
+            'url_name': 'reportes:seleccionar_reporte_modulo',
+            'service_class': 'ConsumoInternoFotocopiaService'
+        },
+        'fotocopiadora_cobros': {
+            'codigo': 'fotocopiadora_cobros',
+            'nombre': 'Copias con Cobro Informativo',
+            'modulo': 'fotocopiadora',
+            'descripcion': 'Copias personales o externas con monto informativo',
+            'filtros': {
+                'desde': {
+                    'tipo': 'date',
+                    'label': 'Fecha de Inicio',
+                    'requerido': False,
+                    'default': None
+                },
+                'hasta': {
+                    'tipo': 'date',
+                    'label': 'Fecha de Termino',
+                    'requerido': False,
+                    'default': None
+                },
+                'equipo_id': {
+                    'tipo': 'select',
+                    'label': 'Equipo',
+                    'requerido': False,
+                    'opciones': 'equipos_fotocopiadora'
+                },
+                'tipo_uso': {
+                    'tipo': 'select',
+                    'label': 'Tipo de Uso',
+                    'requerido': False,
+                    'opciones': 'tipo_uso_fotocopiadora'
+                }
+            },
+            'url_name': 'reportes:seleccionar_reporte_modulo',
+            'service_class': 'CobrosFotocopiaService'
         }
     }
 
@@ -140,6 +208,8 @@ class ReporteService:
         """
         from apps.bodega.models import Bodega, Categoria
         from apps.compras.models import Proveedor
+        from apps.fotocopiadora.models import FotocopiadoraEquipo, TrabajoFotocopia
+        from apps.solicitudes.models import Departamento
 
         if filtro_tipo == 'bodegas':
             return [
@@ -156,5 +226,19 @@ class ReporteService:
                 {'id': p.id, 'nombre': f'{p.rut} - {p.razon_social}'}
                 for p in Proveedor.objects.filter(eliminado=False, activo=True).order_by('razon_social')
             ]
+        elif filtro_tipo == 'equipos_fotocopiadora':
+            return [
+                {'id': e.id, 'nombre': f'{e.codigo} - {e.nombre}'}
+                for e in FotocopiadoraEquipo.objects.filter(eliminado=False, activo=True).order_by('codigo')
+            ]
+        elif filtro_tipo == 'tipo_uso_fotocopiadora':
+            return [
+                {'id': t[0], 'nombre': t[1]}
+                for t in TrabajoFotocopia.TipoUso.choices
+            ]
+        elif filtro_tipo == 'departamentos':
+            return [
+                {'id': d.id, 'nombre': f'{d.codigo} - {d.nombre}'}
+                for d in Departamento.objects.filter(eliminado=False, activo=True).order_by('codigo')
+            ]
         return []
-
