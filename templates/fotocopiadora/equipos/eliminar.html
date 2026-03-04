@@ -1,0 +1,12 @@
+{% extends 'partials/base.html' %}
+{% block title %}Eliminar Equipo{% endblock %}
+{% block content %}
+<div class="card"><div class="card-body">
+  <h5>Eliminar equipo {{ object.codigo }}</h5>
+  <p>Esta accion marcara el equipo como inactivo y eliminado.</p>
+  <form method="post">{% csrf_token %}
+    <a href="{% url 'fotocopiadora:lista_equipos' %}" class="btn btn-light">Cancelar</a>
+    <button class="btn btn-danger" type="submit">Eliminar</button>
+  </form>
+</div></div>
+{% endblock %}

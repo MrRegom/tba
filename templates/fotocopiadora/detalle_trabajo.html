@@ -1,0 +1,40 @@
+{% extends 'partials/base.html' %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+      <h4 class="mb-sm-0">{{ titulo }}</h4>
+      <div class="page-title-right">
+        <ol class="breadcrumb m-0">
+          <li class="breadcrumb-item"><a href="{% url 'fotocopiadora:lista_trabajos' %}">Trabajos</a></li>
+          <li class="breadcrumb-item active">{{ trabajo.numero }}</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-3"><strong>Numero:</strong><br>{{ trabajo.numero }}</div>
+      <div class="col-md-3"><strong>Fecha:</strong><br>{{ trabajo.fecha_hora|date:'d/m/Y H:i' }}</div>
+      <div class="col-md-3"><strong>Tipo:</strong><br>{{ trabajo.get_tipo_uso_display }}</div>
+      <div class="col-md-3"><strong>Equipo:</strong><br>{{ trabajo.equipo }}</div>
+      <div class="col-md-4"><strong>Solicitante:</strong><br>{{ trabajo.solicitante_nombre }}</div>
+      <div class="col-md-4"><strong>RUT:</strong><br>{{ trabajo.rut_solicitante|default:'-' }}</div>
+      <div class="col-md-4"><strong>Usuario sistema:</strong><br>{{ trabajo.solicitante_usuario|default:'-' }}</div>
+      <div class="col-md-3"><strong>Departamento:</strong><br>{{ trabajo.departamento|default:'-' }}</div>
+      <div class="col-md-3"><strong>Area:</strong><br>{{ trabajo.area|default:'-' }}</div>
+      <div class="col-md-3"><strong>Copias:</strong><br>{{ trabajo.cantidad_copias }}</div>
+      <div class="col-md-3"><strong>Monto:</strong><br>${{ trabajo.monto_total|floatformat:0 }}</div>
+      <div class="col-md-12"><strong>Observaciones:</strong><br>{{ trabajo.observaciones|default:'-' }}</div>
+    </div>
+  </div>
+  <div class="card-footer text-end">
+    <a href="{% url 'fotocopiadora:editar_trabajo' trabajo.pk %}" class="btn btn-secondary">Editar</a>
+    <a href="{% url 'fotocopiadora:lista_trabajos' %}" class="btn btn-light">Volver</a>
+  </div>
+</div>
+{% endblock %}

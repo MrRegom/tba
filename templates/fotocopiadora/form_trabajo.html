@@ -1,0 +1,72 @@
+{% extends 'partials/base.html' %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+      <h4 class="mb-sm-0">{{ titulo }}</h4>
+      <div class="page-title-right">
+        <ol class="breadcrumb m-0">
+          <li class="breadcrumb-item"><a href="{% url 'fotocopiadora:lista_trabajos' %}">Trabajos</a></li>
+          <li class="breadcrumb-item active">{{ action }}</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<form method="post">
+  {% csrf_token %}
+  <div class="card">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-3"><label class="form-label">Fecha y Hora</label>{{ form.fecha_hora }}</div>
+        <div class="col-md-3"><label class="form-label">Tipo de Uso</label>{{ form.tipo_uso }}</div>
+        <div class="col-md-3"><label class="form-label">Equipo</label>{{ form.equipo }}</div>
+        <div class="col-md-3"><label class="form-label">Solicitante Usuario</label>{{ form.solicitante_usuario }}</div>
+        <div class="col-md-6"><label class="form-label">Solicitante Nombre</label>{{ form.solicitante_nombre }}</div>
+        <div class="col-md-3" id="rut-wrap"><label class="form-label">RUT Solicitante</label>{{ form.rut_solicitante }}</div>
+        <div class="col-md-3"><label class="form-label">Cantidad Copias</label>{{ form.cantidad_copias }}</div>
+        <div class="col-md-3" id="precio-wrap"><label class="form-label">Precio Unitario</label>{{ form.precio_unitario }}</div>
+        <div class="col-md-3" id="depto-wrap"><label class="form-label">Departamento</label>{{ form.departamento }}</div>
+        <div class="col-md-3" id="area-wrap"><label class="form-label">Area</label>{{ form.area }}</div>
+        <div class="col-md-12"><label class="form-label">Observaciones</label>{{ form.observaciones }}</div>
+        <div class="col-md-12"><div class="form-check">{{ form.activo }}<label class="form-check-label" for="{{ form.activo.id_for_label }}">Activo</label></div></div>
+      </div>
+      {% if form.errors %}
+      <div class="alert alert-danger mt-3">{{ form.errors }}</div>
+      {% endif %}
+    </div>
+    <div class="card-footer d-flex gap-2 justify-content-end">
+      <a href="{% url 'fotocopiadora:lista_trabajos' %}" class="btn btn-light">Cancelar</a>
+      <button type="submit" class="btn btn-primary">{{ action }}</button>
+    </div>
+  </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  const tipo = document.getElementById('id_tipo_uso');
+  const rutWrap = document.getElementById('rut-wrap');
+  const precioWrap = document.getElementById('precio-wrap');
+  const deptoWrap = document.getElementById('depto-wrap');
+  const areaWrap = document.getElementById('area-wrap');
+
+  function toggleFields() {
+    if (!tipo) return;
+    const interno = tipo.value === 'INTERNO';
+    rutWrap.style.display = interno ? 'none' : 'block';
+    precioWrap.style.display = interno ? 'none' : 'block';
+    deptoWrap.style.display = interno ? 'block' : 'none';
+    areaWrap.style.display = interno ? 'block' : 'none';
+  }
+
+  if (tipo) {
+    tipo.addEventListener('change', toggleFields);
+    toggleFields();
+  }
+})();
+</script>
+{% endblock %}

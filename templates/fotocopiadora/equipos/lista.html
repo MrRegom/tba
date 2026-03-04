@@ -1,0 +1,23 @@
+{% extends 'partials/base.html' %}
+{% block title %}Equipos Fotocopiadora{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header d-flex justify-content-between"><h5 class="mb-0">Equipos de Fotocopiadora</h5><a href="{% url 'fotocopiadora:crear_equipo' %}" class="btn btn-primary btn-sm">Nuevo Equipo</a></div>
+  <div class="card-body">
+    <table class="table table-striped">
+      <thead><tr><th>Codigo</th><th>Nombre</th><th>Ubicacion</th><th>Activo</th><th></th></tr></thead>
+      <tbody>
+        {% for equipo in equipos %}
+        <tr>
+          <td>{{ equipo.codigo }}</td><td>{{ equipo.nombre }}</td><td>{{ equipo.ubicacion }}</td><td>{{ equipo.activo|yesno:'Si,No' }}</td>
+          <td class="text-end">
+            <a href="{% url 'fotocopiadora:editar_equipo' equipo.pk %}" class="btn btn-sm btn-soft-secondary">Editar</a>
+            <a href="{% url 'fotocopiadora:eliminar_equipo' equipo.pk %}" class="btn btn-sm btn-soft-danger">Eliminar</a>
+          </td>
+        </tr>
+        {% empty %}<tr><td colspan="5" class="text-center text-muted">Sin equipos</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends 'partials/base.html' %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+      <h4 class="mb-sm-0">{{ titulo }}</h4>
+      <div class="page-title-right">
+        <ol class="breadcrumb m-0">
+          <li class="breadcrumb-item"><a href="{% url 'fotocopiadora:menu_fotocopiadora' %}">Fotocopiadora</a></li>
+          <li class="breadcrumb-item active">Trabajos</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Listado</h5>
+    {% if permisos.puede_crear %}<a href="{% url 'fotocopiadora:crear_trabajo' %}" class="btn btn-primary btn-sm">Nuevo Trabajo</a>{% endif %}
+  </div>
+  <div class="card-body">
+    <form method="get" class="row g-2 mb-3">
+      <div class="col-md-2">{{ form.fecha_desde }}</div>
+      <div class="col-md-2">{{ form.fecha_hasta }}</div>
+      <div class="col-md-2">{{ form.equipo }}</div>
+      <div class="col-md-2">{{ form.tipo_uso }}</div>
+      <div class="col-md-2">{{ form.solicitante }}</div>
+      <div class="col-md-2">{{ form.rut }}</div>
+      <div class="col-12 d-flex gap-2">
+        <button class="btn btn-secondary btn-sm" type="submit">Filtrar</button>
+        <a class="btn btn-light btn-sm" href="{% url 'fotocopiadora:lista_trabajos' %}">Limpiar</a>
+      </div>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table table-striped align-middle">
+        <thead>
+          <tr>
+            <th>Numero</th>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Equipo</th>
+            <th>Solicitante</th>
+            <th>RUT</th>
+            <th>Copias</th>
+            <th>Monto</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for trabajo in trabajos %}
+          <tr>
+            <td>{{ trabajo.numero }}</td>
+            <td>{{ trabajo.fecha_hora|date:'d/m/Y H:i' }}</td>
+            <td>{{ trabajo.get_tipo_uso_display }}</td>
+            <td>{{ trabajo.equipo.nombre }}</td>
+            <td>{{ trabajo.solicitante_nombre }}</td>
+            <td>{{ trabajo.rut_solicitante|default:'-' }}</td>
+            <td>{{ trabajo.cantidad_copias }}</td>
+            <td>${{ trabajo.monto_total|floatformat:0 }}</td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-light" href="{% url 'fotocopiadora:detalle_trabajo' trabajo.pk %}">Ver</a>
+              {% if permisos.puede_editar %}<a class="btn btn-sm btn-soft-secondary" href="{% url 'fotocopiadora:editar_trabajo' trabajo.pk %}">Editar</a>{% endif %}
+              {% if permisos.puede_anular %}<a class="btn btn-sm btn-soft-danger" href="{% url 'fotocopiadora:eliminar_trabajo' trabajo.pk %}">Anular</a>{% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="9" class="text-center text-muted">Sin registros</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

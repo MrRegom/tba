@@ -1,0 +1,67 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/modulo-cards.css' %}" rel="stylesheet" type="text/css">
+{% endblock extra_css %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <div class="page-title-box d-sm-flex align-items-center justify-content-between mb-3">
+      <h4 class="mb-sm-0">{{ titulo }}</h4>
+      <div class="page-title-right">
+        <ol class="breadcrumb m-0">
+          <li class="breadcrumb-item"><a href="{% url 'dashboard_analytics' %}">Dashboard</a></li>
+          <li class="breadcrumb-item active">Fotocopiadora</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-xl-3 col-md-6">
+    <div class="card card-animate"><div class="card-body"><p class="text-muted mb-1">Copias Mes</p><h3>{{ stats.total_copias_mes }}</h3></div></div>
+  </div>
+  <div class="col-xl-3 col-md-6">
+    <div class="card card-animate"><div class="card-body"><p class="text-muted mb-1">Copias Internas</p><h3>{{ stats.copias_internas_mes }}</h3></div></div>
+  </div>
+  <div class="col-xl-3 col-md-6">
+    <div class="card card-animate"><div class="card-body"><p class="text-muted mb-1">Copias con Cobro</p><h3>{{ stats.copias_cobro_mes }}</h3></div></div>
+  </div>
+  <div class="col-xl-3 col-md-6">
+    <div class="card card-animate"><div class="card-body"><p class="text-muted mb-1">Monto Informativo Mes</p><h3>${{ stats.monto_informativo_mes|floatformat:0 }}</h3></div></div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="card h-100"><div class="card-body d-grid">
+      <h5>Trabajos</h5>
+      <p class="text-muted">Listado y control de trabajos de copias.</p>
+      <a href="{% url 'fotocopiadora:lista_trabajos' %}" class="btn btn-primary mt-auto">Ver Trabajos</a>
+    </div></div>
+  </div>
+  {% if permisos.puede_crear %}
+  <div class="col-lg-4">
+    <div class="card h-100"><div class="card-body d-grid">
+      <h5>Nuevo Trabajo</h5>
+      <p class="text-muted">Registrar solicitud interna, personal o externa.</p>
+      <a href="{% url 'fotocopiadora:crear_trabajo' %}" class="btn btn-success mt-auto">Registrar</a>
+    </div></div>
+  </div>
+  {% endif %}
+  {% if permisos.puede_gestionar_equipos %}
+  <div class="col-lg-4">
+    <div class="card h-100"><div class="card-body d-grid">
+      <h5>Equipos</h5>
+      <p class="text-muted">Mantenedor de fotocopiadoras y ubicaciones.</p>
+      <a href="{% url 'fotocopiadora:lista_equipos' %}" class="btn btn-info mt-auto">Gestionar Equipos</a>
+    </div></div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

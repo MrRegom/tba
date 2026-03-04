@@ -1,0 +1,14 @@
+{% extends 'partials/base.html' %}
+{% block title %}Anular Trabajo{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <h5>Anular trabajo {{ object.numero }}</h5>
+    <p>Esta accion marcara el trabajo como eliminado.</p>
+    <form method="post">{% csrf_token %}
+      <a href="{% url 'fotocopiadora:lista_trabajos' %}" class="btn btn-light">Cancelar</a>
+      <button class="btn btn-danger" type="submit">Anular</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
