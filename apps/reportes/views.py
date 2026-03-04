@@ -13,9 +13,15 @@ from apps.compras.models import Proveedor
 # Servicios y exportadores
 from apps.reportes.services.bodega import ArticulosSinMovimientoService
 from apps.reportes.services.compras import OcAtrasadasPorProveedorService
+from apps.reportes.services.fotocopiadora import (
+    CobrosFotocopiaService,
+    ConsumoInternoFotocopiaService,
+)
 from apps.reportes.services.reporte import ReporteService
 from apps.reportes.exporters.pdf import export_pdf
 from apps.reportes.exporters.xlsx import export_xlsx
+from apps.fotocopiadora.models import FotocopiadoraEquipo
+from apps.solicitudes.models import Departamento
 
 
 @login_required
@@ -194,6 +200,7 @@ def seleccionar_reporte(request, modulo=None):
             {'codigo': 'solicitudes', 'nombre': 'Solicitudes', 'descripcion': 'Reportes del modulo de solicitudes', 'icono': 'ri-file-text-line', 'tipo': 'reporte'},
             {'codigo': 'activos', 'nombre': 'Activos', 'descripcion': 'Reportes del modulo de activos fijos', 'icono': 'ri-building-line', 'tipo': 'reporte'},
             {'codigo': 'bajas', 'nombre': 'Bajas', 'descripcion': 'Reportes del modulo de bajas de inventario', 'icono': 'ri-delete-bin-line', 'tipo': 'reporte'},
+            {'codigo': 'fotocopiadora', 'nombre': 'Fotocopiadora', 'descripcion': 'Reportes del modulo de fotocopiadora', 'icono': 'ri-file-copy-2-line', 'tipo': 'reporte'},
         ]
         context = {
             'titulo': 'Generar Reporte',
@@ -256,11 +263,37 @@ def seleccionar_reporte(request, modulo=None):
             
             service = OcAtrasadasPorProveedorService()
             report_data = service.run(proveedor_id=proveedor_id, bodega_id=bodega_id)
+        elif reporte_codigo == 'fotocopiadora_consumo_interno':
+            desde_str = filtros_valores.get('desde')
+            hasta_str = filtros_valores.get('hasta')
+            equipo_id = filtros_valores.get('equipo_id')
+            departamento_id = filtros_valores.get('departamento_id')
+
+            hoy = timezone.now().date()
+            desde = datetime.strptime(desde_str, "%Y-%m-%d").date() if desde_str else (hoy - timedelta(days=30))
+            hasta = datetime.strptime(hasta_str, "%Y-%m-%d").date() if hasta_str else hoy
+
+            service = ConsumoInternoFotocopiaService()
+            report_data = service.run(desde, hasta, equipo_id=equipo_id, departamento_id=departamento_id)
+        elif reporte_codigo == 'fotocopiadora_cobros':
+            desde_str = filtros_valores.get('desde')
+            hasta_str = filtros_valores.get('hasta')
+            equipo_id = filtros_valores.get('equipo_id')
+            tipo_uso = filtros_valores.get('tipo_uso')
+
+            hoy = timezone.now().date()
+            desde = datetime.strptime(desde_str, "%Y-%m-%d").date() if desde_str else (hoy - timedelta(days=30))
+            hasta = datetime.strptime(hasta_str, "%Y-%m-%d").date() if hasta_str else hoy
+
+            service = CobrosFotocopiaService()
+            report_data = service.run(desde, hasta, equipo_id=equipo_id, tipo_uso=tipo_uso)
     
     # Obtener opciones para filtros de tipo select
     bodegas = Bodega.objects.filter(eliminado=False, activo=True).order_by("codigo")
     categorias = Categoria.objects.filter(eliminado=False).order_by("codigo")
     proveedores = Proveedor.objects.filter(eliminado=False, activo=True).order_by("razon_social")
+    equipos_fotocopiadora = FotocopiadoraEquipo.objects.filter(eliminado=False, activo=True).order_by("codigo")
+    departamentos = Departamento.objects.filter(eliminado=False, activo=True).order_by("codigo")
     
     # Nombre del modulo para mostrar
     nombres_modulos = {
@@ -269,6 +302,7 @@ def seleccionar_reporte(request, modulo=None):
         'solicitudes': 'Solicitudes',
         'activos': 'Activos',
         'bajas': 'Bajas',
+        'fotocopiadora': 'Fotocopiadora',
     }
     nombre_modulo = nombres_modulos.get(modulo, modulo.capitalize())
     
@@ -284,6 +318,8 @@ def seleccionar_reporte(request, modulo=None):
         'bodegas': bodegas,
         'categorias': categorias,
         'proveedores': proveedores,
+        'equipos_fotocopiadora': equipos_fotocopiadora,
+        'departamentos': departamentos,
         'report': report_data,
         'crear_informe': crear_informe,
         'mostrar_modulos': False,
@@ -294,6 +330,9 @@ def seleccionar_reporte(request, modulo=None):
             'bodega_id': request.GET.get('bodega_id', ''),
             'categoria_id': request.GET.get('categoria_id', ''),
             'proveedor_id': request.GET.get('proveedor_id', ''),
+            'equipo_id': request.GET.get('equipo_id', ''),
+            'tipo_uso': request.GET.get('tipo_uso', ''),
+            'departamento_id': request.GET.get('departamento_id', ''),
         }
     }
     
