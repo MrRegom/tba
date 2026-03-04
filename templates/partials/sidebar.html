@@ -217,6 +217,19 @@
                 {% endif %}
 
                 <!-- ============================================================ -->
+                <!-- Fotocopiadora                                                -->
+                <!-- ============================================================ -->
+                {% if perms.fotocopiadora.view_trabajofotocopia %}
+                <li class="nav-item">
+                    <a class="nav-link menu-link {% if '/fotocopiadora/' in request.path %}active{% endif %}"
+                       href="{% url 'fotocopiadora:menu_fotocopiadora' %}">
+                        <i class="ri-file-copy-2-line"></i>
+                        <span>Fotocopiadora</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                <!-- ============================================================ -->
                 <!-- Gestores: solo staff                                          -->
                 <!-- nav_en_gestores=True → expandido y cada item marcado activo  -->
                 <!-- ============================================================ -->
