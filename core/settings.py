@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     'apps.notificaciones',
     'apps.bajas_inventario',
     'apps.inventario',
+    'apps.fotocopiadora',
     
     # Forms & Auth
     "crispy_forms",

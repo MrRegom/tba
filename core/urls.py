@@ -37,6 +37,7 @@ urlpatterns = [
     path('bajas-inventario/', include('apps.bajas_inventario.urls')),
     path('gestores/', include('apps.inventario.urls')),
     path('notificaciones/', include('apps.notificaciones.urls')),
+    path('fotocopiadora/', include('apps.fotocopiadora.urls')),
 
     # Gestión de usuarios y permisos
     path('administracion/', include('apps.accounts.urls')),
