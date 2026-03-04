@@ -165,6 +165,24 @@
                                     filtros_actuales.proveedor_id|stringformat:'s'==p.id|stringformat:'s' %}selected{%
                                     endif %}>{{ p.rut }} - {{ p.razon_social }}</option>
                                 {% endfor %}
+                                {% elif filtro_key == 'equipo_id' %}
+                                {% for e in equipos_fotocopiadora %}
+                                <option value="{{ e.id }}" {% if
+                                    filtros_actuales.equipo_id|stringformat:'s'==e.id|stringformat:'s' %}selected{%
+                                    endif %}>{{ e.codigo }} - {{ e.nombre }}</option>
+                                {% endfor %}
+                                {% elif filtro_key == 'departamento_id' %}
+                                {% for d in departamentos %}
+                                <option value="{{ d.id }}" {% if
+                                    filtros_actuales.departamento_id|stringformat:'s'==d.id|stringformat:'s' %}selected{%
+                                    endif %}>{{ d.codigo }} - {{ d.nombre }}</option>
+                                {% endfor %}
+                                {% elif filtro_key == 'tipo_uso' %}
+                                {% for option in opciones_filtros.tipo_uso %}
+                                <option value="{{ option.id }}" {% if
+                                    filtros_actuales.tipo_uso|stringformat:'s'==option.id|stringformat:'s' %}selected{%
+                                    endif %}>{{ option.nombre }}</option>
+                                {% endfor %}
                                 {% endif %}
                             </select>
                             {% endif %}
