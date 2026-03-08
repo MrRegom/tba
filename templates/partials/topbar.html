@@ -124,6 +124,8 @@
                         </div>
                         <a href="{% url 'pages:profile' %}" class="dropdown-item"><i
                                 class="bi bi-person align-middle me-2"></i> Perfil</a>
+                        <a href="{% url 'pages:manual' %}" class="dropdown-item"><i
+                                class="bi bi-book align-middle me-2"></i> Manual</a>
                         {% if user.is_authenticated %}
                         <a href="{% url 'account_logout' %}" class="dropdown-item"><i
                                 class="bi bi-box-arrow-right align-middle me-2"></i> Cerrar Sesión</a>

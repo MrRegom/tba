@@ -1,0 +1,879 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}Manual de Usuario{% endblock title %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --manual-primary: #0f4fa8;
+        --manual-primary-soft: #eaf2ff;
+        --manual-ink: #1f2a44;
+        --manual-muted: #475569;
+        --manual-border: #dfe7f3;
+        --manual-bg: #f6f9ff;
+        --manual-card: #ffffff;
+        --manual-ok: #1f8f4d;
+        --manual-warn: #c78315;
+    }
+
+    .manual-wrap {
+        max-width: 1360px;
+        margin: 0 auto;
+        padding-top: .85rem;
+        padding-bottom: 5.5rem;
+    }
+
+    .manual-toolbar .btn {
+        border-radius: 11px;
+        font-size: .98rem;
+    }
+
+    .manual-card {
+        border: 1px solid var(--manual-border);
+        border-radius: 14px;
+        background: var(--manual-card);
+        box-shadow: 0 3px 10px rgba(15, 79, 168, .04);
+    }
+
+    .manual-card .card-body {
+        padding: 1rem;
+    }
+
+    .manual-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        border-radius: 999px;
+        font-size: .9rem;
+        font-weight: 700;
+        padding: .25rem .72rem;
+        background: var(--manual-primary-soft);
+        color: var(--manual-primary);
+        margin-bottom: .45rem;
+    }
+
+    .manual-card h3 {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: var(--manual-ink);
+        margin-bottom: .45rem;
+    }
+
+    .manual-card p,
+    .manual-card li {
+        font-size: 1rem;
+        line-height: 1.55;
+        color: var(--manual-muted);
+        margin-bottom: .3rem;
+    }
+
+    .manual-index a {
+        display: block;
+        text-decoration: none;
+        color: #2a3a57;
+        border: 0;
+        border-left: 3px solid transparent;
+        border-radius: 9px;
+        padding: .5rem .6rem;
+        margin-bottom: .25rem;
+        font-size: .94rem;
+        transition: .18s ease;
+        background: transparent;
+    }
+
+    .manual-index a:hover {
+        background: #f3f7ff;
+        border-left-color: #2f73dd;
+        color: #0f4fa8;
+        transform: translateX(2px);
+    }
+
+    .manual-index a.is-active {
+        background: linear-gradient(90deg, #e8f1ff 0%, #f4f8ff 100%);
+        border-left-color: #0f5fcc;
+        color: #0f4fa8;
+        font-weight: 700;
+    }
+
+    .manual-layout {
+        display: grid;
+        grid-template-columns: 250px minmax(0, 1fr);
+        gap: 1rem;
+        align-items: start;
+    }
+
+    .manual-sidebar {
+        position: sticky;
+        top: 92px;
+        margin-left: -10px;
+    }
+
+    .manual-sidebar .manual-index {
+        max-height: calc(100vh - 140px);
+        overflow: auto;
+        padding-right: .1rem;
+    }
+
+    .manual-main {
+        min-width: 0;
+        background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+        border: 1px solid #d9e6f7;
+        border-radius: 14px;
+        padding: .9rem;
+        box-shadow: 0 10px 24px rgba(15, 79, 168, .06);
+    }
+
+    .manual-selector-card {
+        margin-bottom: .95rem;
+        border-radius: 12px;
+        background: #fff;
+        border-color: #d8e5f8;
+    }
+
+    .manual-sidebar .manual-card {
+        border-radius: 12px;
+        border: 1px solid #d4e0f4;
+        background: linear-gradient(180deg, #fbfdff 0%, #f5f9ff 100%);
+        box-shadow: 0 6px 14px rgba(8, 42, 93, .08);
+    }
+
+    .manual-sidebar .manual-card .card-body {
+        padding: .8rem .75rem;
+    }
+
+    .manual-sidebar .manual-chip {
+        margin-bottom: .35rem;
+    }
+
+    .manual-sidebar h3 {
+        font-size: 1.02rem;
+        margin-bottom: .5rem;
+    }
+
+    .manual-note {
+        border-left: 4px solid #1f6fe5;
+        border-radius: 9px;
+        background: #f3f8ff;
+        padding: .72rem .82rem;
+        font-size: .98rem;
+        color: #29466d;
+    }
+
+    .manual-role-btn {
+        border-radius: 999px;
+        margin: .15rem;
+        font-size: .88rem;
+        padding: .28rem .7rem;
+    }
+
+    .manual-role-feedback {
+        margin-top: .55rem;
+        border: 1px solid #d8e5fb;
+        background: #f5f9ff;
+        color: #1d4279;
+        border-radius: 10px;
+        padding: .45rem .65rem;
+        font-size: .92rem;
+        font-weight: 600;
+    }
+
+    .manual-section {
+        scroll-margin-top: 100px;
+        margin-bottom: 1.05rem;
+        transition: box-shadow .25s ease, border-color .25s ease;
+        border: 1px solid #dfe8f7;
+        border-radius: 12px;
+        padding: .85rem;
+        background: #fff;
+    }
+
+    .manual-section h2 {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--manual-ink);
+        margin-bottom: .65rem;
+    }
+
+    .manual-role-box {
+        border: 1px solid var(--manual-border);
+        border-radius: 12px;
+        background: var(--manual-card);
+        padding: .9rem;
+        height: 100%;
+    }
+
+    .manual-role-box h4 {
+        font-size: 1.07rem;
+        font-weight: 800;
+        margin-bottom: .45rem;
+        color: var(--manual-ink);
+    }
+
+    .manual-role-box ul {
+        margin-bottom: 0;
+        padding-left: 1.15rem;
+    }
+
+    .manual-flow-grid {
+        display: grid;
+        gap: .7rem;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    }
+
+    .manual-flow-item {
+        border: 1px solid var(--manual-border);
+        border-radius: 12px;
+        background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+        padding: .82rem .86rem;
+    }
+
+    .manual-flow-item h4 {
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--manual-ink);
+        margin-bottom: .4rem;
+    }
+
+    .manual-flow-item p {
+        margin-bottom: .35rem;
+        font-size: .95rem;
+    }
+
+    .manual-badge {
+        display: inline-block;
+        border-radius: 999px;
+        padding: .12rem .58rem;
+        font-size: .82rem;
+        font-weight: 700;
+    }
+
+    .manual-badge.sla {
+        background: #e9f7ef;
+        color: var(--manual-ok);
+    }
+
+    .manual-badge.control {
+        background: #fff4e1;
+        color: var(--manual-warn);
+    }
+
+    .manual-procedure {
+        border: 1px solid var(--manual-border);
+        border-radius: 12px;
+        background: var(--manual-card);
+        padding: .88rem .95rem .75rem .95rem;
+        margin-bottom: .65rem;
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .manual-procedure:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 14px rgba(10, 40, 90, .07);
+    }
+
+    .manual-procedure h4 {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--manual-ink);
+        margin-bottom: .45rem;
+    }
+
+    .manual-procedure ol {
+        margin-bottom: 0;
+        padding-left: 1.2rem;
+    }
+
+    .manual-procedure li {
+        font-size: .98rem;
+        color: var(--manual-muted);
+        line-height: 1.55;
+        margin-bottom: .32rem;
+    }
+
+    .manual-help {
+        border: 2px dashed #ffd8a4;
+        border-radius: 13px;
+        background: #fff9f2;
+        padding: .95rem 1rem;
+    }
+
+    .manual-help h3 {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #7a4300;
+        margin-bottom: .35rem;
+    }
+
+    .manual-help li,
+    .manual-help p {
+        font-size: .97rem;
+        color: #694d30;
+        line-height: 1.5;
+    }
+
+    .manual-reveal {
+        animation: manualReveal .4s ease;
+    }
+
+    .manual-focus {
+        animation: manualFocus .8s ease;
+    }
+
+    @keyframes manualReveal {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes manualFocus {
+        0% {
+            box-shadow: 0 0 0 0 rgba(15, 79, 168, 0);
+        }
+        35% {
+            box-shadow: 0 0 0 6px rgba(15, 79, 168, .12);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(15, 79, 168, 0);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .manual-card p,
+        .manual-procedure li {
+            font-size: .96rem;
+        }
+    }
+
+    @media (max-width: 991.98px) {
+        .manual-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .manual-sidebar {
+            position: static;
+            top: auto;
+            margin-left: 0;
+        }
+
+        .manual-sidebar .manual-index {
+            max-height: 340px;
+        }
+
+        .manual-wrap {
+            padding-bottom: 2rem;
+        }
+
+        .manual-main {
+            padding: .65rem;
+        }
+    }
+</style>
+{% endblock extra_css %}
+
+{% block main_title %}
+<div class="page-title-box">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            {% include "partials/page-title.html" with pagetitle="Ayuda" title="Manual de Usuario del Sistema" %}
+        </div>
+        <div class="col-md-auto ms-auto manual-toolbar">
+            <button class="btn btn-outline-danger me-2" onclick="window.print();">
+                <i class="bi bi-printer me-1"></i> Imprimir
+            </button>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-primary">
+                <i class="bi bi-house-door me-1"></i> Inicio
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock main_title %}
+
+{% block content %}
+<div class="manual-wrap">
+    <div class="manual-layout">
+        <aside class="manual-sidebar">
+            <div class="manual-card">
+                <div class="card-body manual-index">
+                    <span class="manual-chip"><i class="bi bi-list"></i>Indice rapido</span>
+                    <h3>Ir a una seccion</h3>
+                    <a href="#perfiles">1) Perfiles y alcances</a>
+                    <a href="#flujo">2) Flujo operativo institucional</a>
+                    <a href="#inicio">3) Inicio y navegacion</a>
+                    <a href="#solicitudes">4) Solicitudes</a>
+                    <a href="#bodega">5) Bodega</a>
+                    <a href="#compras">6) Compras</a>
+                    <a href="#inventario">7) Inventario (Activos)</a>
+                    <a href="#bajas">8) Bajas de Inventario</a>
+                    <a href="#reportes">9) Reportes</a>
+                    <a href="#fotocopiadora">10) Fotocopiadora</a>
+                    <a href="#administracion">11) Administracion</a>
+                    <a href="#auditoria">12) Auditoria</a>
+                    <a href="#soporte">13) Soporte</a>
+                </div>
+            </div>
+        </aside>
+
+        <main class="manual-main">
+            <div class="manual-card manual-selector-card">
+                <div class="card-body">
+                    <span class="manual-chip"><i class="bi bi-person-check"></i>Selector por perfil</span>
+                    <h3>Resaltar contenido por rol</h3>
+                    <p class="mb-1">Seleccione su perfil para ver solo secciones relevantes.</p>
+                    <div class="mb-2">
+                        <button type="button" class="btn btn-sm btn-outline-primary manual-role-btn" data-role-filter="todos">Todos</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary manual-role-btn" data-role-filter="administrativo">Administrativo</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary manual-role-btn" data-role-filter="profesor">Profesor</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary manual-role-btn" data-role-filter="bodeguero">Bodeguero</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary manual-role-btn" data-role-filter="inventario">Encargado Inventario</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary manual-role-btn" data-role-filter="admin-sistema">Administrador Sistema</button>
+                    </div>
+                    <div id="role-feedback" class="manual-role-feedback" aria-live="polite">
+                        Perfil activo: Todos los perfiles.
+                    </div>
+                    <div class="manual-note">
+                        Acceso permanente: clic en su <strong>foto de perfil</strong> (arriba derecha) y luego <strong>Manual</strong>.
+                    </div>
+                </div>
+            </div>
+
+            <section class="manual-section" id="perfiles">
+        <h2>1. Perfiles y alcances</h2>
+        <div class="row g-2">
+            <div class="col-lg-4" data-roles="administrativo">
+                <div class="manual-role-box">
+                    <h4>Administrativo</h4>
+                    <ul>
+                        <li>Coordina solicitudes y seguimiento.</li>
+                        <li>Apoya compras y control documental.</li>
+                        <li>Consulta reportes de gestion.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-4" data-roles="profesor">
+                <div class="manual-role-box">
+                    <h4>Profesor</h4>
+                    <ul>
+                        <li>Crea solicitudes de articulos o bienes.</li>
+                        <li>Da seguimiento en Mis Solicitudes.</li>
+                        <li>Entrega antecedentes claros de necesidad.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-4" data-roles="bodeguero">
+                <div class="manual-role-box">
+                    <h4>Bodeguero</h4>
+                    <ul>
+                        <li>Registra recepciones y entregas.</li>
+                        <li>Controla stock y movimientos.</li>
+                        <li>Valida PIN de recepcion cuando corresponda.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-4" data-roles="inventario">
+                <div class="manual-role-box">
+                    <h4>Encargado de Inventario</h4>
+                    <ul>
+                        <li>Administra activos y traslados.</li>
+                        <li>Controla estados, ubicaciones y bajas.</li>
+                        <li>Garantiza trazabilidad del activo.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-4" data-roles="admin-sistema">
+                <div class="manual-role-box">
+                    <h4>Administrador del Sistema</h4>
+                    <ul>
+                        <li>Gestiona usuarios, grupos y permisos.</li>
+                        <li>Mantiene catalogos institucionales.</li>
+                        <li>Monitorea auditoria y seguridad.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+            </section>
+
+            <section class="manual-section" id="flujo" data-roles="todos">
+        <h2>2. Flujo operativo institucional (colegio)</h2>
+        <div class="manual-flow-grid">
+            <article class="manual-flow-item">
+                <h4>Etapa 1: Solicitud</h4>
+                <p><strong>Responsable:</strong> Profesor o Administrativo</p>
+                <p><strong>Accion:</strong> Crear solicitud de articulo o bien.</p>
+                <span class="manual-badge sla">Tiempo objetivo: mismo dia</span>
+            </article>
+            <article class="manual-flow-item">
+                <h4>Etapa 2: Revision</h4>
+                <p><strong>Responsable:</strong> Administrativo / Encargado de area</p>
+                <p><strong>Accion:</strong> Validar datos y pertinencia.</p>
+                <span class="manual-badge sla">Tiempo objetivo: 24 horas habiles</span>
+            </article>
+            <article class="manual-flow-item">
+                <h4>Etapa 3: Resolucion</h4>
+                <p><strong>Responsable:</strong> Gestion de solicitudes</p>
+                <p><strong>Accion:</strong> Aprobar, rechazar o derivar a compra.</p>
+                <span class="manual-badge sla">Tiempo objetivo: 24-48 horas</span>
+            </article>
+            <article class="manual-flow-item">
+                <h4>Etapa 4: Abastecimiento</h4>
+                <p><strong>Responsable:</strong> Bodega o Compras</p>
+                <p><strong>Accion:</strong> Entrega desde stock o emision de OC.</p>
+                <span class="manual-badge sla">Tiempo objetivo: segun disponibilidad</span>
+            </article>
+            <article class="manual-flow-item">
+                <h4>Etapa 5: Recepcion y cierre</h4>
+                <p><strong>Responsable:</strong> Receptor + Bodeguero</p>
+                <p><strong>Accion:</strong> Confirmar entrega (PIN cuando aplica).</p>
+                <span class="manual-badge control">Control: evidencia y trazabilidad</span>
+            </article>
+            <article class="manual-flow-item">
+                <h4>Etapa 6: Control y reporte</h4>
+                <p><strong>Responsable:</strong> Administrativo / Direccion</p>
+                <p><strong>Accion:</strong> Revisar indicadores y desvíos.</p>
+                <span class="manual-badge control">Control: revision semanal</span>
+            </article>
+        </div>
+            </section>
+
+            <section class="manual-section" id="inicio" data-roles="todos">
+        <h2>3. Inicio y navegacion</h2>
+        <div class="manual-procedure">
+            <h4>3.1 Ingreso al sistema</h4>
+            <ol>
+                <li>Ingrese usuario y contrasena.</li>
+                <li>Presione <strong>Iniciar sesion</strong>.</li>
+                <li>Si olvida la clave, use recuperacion de cuenta.</li>
+            </ol>
+        </div>
+        <div class="manual-procedure">
+            <h4>3.2 Uso del menu</h4>
+            <ol>
+                <li>Menu izquierdo: acceso a modulos segun permisos.</li>
+                <li>Foto de perfil: Perfil, Manual y Cerrar sesion.</li>
+                <li>Revise mensajes de confirmacion despues de guardar.</li>
+            </ol>
+        </div>
+        <div class="manual-procedure">
+            <h4>3.3 Como ubicarse en la pantalla (muy importante)</h4>
+            <ol>
+                <li><strong>Lado izquierdo:</strong> menu principal con los modulos (Solicitudes, Bodega, Compras, etc.).</li>
+                <li><strong>Zona central:</strong> lista o formulario donde trabaja.</li>
+                <li><strong>Parte superior derecha:</strong> su foto de perfil, notificaciones y salida.</li>
+                <li><strong>Botones comunes:</strong> Crear, Guardar, Editar, Eliminar, Volver.</li>
+                <li>Si no ve un boton, probablemente su perfil no tiene ese permiso.</li>
+            </ol>
+        </div>
+        <div class="manual-procedure">
+            <h4>3.4 Regla de seguridad PIN personal</h4>
+            <ol>
+                <li>Su PIN es personal y se usa para confirmar recepciones/entregas sensibles.</li>
+                <li>No comparta su PIN con terceros.</li>
+                <li>Si no recuerda su PIN, solicite soporte a Administracion antes de retirar en bodega.</li>
+            </ol>
+        </div>
+            </section>
+
+            <section class="manual-section" id="solicitudes" data-roles="administrativo profesor">
+        <h2>4. Modulo Solicitudes</h2>
+        <div class="manual-procedure">
+            <h4>4.1 Crear solicitud de articulos</h4>
+            <ol>
+                <li>En el menu izquierdo, haga clic en <strong>Solicitudes</strong>.</li>
+                <li>Luego haga clic en <strong>Solicitud de Articulos</strong>.</li>
+                <li>Presione el boton <strong>Crear</strong>.</li>
+                <li>Complete los datos obligatorios del formulario.</li>
+                <li>Agregue items y valide cantidades.</li>
+                <li>Guarde y confirme numero de solicitud.</li>
+                <li>Estado esperado despues de guardar: <strong>Pendiente / En validacion</strong>.</li>
+                <li>En ese estado aun no hay entrega. Debe esperar revision de gestion.</li>
+            </ol>
+        </div>
+        <div class="manual-procedure">
+            <h4>4.2 Crear solicitud de bienes</h4>
+            <ol>
+                <li>En el menu izquierdo, haga clic en <strong>Solicitudes</strong>.</li>
+                <li>Haga clic en <strong>Solicitud de Bienes</strong>.</li>
+                <li>Presione <strong>Crear</strong>.</li>
+                <li>Registre motivo, area y detalle del bien.</li>
+                <li>Guarde y verifique estado inicial.</li>
+                <li>Estado esperado: <strong>Pendiente / En validacion</strong>.</li>
+            </ol>
+        </div>
+        <div class="manual-procedure">
+            <h4>4.3 Seguimiento y gestion</h4>
+            <ol>
+                <li>Para revisar lo suyo: menu izquierdo -> <strong>Solicitudes</strong> -> <strong>Mis Solicitudes</strong>.</li>
+                <li>Para gestionar todas: menu izquierdo -> <strong>Solicitudes</strong> -> <strong>Administrar Solicitudes</strong>.</li>
+                <li>Aplicar acciones: Aprobar, Rechazar, Despachar o Comprar.</li>
+                <li>Si la solicitud fue aprobada, pasa a preparacion de entrega o gestion de compra.</li>
+                <li>Si fue rechazada, revise observaciones y corrija antes de reenviar.</li>
+            </ol>
+        </div>
+        <div class="manual-procedure">
+            <h4>4.4 Estados de solicitud (lectura simple)</h4>
+            <ol>
+                <li><strong>Pendiente / En validacion:</strong> solicitud ingresada, esperando revision.</li>
+                <li><strong>Aprobada:</strong> autorizada para despacho o compra.</li>
+                <li><strong>En compra:</strong> requiere adquisicion por modulo Compras.</li>
+                <li><strong>Despachada / Entregada:</strong> proceso finalizado en bodega.</li>
+                <li><strong>Rechazada:</strong> no continua; revisar motivo informado.</li>
+            </ol>
+        </div>
+            </section>
+
+            <section class="manual-section" id="bodega" data-roles="bodeguero administrativo">
+        <h2>5. Modulo Bodega</h2>
+        <div class="manual-procedure">
+            <h4>5.1 Recepcion de articulos y bienes</h4>
+            <ol>
+                <li>En el menu izquierdo, haga clic en <strong>Bodega</strong>.</li>
+                <li>Seleccione <strong>Recepcion de Articulos</strong> o <strong>Recepcion de Bienes</strong>.</li>
+                <li>Presione <strong>Crear</strong> para iniciar un registro.</li>
+                <li>Registrar detalle y confirmar para actualizar existencias.</li>
+            </ol>
+        </div>
+        <div class="manual-procedure">
+            <h4>5.2 Entregas y movimientos</h4>
+            <ol>
+                <li>En <strong>Bodega</strong>, entre a <strong>Entrega de Articulos</strong> o <strong>Entrega de Bienes</strong>.</li>
+                <li>Para ajustes de stock, entre a <strong>Movimientos de Bodega</strong>.</li>
+                <li>Adjuntar justificacion y validar PIN cuando se exija.</li>
+            </ol>
+        </div>
+        <div class="manual-procedure">
+            <h4>5.3 Confirmacion con PIN (receptor)</h4>
+            <ol>
+                <li>Para retiros controlados, el receptor debe ingresar su PIN al confirmar la entrega.</li>
+                <li>Si el PIN es incorrecto, la entrega no debe cerrarse.</li>
+                <li>Si el usuario no tiene PIN activo, debe regularizarlo con Administracion antes de recibir.</li>
+                <li>Al validar PIN correctamente, la entrega queda registrada y trazable.</li>
+            </ol>
+        </div>
+            </section>
+
+            <section class="manual-section" id="compras" data-roles="administrativo">
+        <h2>6. Modulo Compras</h2>
+        <div class="manual-procedure">
+            <h4>6.1 Proveedores</h4>
+            <ol>
+                <li>En el menu izquierdo, haga clic en <strong>Compras</strong>.</li>
+                <li>Abra <strong>Proveedores</strong>.</li>
+                <li>Use <strong>Crear</strong> o <strong>Editar</strong> segun corresponda.</li>
+                <li>Actualizar datos de contacto y estado.</li>
+            </ol>
+        </div>
+        <div class="manual-procedure">
+            <h4>6.2 Ordenes de compra</h4>
+            <ol>
+                <li>Menu izquierdo -> <strong>Compras</strong> -> <strong>Ordenes de Compra</strong>.</li>
+                <li>Crear orden, agregar articulos/bienes y guardar.</li>
+                <li>Actualizar estado segun avance del proveedor.</li>
+            </ol>
+        </div>
+            </section>
+
+            <section class="manual-section" id="inventario" data-roles="inventario administrativo">
+        <h2>7. Modulo Inventario (Activos)</h2>
+        <div class="manual-procedure">
+            <h4>7.1 Registro y control de activos</h4>
+            <ol>
+                <li>En el menu izquierdo, haga clic en <strong>Inventario</strong>.</li>
+                <li>Abra la lista de <strong>Activos</strong>.</li>
+                <li>Crear, editar y consultar detalle del activo.</li>
+                <li>Para traslados/cambios, entre a <strong>Movimientos</strong>.</li>
+            </ol>
+        </div>
+        <div class="manual-procedure">
+            <h4>7.2 Validacion de responsable</h4>
+            <ol>
+                <li>En movimientos de activos, valide siempre responsable y ubicacion destino.</li>
+                <li>Si el flujo solicita PIN del responsable, no omita ese paso.</li>
+                <li>Sin validacion correcta, no confirmar el movimiento.</li>
+            </ol>
+        </div>
+            </section>
+
+            <section class="manual-section" id="bajas" data-roles="inventario administrativo">
+        <h2>8. Modulo Bajas de Inventario</h2>
+        <div class="manual-procedure">
+            <h4>8.1 Gestion de bajas</h4>
+            <ol>
+                <li>Menu izquierdo -> <strong>Bajas de Inventario</strong>.</li>
+                <li>Ingrese a <strong>Listado de Bajas</strong>.</li>
+                <li>Presione <strong>Crear</strong>.</li>
+                <li>Crear baja con motivo y respaldo.</li>
+                <li>Controlar avance hasta cierre.</li>
+            </ol>
+        </div>
+            </section>
+
+            <section class="manual-section" id="reportes" data-roles="administrativo admin-sistema">
+        <h2>9. Modulo Reportes</h2>
+        <div class="manual-procedure">
+            <h4>9.1 Consulta de reportes</h4>
+            <ol>
+                <li>En el menu izquierdo, haga clic en <strong>Reportes</strong>.</li>
+                <li>Elegir modulo, filtro y periodo.</li>
+                <li>Exportar informacion para seguimiento.</li>
+            </ol>
+        </div>
+            </section>
+
+            <section class="manual-section" id="fotocopiadora" data-roles="administrativo profesor">
+        <h2>10. Modulo Fotocopiadora</h2>
+        <div class="manual-procedure">
+            <h4>10.1 Trabajos y equipos</h4>
+            <ol>
+                <li>Menu izquierdo -> <strong>Fotocopiadora</strong>.</li>
+                <li>Entre a <strong>Trabajos</strong> para crear y seguir solicitudes.</li>
+                <li>Entre a <strong>Equipos</strong> para administrar maquinas.</li>
+            </ol>
+        </div>
+            </section>
+
+            <section class="manual-section" id="administracion" data-roles="admin-sistema">
+        <h2>11. Administracion de Usuarios y Organizacion</h2>
+        <div class="manual-procedure">
+            <h4>11.1 Usuarios, grupos y permisos</h4>
+            <ol>
+                <li>Menu izquierdo -> <strong>Gestores</strong> -> <strong>Usuarios</strong> (o <strong>Administracion</strong>).</li>
+                <li>Crear usuario, asignar grupo y luego permisos especiales.</li>
+                <li>Gestionar PIN y desbloqueos solo con autorizacion.</li>
+            </ol>
+        </div>
+            </section>
+
+            <section class="manual-section" id="auditoria" data-roles="admin-sistema">
+        <h2>12. Auditoria y trazabilidad</h2>
+        <div class="manual-procedure">
+            <h4>12.1 Revision de actividad</h4>
+            <ol>
+                <li>Menu izquierdo -> <strong>Auditoria</strong>.</li>
+                <li>Revisar CRUD, sesiones, logs y eventos PIN.</li>
+                <li>Levantar alerta frente a acciones no autorizadas.</li>
+            </ol>
+        </div>
+            </section>
+
+            <section class="manual-section" id="soporte" data-roles="todos">
+        <h2>13. Soporte y contingencia</h2>
+        <div class="manual-help">
+            <h3>Respuesta rapida ante problemas</h3>
+            <ul>
+                <li>Si no ve un modulo, valide perfil y permisos.</li>
+                <li>Si falla guardado, revise campos obligatorios.</li>
+                <li>Si la sesion expira, vuelva a iniciar sesion y repita.</li>
+                <li>Para soporte: informar modulo, accion, fecha/hora y error mostrado.</li>
+            </ul>
+            <p class="mb-0">Cierre sesion al terminar la jornada para seguridad institucional.</p>
+        </div>
+            </section>
+        </main>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+    (function () {
+        const buttons = document.querySelectorAll('[data-role-filter]');
+        const sections = document.querySelectorAll('[data-roles]');
+        const navLinks = document.querySelectorAll('.manual-index a[href^="#"]');
+        const perfilSection = document.getElementById('perfiles');
+        const feedback = document.getElementById('role-feedback');
+        const roleLabels = {
+            'todos': 'Todos los perfiles',
+            'administrativo': 'Administrativo',
+            'profesor': 'Profesor',
+            'bodeguero': 'Bodeguero',
+            'inventario': 'Encargado Inventario',
+            'admin-sistema': 'Administrador Sistema'
+        };
+
+        function setActiveNav(id) {
+            navLinks.forEach((link) => {
+                const active = link.getAttribute('href') === '#' + id;
+                link.classList.toggle('is-active', active);
+            });
+        }
+
+        function updateActiveByViewport() {
+            const visibleSections = Array.from(document.querySelectorAll('.manual-section'))
+                .filter((s) => s.style.display !== 'none');
+            if (!visibleSections.length) return;
+
+            let current = visibleSections[0];
+            const pivot = window.innerHeight * 0.28;
+
+            visibleSections.forEach((section) => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top <= pivot) current = section;
+            });
+
+            setActiveNav(current.id);
+        }
+
+        function applyFilter(role) {
+            sections.forEach((el) => {
+                const roles = (el.getAttribute('data-roles') || '').split(/\s+/);
+                const visible = role === 'todos' || roles.includes('todos') || roles.includes(role);
+                const wasHidden = el.style.display === 'none';
+                el.style.display = visible ? '' : 'none';
+
+                if (visible && (wasHidden || role !== 'todos')) {
+                    el.classList.remove('manual-reveal');
+                    void el.offsetWidth;
+                    el.classList.add('manual-reveal');
+                }
+            });
+
+            buttons.forEach((btn) => {
+                const active = btn.getAttribute('data-role-filter') === role;
+                btn.classList.toggle('btn-primary', active);
+                btn.classList.toggle('btn-outline-primary', !active);
+            });
+
+            if (feedback) {
+                feedback.textContent = 'Perfil activo: ' + (roleLabels[role] || role) + '.';
+            }
+
+            updateActiveByViewport();
+
+            if (role !== 'todos' && perfilSection) {
+                perfilSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                perfilSection.classList.remove('manual-focus');
+                void perfilSection.offsetWidth;
+                perfilSection.classList.add('manual-focus');
+            }
+        }
+
+        buttons.forEach((btn) => {
+            btn.addEventListener('click', function () {
+                applyFilter(this.getAttribute('data-role-filter'));
+            });
+        });
+
+        navLinks.forEach((link) => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').slice(1);
+                const target = document.getElementById(targetId);
+                if (!target) return;
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                setActiveNav(targetId);
+            });
+        });
+
+        window.addEventListener('scroll', updateActiveByViewport, { passive: true });
+        window.addEventListener('resize', updateActiveByViewport);
+
+        applyFilter('todos');
+        updateActiveByViewport();
+    })();
+</script>
+{% endblock extra_js %}

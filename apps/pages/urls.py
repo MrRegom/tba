@@ -27,6 +27,7 @@ from .views import (
     pages_privacy_policy,
     pages_term_conditions,
     pages_web_apps,
+    pages_manual,
     MyPasswordChangeView,
 )
 
@@ -63,6 +64,7 @@ urlpatterns = [
     path('privacy-policy',view=pages_privacy_policy,name='privacy_policy'),
     path('term-conditions',view=pages_term_conditions,name='term_conditions'),
     path('web-apps',view=pages_web_apps,name='web_apps'),
+    path('manual', view=pages_manual, name='manual'),
     
     # Profile - Change Password
     path('profile/change-password/', MyPasswordChangeView.as_view(), name='change_password'),

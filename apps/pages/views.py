@@ -42,6 +42,7 @@ pages_coming_soon= pagesview.as_view(template_name = "pages/pages-coming-soon.ht
 pages_privacy_policy= pagesview.as_view(template_name = "pages/pages-privacy-policy.html")
 pages_term_conditions= pagesview.as_view(template_name = "pages/pages-term-conditions.html")
 pages_web_apps = pagesview.as_view(template_name = "pages/pages-web-apps.html")
+pages_manual = pagesview.as_view(template_name = "pages/manual-usuario.html")
 
 
 # ============================================================================
