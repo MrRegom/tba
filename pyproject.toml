@@ -20,7 +20,10 @@ dependencies = [
     "pytest==8.3.4",
     "pytest-cov==6.0.0",
     "pytest-django==4.9.0",
+    "pytest-html>=4.2.0",
     "reportlab>=4.4.5",
+    "selenium>=4.41.0",
     "sqlparse==0.5.3",
     "tzdata==2025.2",
+    "webdriver-manager>=4.0.2",
 ]
