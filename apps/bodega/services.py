@@ -337,6 +337,7 @@ class MovimientoService:
         self.movimiento_repo = MovimientoRepository()
         self.articulo_repo = ArticuloRepository()
         self.tipo_repo = TipoMovimientoRepository()
+        self.operacion_repo = OperacionRepository()
 
     @transaction.atomic
     def registrar_entrada(
