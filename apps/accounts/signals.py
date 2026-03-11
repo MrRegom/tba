@@ -63,7 +63,7 @@ def log_user_logout(sender, request, user, **kwargs):
 
     AuthLogs.objects.create(
         accion=accion,
-        usuario=user if user.is_authenticated else None,
+        usuario=user if user and user.is_authenticated else None,
         descripcion=f"Usuario {getattr(user, 'username', 'Anónimo')} cerró sesión.",
         ip_usuario=ip,
         agente=agente,
