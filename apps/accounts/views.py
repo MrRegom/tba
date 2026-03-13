@@ -17,6 +17,7 @@ from .forms import (
     UserFilterForm, PermissionForm, CargoForm, PersonaForm, PINForm, UserCargoForm
 )
 from .models import AuthLogs, AuthLogAccion
+from .role_catalog import OFFICIAL_ROLE_CATALOG, get_official_role_names
 
 # Importar utilidades centralizadas
 from core.utils import registrar_log_auditoria
@@ -759,14 +760,33 @@ def asignar_grupos_usuario(request, pk):
             )
 
             messages.success(request, f'Roles del usuario {usuario.username} actualizados exitosamente.')
-            return redirect('accounts:detalle_usuario', pk=usuario.pk)
+            return redirect('accounts:lista_usuarios')
     else:
         form = UserGroupsForm(instance=usuario)
+
+    official_names = get_official_role_names()
+    selected_ids = {str(group_id) for group_id in (form['groups'].value() or [])}
+
+    official_groups = []
+    for group in Group.objects.filter(name__in=official_names):
+        official_groups.append({
+            'group': group,
+            'meta': OFFICIAL_ROLE_CATALOG.get(group.name, {}),
+            'selected': str(group.pk) in selected_ids,
+        })
+    official_groups.sort(key=lambda item: official_names.index(item['group'].name))
+
+    grouped_official_roles = {}
+    for item in official_groups:
+        category = item['meta'].get('category', 'Otros')
+        grouped_official_roles.setdefault(category, []).append(item)
 
     context = {
         'titulo': f'Asignar Roles: {usuario.username}',
         'form': form,
         'usuario_detalle': usuario,
+        'grouped_official_roles': grouped_official_roles,
+        'selected_group_ids': selected_ids,
     }
 
     return render(request, 'account/gestion_usuarios/asignar_grupos_usuario.html', context)
