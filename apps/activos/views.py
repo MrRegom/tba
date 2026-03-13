@@ -23,8 +23,10 @@ from django.contrib.auth.decorators import login_required
 
 from core.mixins import (
     BaseAuditedViewMixin, AtomicTransactionMixin, SoftDeleteMixin,
+    ScopedObjectPermissionMixin,
     PaginatedListMixin, FilteredListMixin
 )
+from core.authz import can_view_activo, scope_activos_for_user
 from .models import (
     Activo, CategoriaActivo, EstadoActivo, Ubicacion,
     Proveniencia, Marca, Taller, TipoMovimientoActivo, MovimientoActivo
@@ -90,8 +92,11 @@ class ActivoListView(BaseAuditedViewMixin, PaginatedListMixin, ListView):
 
     def get_queryset(self) -> QuerySet[Activo]:
         """Retorna activos con optimización N+1."""
-        queryset = Activo.objects.filter(eliminado=False).select_related(
-            'categoria', 'estado', 'marca'
+        queryset = scope_activos_for_user(
+            Activo.objects.filter(eliminado=False).select_related(
+                'categoria', 'estado', 'marca'
+            ),
+            self.request.user
         )
 
         # Aplicar filtros del formulario
@@ -127,7 +132,7 @@ class ActivoListView(BaseAuditedViewMixin, PaginatedListMixin, ListView):
         return context
 
 
-class ActivoDetailView(BaseAuditedViewMixin, DetailView):
+class ActivoDetailView(ScopedObjectPermissionMixin, BaseAuditedViewMixin, DetailView):
     """
     Vista para ver el detalle de un activo con su historial.
 
@@ -140,9 +145,15 @@ class ActivoDetailView(BaseAuditedViewMixin, DetailView):
 
     def get_queryset(self) -> QuerySet[Activo]:
         """Optimiza consultas con select_related."""
-        return Activo.objects.filter(eliminado=False).select_related(
-            'categoria', 'estado', 'marca'
+        return scope_activos_for_user(
+            Activo.objects.filter(eliminado=False).select_related(
+                'categoria', 'estado', 'marca'
+            ),
+            self.request.user
         )
+
+    def has_object_permission(self, obj) -> bool:
+        return can_view_activo(self.request.user, obj)
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """Agrega movimientos recientes al contexto."""
