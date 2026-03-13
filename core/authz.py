@@ -9,10 +9,24 @@ from __future__ import annotations
 from django.db.models import Q, QuerySet
 
 from apps.accounts.models import AccessScope
+from apps.accounts.role_catalog import OFFICIAL_ROLE_CATALOG
 
 
 def _profile(user):
     return getattr(user, 'access_profile', None)
+
+
+def get_user_official_role_names(user) -> list[str]:
+    if not getattr(user, 'is_authenticated', False):
+        return []
+
+    assigned = set(user.groups.values_list('name', flat=True))
+    return [name for name in OFFICIAL_ROLE_CATALOG if name in assigned]
+
+
+def get_primary_official_role_name(user) -> str | None:
+    roles = get_user_official_role_names(user)
+    return roles[0] if roles else None
 
 
 def _resolve_user_bodega_scope_id(user):
@@ -43,6 +57,18 @@ def _resolve_user_bodega_scope_id(user):
 def has_global_scope(user) -> bool:
     profile = _profile(user)
     return bool(user.is_superuser or (profile and profile.scope_level == AccessScope.GLOBAL))
+
+
+def can_view_operational_dashboard(user) -> bool:
+    if not getattr(user, 'is_authenticated', False):
+        return False
+    if user.is_superuser:
+        return True
+
+    for role_name in get_user_official_role_names(user):
+        if OFFICIAL_ROLE_CATALOG.get(role_name, {}).get('show_dashboard'):
+            return True
+    return False
 
 
 def can_manage_authorization(user) -> bool:

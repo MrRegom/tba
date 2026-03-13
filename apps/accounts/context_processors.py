@@ -3,6 +3,7 @@ Context processors para la app accounts.
 Proporciona datos del usuario a todos los templates.
 """
 from django.conf import settings
+from core.authz import can_view_operational_dashboard
 
 
 def user_photo(request):
@@ -65,5 +66,5 @@ def sidebar_nav(request):
         'nav_gs_org':      gs_org,
         'nav_gs_usr':      gs_usr,
         'nav_en_gestores': gs_sol or gs_bod or gs_comp or gs_inv or gs_bajas or gs_org or gs_usr,
+        'can_view_operational_dashboard': can_view_operational_dashboard(request.user),
     }
-

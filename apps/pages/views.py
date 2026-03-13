@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from allauth.account.views import PasswordChangeView, PasswordSetView
 from django.views.generic import TemplateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -9,8 +9,16 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.db import transaction
 from apps.accounts.models import UserSecure, AuditoriaPin, Persona
+from apps.accounts.role_catalog import OFFICIAL_ROLE_CATALOG
 from .forms import ProfileForm, UserPINForm
 from .manual_profiles import resolve_manual_profiles
+from core.authz import (
+    can_view_operational_dashboard,
+    get_primary_official_role_name,
+    get_user_official_role_names,
+    scope_ordenes_compra_for_user,
+    scope_solicitudes_for_user,
+)
 
 # Create your views here.
 
@@ -65,11 +73,224 @@ class ManualUsuarioView(LoginRequiredMixin, TemplateView):
 pages_manual = ManualUsuarioView.as_view()
 
 
+class HomeView(LoginRequiredMixin, TemplateView):
+    template_name = "pages/home.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        from apps.accounts.models import UserCargo
+        from apps.compras.models import OrdenCompra
+        from apps.fotocopiadora.models import TrabajoFotocopia
+        from apps.solicitudes.models import Solicitud
+
+        role_names = get_user_official_role_names(user)
+        primary_role_name = get_primary_official_role_name(user)
+        primary_role_meta = OFFICIAL_ROLE_CATALOG.get(primary_role_name, {}) if primary_role_name else {}
+
+        cargo_actual = UserCargo.objects.filter(
+            usuario=user,
+            eliminado=False,
+            fecha_fin__isnull=True,
+            activo=True,
+        ).select_related('cargo').order_by('-fecha_inicio').first()
+
+        try:
+            persona = Persona.objects.get(user=user, eliminado=False)
+        except Persona.DoesNotExist:
+            persona = None
+
+        solicitudes_propias = Solicitud.objects.filter(
+            solicitante=user,
+            eliminado=False,
+        ).count()
+
+        solicitudes_visibles = 0
+        if user.has_perm('solicitudes.view_solicitud'):
+            solicitudes_visibles = scope_solicitudes_for_user(
+                Solicitud.objects.filter(eliminado=False),
+                user,
+            ).count()
+
+        ordenes_visibles = 0
+        if user.has_perm('compras.view_ordencompra'):
+            ordenes_visibles = scope_ordenes_compra_for_user(
+                OrdenCompra.objects.filter(eliminado=False),
+                user,
+            ).count()
+
+        trabajos_fotocopia = 0
+        if user.has_perm('fotocopiadora.view_trabajofotocopia'):
+            trabajos_fotocopia = TrabajoFotocopia.objects.filter(
+                eliminado=False,
+                solicitante_usuario=user,
+            ).count()
+
+        context.update({
+            'persona': persona,
+            'cargo_actual': cargo_actual.cargo if cargo_actual else None,
+            'official_roles': [
+                {'name': role_name, 'meta': OFFICIAL_ROLE_CATALOG[role_name]}
+                for role_name in role_names
+            ],
+            'primary_role_name': primary_role_name,
+            'primary_role_meta': primary_role_meta,
+            'can_view_operational_dashboard': can_view_operational_dashboard(user),
+            'quick_links': self._build_quick_links(user),
+            'pending_items': [
+                {
+                    'label': 'Mis solicitudes',
+                    'value': solicitudes_propias,
+                    'hint': 'Solicitudes creadas por usted.',
+                    'url': reverse('solicitudes:mis_solicitudes'),
+                    'visible': user.has_perm('solicitudes.view_solicitud') or user.has_perm('solicitudes.add_solicitud'),
+                },
+                {
+                    'label': 'Solicitudes visibles',
+                    'value': solicitudes_visibles,
+                    'hint': 'Solicitudes dentro de su alcance.',
+                    'url': reverse('solicitudes:lista_solicitudes') if user.has_perm('solicitudes.view_solicitud') else reverse('solicitudes:menu_solicitudes'),
+                    'visible': user.has_perm('solicitudes.view_solicitud'),
+                },
+                {
+                    'label': 'Órdenes visibles',
+                    'value': ordenes_visibles,
+                    'hint': 'Órdenes de compra que puede consultar.',
+                    'url': reverse('compras:orden_compra_lista') if user.has_perm('compras.view_ordencompra') else reverse('compras:menu_compras'),
+                    'visible': user.has_perm('compras.view_ordencompra'),
+                },
+                {
+                    'label': 'Trabajos de fotocopiadora',
+                    'value': trabajos_fotocopia,
+                    'hint': 'Trabajos asociados a su usuario.',
+                    'url': reverse('fotocopiadora:lista_trabajos'),
+                    'visible': user.has_perm('fotocopiadora.view_trabajofotocopia'),
+                },
+            ],
+        })
+        return context
+
+    def _build_quick_links(self, user):
+        links = [
+            {
+                'title': 'Manual',
+                'description': 'Guía del sistema ajustada a sus roles oficiales.',
+                'url': reverse('pages:manual'),
+                'icon': 'ri-book-open-line',
+                'accent': 'manual',
+                'visible': True,
+            },
+            {
+                'title': 'Mi perfil',
+                'description': 'Actualice datos personales, foto y seguridad.',
+                'url': reverse('pages:profile'),
+                'icon': 'ri-user-settings-line',
+                'accent': 'perfil',
+                'visible': True,
+            },
+            {
+                'title': 'Dashboard',
+                'description': 'Vista operativa con métricas globales y seguimiento.',
+                'url': reverse('dashboard_operativo'),
+                'icon': 'ri-line-chart-line',
+                'accent': 'dashboard',
+                'visible': can_view_operational_dashboard(user),
+            },
+            {
+                'title': 'Solicitudes',
+                'description': 'Cree, revise o gestione solicitudes según su alcance.',
+                'url': reverse('solicitudes:menu_solicitudes'),
+                'icon': 'ri-file-list-3-line',
+                'accent': 'solicitudes',
+                'visible': user.has_perm('solicitudes.view_solicitud') or user.has_perm('solicitudes.add_solicitud'),
+            },
+            {
+                'title': 'Bodega',
+                'description': 'Recepciones, entregas, movimientos y operación de stock.',
+                'url': reverse('bodega:menu_bodega'),
+                'icon': 'ri-archive-drawer-line',
+                'accent': 'bodega',
+                'visible': any([
+                    user.has_perm('bodega.view_entregaarticulo'),
+                    user.has_perm('bodega.view_movimiento'),
+                    user.has_perm('bodega.view_articulo'),
+                ]),
+            },
+            {
+                'title': 'Compras',
+                'description': 'Órdenes de compra, proveedores y seguimiento.',
+                'url': reverse('compras:menu_compras'),
+                'icon': 'ri-shopping-cart-2-line',
+                'accent': 'compras',
+                'visible': user.has_perm('compras.view_ordencompra'),
+            },
+            {
+                'title': 'Inventario',
+                'description': 'Activos, categorías, ubicaciones y movimientos.',
+                'url': reverse('activos:menu_inventario'),
+                'icon': 'ri-building-line',
+                'accent': 'inventario',
+                'visible': user.has_perm('activos.view_activo'),
+            },
+            {
+                'title': 'Bajas',
+                'description': 'Expedientes, motivos y seguimiento de bajas.',
+                'url': reverse('bajas_inventario:menu_bajas'),
+                'icon': 'ri-delete-bin-6-line',
+                'accent': 'bajas',
+                'visible': user.has_perm('bajas_inventario.view_bajainventario'),
+            },
+            {
+                'title': 'Fotocopiadora',
+                'description': 'Trabajos, equipos y control del módulo.',
+                'url': reverse('fotocopiadora:menu_fotocopiadora'),
+                'icon': 'ri-file-copy-2-line',
+                'accent': 'fotocopiadora',
+                'visible': user.has_perm('fotocopiadora.view_trabajofotocopia'),
+            },
+            {
+                'title': 'Administración',
+                'description': 'Usuarios, organización y configuración institucional.',
+                'url': reverse('accounts:menu_administracion'),
+                'icon': 'ri-admin-line',
+                'accent': 'administracion',
+                'visible': any([
+                    user.has_perm('auth.view_user'),
+                    user.has_perm('accounts.manage_access_profiles'),
+                ]),
+            },
+            {
+                'title': 'Reportes',
+                'description': 'Consulta y generación de reportes disponibles.',
+                'url': reverse('reportes:seleccionar_reporte'),
+                'icon': 'ri-bar-chart-box-line',
+                'accent': 'reportes',
+                'visible': user.has_perm('reportes.view_reporte') or user.has_perm('accounts.export_sensitive_reports'),
+            },
+        ]
+        return [link for link in links if link['visible']]
+
+
 # ============================================================================
 # Dashboard Views (movidas desde core/views.py)
 # ============================================================================
 
-class DashboardView(LoginRequiredMixin, TemplateView):
+
+class DashboardAccessMixin(LoginRequiredMixin):
+    """Restringe el dashboard operativo a roles oficiales de gestión."""
+
+    def dispatch(self, request, *args, **kwargs):
+        if not can_view_operational_dashboard(request.user):
+            messages.info(
+                request,
+                'El dashboard operativo está reservado para roles de gestión y administración. Se muestra Inicio.'
+            )
+            return redirect('dashboard')
+        return super().dispatch(request, *args, **kwargs)
+
+
+class DashboardView(DashboardAccessMixin, TemplateView):
     """
     Vista del dashboard principal con datos reales del sistema.
     
@@ -298,8 +519,8 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         return context
 
-dashboard_view = DashboardView.as_view(template_name="index.html")
-dashboard_analytics_view = DashboardView.as_view(template_name="dashboard-analytics.html")
+dashboard_view = HomeView.as_view()
+dashboard_analytics_view = DashboardView.as_view(template_name="index.html")
 dashboard_crypto_view = DashboardView.as_view(template_name="dashboard-crypto.html")
 
 
