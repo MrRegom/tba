@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from decimal import Decimal
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
@@ -152,3 +153,457 @@ class TrabajoFotocopia(BaseModel):
             self.monto_total = Decimal(self.cantidad_copias) * self.precio_unitario
 
         super().save(*args, **kwargs)
+
+
+class PrintRequestType(models.TextChoices):
+    PHOTOCOPY = 'PHOTOCOPY', 'Fotocopia'
+    PRINT = 'PRINT', 'Impresion'
+    MIXED = 'MIXED', 'Mixto'
+
+
+class PrintRequestStatus(models.TextChoices):
+    DRAFT = 'DRAFT', 'Borrador'
+    PENDING_APPROVAL = 'PENDING_APPROVAL', 'Pendiente de aprobacion'
+    APPROVED = 'APPROVED', 'Aprobada'
+    REJECTED = 'REJECTED', 'Rechazada'
+    IN_PROGRESS = 'IN_PROGRESS', 'En preparacion'
+    READY_FOR_PICKUP = 'READY_FOR_PICKUP', 'Lista para retiro'
+    DELIVERED = 'DELIVERED', 'Entregada'
+    CLOSED = 'CLOSED', 'Cerrada'
+    CANCELLED = 'CANCELLED', 'Cancelada'
+
+
+class PrintPriority(models.TextChoices):
+    LOW = 'LOW', 'Baja'
+    NORMAL = 'NORMAL', 'Normal'
+    HIGH = 'HIGH', 'Alta'
+    URGENT = 'URGENT', 'Urgente'
+
+
+class PrintSourceMode(models.TextChoices):
+    TEACHER_PORTAL = 'TEACHER_PORTAL', 'Portal Docente'
+    OPERATOR_MANUAL = 'OPERATOR_MANUAL', 'Carga Manual Operadora'
+    MIGRATED_LEGACY = 'MIGRATED_LEGACY', 'Migrado Legacy'
+
+
+class PrintPageSize(models.TextChoices):
+    A4 = 'A4', 'A4'
+    A3 = 'A3', 'A3'
+    LETTER = 'LETTER', 'Carta'
+    LEGAL = 'LEGAL', 'Legal'
+    OFICIO = 'OFICIO', 'Oficio'
+
+
+class PrintSide(models.TextChoices):
+    SINGLE = 'SINGLE', 'Una Cara'
+    DOUBLE = 'DOUBLE', 'Doble Faz'
+
+
+class PrintColorMode(models.TextChoices):
+    BW = 'BW', 'Blanco y Negro'
+    COLOR = 'COLOR', 'Color'
+
+
+class PrintCommentType(models.TextChoices):
+    GENERAL = 'GENERAL', 'General'
+    APPROVAL = 'APPROVAL', 'Aprobacion'
+    OPERATION = 'OPERATION', 'Operacion'
+    DELIVERY = 'DELIVERY', 'Entrega'
+    INTERNAL = 'INTERNAL', 'Interno'
+
+
+class PrintMembershipRole(models.TextChoices):
+    REQUESTER = 'REQUESTER', 'Solicitante'
+    APPROVER = 'APPROVER', 'Aprobador'
+    OPERATOR = 'OPERATOR', 'Operador'
+    ADMIN = 'ADMIN', 'Administrador'
+    AUDITOR = 'AUDITOR', 'Auditor'
+
+
+class PrintCostCenter(BaseModel):
+    codigo = models.CharField(max_length=30, unique=True, verbose_name='Codigo')
+    nombre = models.CharField(max_length=120, verbose_name='Nombre')
+    departamento = models.ForeignKey(
+        Departamento,
+        on_delete=models.PROTECT,
+        related_name='centros_costo_impresion',
+        null=True,
+        blank=True,
+        verbose_name='Departamento',
+    )
+    area = models.ForeignKey(
+        Area,
+        on_delete=models.PROTECT,
+        related_name='centros_costo_impresion',
+        null=True,
+        blank=True,
+        verbose_name='Area',
+    )
+    monthly_copy_quota = models.PositiveIntegerField(default=0, verbose_name='Cuota mensual de copias')
+    monthly_color_quota = models.PositiveIntegerField(default=0, verbose_name='Cuota mensual de color')
+
+    class Meta:
+        db_table = 'tba_print_cost_center'
+        verbose_name = 'Centro de costo de impresion'
+        verbose_name_plural = 'Centros de costo de impresion'
+        ordering = ['codigo']
+
+    def __str__(self) -> str:
+        return f'{self.codigo} - {self.nombre}'
+
+
+class PrintRoleMembership(BaseModel):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='print_role_memberships',
+        verbose_name='Usuario',
+    )
+    role = models.CharField(max_length=30, choices=PrintMembershipRole.choices, verbose_name='Rol')
+    departamento = models.ForeignKey(
+        Departamento,
+        on_delete=models.PROTECT,
+        related_name='print_role_memberships',
+        null=True,
+        blank=True,
+        verbose_name='Departamento',
+    )
+    area = models.ForeignKey(
+        Area,
+        on_delete=models.PROTECT,
+        related_name='print_role_memberships',
+        null=True,
+        blank=True,
+        verbose_name='Area',
+    )
+    equipo = models.ForeignKey(
+        FotocopiadoraEquipo,
+        on_delete=models.PROTECT,
+        related_name='print_role_memberships',
+        null=True,
+        blank=True,
+        verbose_name='Equipo',
+    )
+    is_primary = models.BooleanField(default=False, verbose_name='Es principal')
+
+    class Meta:
+        db_table = 'tba_print_role_membership'
+        verbose_name = 'Membresia de rol de impresion'
+        verbose_name_plural = 'Membresias de rol de impresion'
+        indexes = [
+            models.Index(fields=['user', 'role']),
+            models.Index(fields=['departamento', 'role']),
+            models.Index(fields=['area', 'role']),
+            models.Index(fields=['equipo', 'role']),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'role', 'departamento', 'area', 'equipo'],
+                name='uniq_print_role_membership_scope',
+            )
+        ]
+
+    def __str__(self) -> str:
+        scope = self.area or self.departamento or self.equipo or 'Global'
+        return f'{self.user} - {self.get_role_display()} - {scope}'
+
+    def clean(self) -> None:
+        if self.role == PrintMembershipRole.APPROVER and not (self.departamento_id or self.area_id):
+            raise ValidationError('Un aprobador debe quedar asociado a un departamento o area.')
+
+
+class PrintRequest(BaseModel):
+    numero = models.CharField(max_length=30, unique=True, db_index=True, verbose_name='Numero')
+    title = models.CharField(max_length=180, verbose_name='Titulo')
+    description = models.TextField(blank=True, verbose_name='Descripcion')
+    request_type = models.CharField(
+        max_length=20,
+        choices=PrintRequestType.choices,
+        default=PrintRequestType.PHOTOCOPY,
+        verbose_name='Tipo de solicitud',
+    )
+    status = models.CharField(
+        max_length=30,
+        choices=PrintRequestStatus.choices,
+        default=PrintRequestStatus.DRAFT,
+        db_index=True,
+        verbose_name='Estado',
+    )
+    priority = models.CharField(
+        max_length=20,
+        choices=PrintPriority.choices,
+        default=PrintPriority.NORMAL,
+        db_index=True,
+        verbose_name='Prioridad',
+    )
+    required_at = models.DateTimeField(db_index=True, verbose_name='Fecha requerida')
+    submitted_at = models.DateTimeField(null=True, blank=True, verbose_name='Fecha de envio')
+    approved_at = models.DateTimeField(null=True, blank=True, verbose_name='Fecha de aprobacion')
+    rejected_at = models.DateTimeField(null=True, blank=True, verbose_name='Fecha de rechazo')
+    started_at = models.DateTimeField(null=True, blank=True, verbose_name='Fecha inicio operacion')
+    ready_at = models.DateTimeField(null=True, blank=True, verbose_name='Fecha listo para retiro')
+    delivered_at = models.DateTimeField(null=True, blank=True, verbose_name='Fecha de entrega')
+    closed_at = models.DateTimeField(null=True, blank=True, verbose_name='Fecha de cierre')
+    cancelled_at = models.DateTimeField(null=True, blank=True, verbose_name='Fecha de cancelacion')
+    requester = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name='print_requests_created',
+        verbose_name='Solicitante',
+    )
+    approver = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name='print_requests_approved',
+        null=True,
+        blank=True,
+        verbose_name='Aprobador',
+    )
+    operator = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name='print_requests_operated',
+        null=True,
+        blank=True,
+        verbose_name='Operador',
+    )
+    departamento = models.ForeignKey(
+        Departamento,
+        on_delete=models.PROTECT,
+        related_name='print_requests',
+        null=True,
+        blank=True,
+        verbose_name='Departamento',
+    )
+    area = models.ForeignKey(
+        Area,
+        on_delete=models.PROTECT,
+        related_name='print_requests',
+        null=True,
+        blank=True,
+        verbose_name='Area',
+    )
+    equipo = models.ForeignKey(
+        FotocopiadoraEquipo,
+        on_delete=models.PROTECT,
+        related_name='print_requests',
+        null=True,
+        blank=True,
+        verbose_name='Equipo asignado',
+    )
+    cost_center = models.ForeignKey(
+        PrintCostCenter,
+        on_delete=models.PROTECT,
+        related_name='print_requests',
+        null=True,
+        blank=True,
+        verbose_name='Centro de costo',
+    )
+    approval_comment = models.TextField(blank=True, verbose_name='Observacion de aprobacion')
+    rejection_reason = models.TextField(blank=True, verbose_name='Motivo de rechazo')
+    operator_comment = models.TextField(blank=True, verbose_name='Observacion operativa')
+    delivery_comment = models.TextField(blank=True, verbose_name='Observacion de entrega')
+    is_partial_approval = models.BooleanField(default=False, verbose_name='Aprobacion parcial')
+    source_mode = models.CharField(
+        max_length=20,
+        choices=PrintSourceMode.choices,
+        default=PrintSourceMode.TEACHER_PORTAL,
+        db_index=True,
+        verbose_name='Origen',
+    )
+
+    class Meta:
+        db_table = 'tba_print_request'
+        verbose_name = 'Solicitud de impresion'
+        verbose_name_plural = 'Solicitudes de impresion'
+        ordering = ['-fecha_creacion', '-required_at']
+        indexes = [
+            models.Index(fields=['status', 'required_at']),
+            models.Index(fields=['requester', 'status']),
+            models.Index(fields=['departamento', 'status']),
+            models.Index(fields=['area', 'status']),
+            models.Index(fields=['operator', 'status']),
+            models.Index(fields=['approver', 'status']),
+            models.Index(fields=['source_mode', 'fecha_creacion']),
+        ]
+        permissions = [
+            ('submit_printrequest', 'Puede enviar solicitudes de impresion'),
+            ('approve_printrequest', 'Puede aprobar solicitudes de impresion'),
+            ('reject_printrequest', 'Puede rechazar solicitudes de impresion'),
+            ('partial_approve_printrequest', 'Puede aprobar parcialmente solicitudes de impresion'),
+            ('operate_printrequest', 'Puede operar solicitudes de impresion'),
+            ('assign_operator_printrequest', 'Puede asignar operador a solicitudes de impresion'),
+            ('mark_ready_printrequest', 'Puede marcar solicitudes listas para retiro'),
+            ('deliver_printrequest', 'Puede marcar solicitudes entregadas'),
+            ('close_printrequest', 'Puede cerrar solicitudes de impresion'),
+            ('cancel_own_printrequest', 'Puede cancelar sus propias solicitudes de impresion'),
+            ('cancel_any_printrequest', 'Puede cancelar cualquier solicitud de impresion'),
+            ('reopen_printrequest', 'Puede reabrir solicitudes de impresion'),
+            ('view_all_printrequest', 'Puede ver todas las solicitudes de impresion'),
+            ('view_department_printrequest', 'Puede ver solicitudes de impresion de su ambito'),
+            ('view_operational_queue_printrequest', 'Puede ver la bandeja operativa de impresion'),
+            ('manage_print_settings', 'Puede gestionar configuracion del modulo de impresion'),
+            ('manage_print_cost_centers', 'Puede gestionar centros de costo y cuotas de impresion'),
+        ]
+
+    def __str__(self) -> str:
+        return f'{self.numero} - {self.title}'
+
+    def save(self, *args, **kwargs) -> None:
+        if not self.numero:
+            self.numero = generar_codigo_unico('PRN', PrintRequest, 'numero', longitud=10)
+        super().save(*args, **kwargs)
+
+    def clean(self) -> None:
+        errors = {}
+        if self.area_id and self.departamento_id and self.area and self.area.departamento_id != self.departamento_id:
+            errors['area'] = 'El area seleccionada no pertenece al departamento indicado.'
+        if self.required_at and self.required_at <= timezone.now():
+            errors['required_at'] = 'La fecha requerida debe ser futura.'
+        if self.status in {
+            PrintRequestStatus.APPROVED,
+            PrintRequestStatus.IN_PROGRESS,
+            PrintRequestStatus.READY_FOR_PICKUP,
+            PrintRequestStatus.DELIVERED,
+            PrintRequestStatus.CLOSED,
+        } and not self.approver_id:
+            errors['approver'] = 'Una solicitud aprobada u operativa debe registrar aprobador.'
+        if self.status in {
+            PrintRequestStatus.IN_PROGRESS,
+            PrintRequestStatus.READY_FOR_PICKUP,
+            PrintRequestStatus.DELIVERED,
+            PrintRequestStatus.CLOSED,
+        } and not self.operator_id:
+            errors['operator'] = 'Una solicitud en operacion debe registrar operador.'
+        if self.status == PrintRequestStatus.REJECTED and not self.rejection_reason:
+            errors['rejection_reason'] = 'Debe registrar motivo de rechazo.'
+        if errors:
+            raise ValidationError(errors)
+
+
+class PrintRequestItem(BaseModel):
+    request = models.ForeignKey(
+        PrintRequest,
+        on_delete=models.CASCADE,
+        related_name='items',
+        verbose_name='Solicitud',
+    )
+    line_number = models.PositiveIntegerField(verbose_name='Linea')
+    document_title = models.CharField(max_length=180, verbose_name='Documento')
+    page_size = models.CharField(max_length=10, choices=PrintPageSize.choices, default=PrintPageSize.A4)
+    print_side = models.CharField(max_length=20, choices=PrintSide.choices, default=PrintSide.SINGLE)
+    color_mode = models.CharField(max_length=20, choices=PrintColorMode.choices, default=PrintColorMode.BW)
+    copy_count_requested = models.PositiveIntegerField(validators=[MinValueValidator(1)], verbose_name='Cantidad solicitada')
+    copy_count_approved = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1)],
+        verbose_name='Cantidad aprobada',
+    )
+    original_page_count = models.PositiveIntegerField(validators=[MinValueValidator(1)], verbose_name='Cantidad de paginas originales')
+    stapled = models.BooleanField(default=False, verbose_name='Corcheteado')
+    collated = models.BooleanField(default=False, verbose_name='Ordenado')
+    notes = models.TextField(blank=True, verbose_name='Notas')
+
+    class Meta:
+        db_table = 'tba_print_request_item'
+        verbose_name = 'Detalle de solicitud de impresion'
+        verbose_name_plural = 'Detalles de solicitud de impresion'
+        ordering = ['line_number']
+        constraints = [
+            models.UniqueConstraint(fields=['request', 'line_number'], name='uniq_print_request_item_line'),
+        ]
+        indexes = [
+            models.Index(fields=['request', 'line_number']),
+        ]
+
+    def __str__(self) -> str:
+        return f'{self.request.numero} - {self.document_title}'
+
+    def clean(self) -> None:
+        errors = {}
+        if self.copy_count_approved and self.copy_count_approved > self.copy_count_requested:
+            errors['copy_count_approved'] = 'La cantidad aprobada no puede superar la solicitada.'
+        if errors:
+            raise ValidationError(errors)
+
+
+class PrintRequestStatusHistory(BaseModel):
+    request = models.ForeignKey(
+        PrintRequest,
+        on_delete=models.CASCADE,
+        related_name='status_history',
+        verbose_name='Solicitud',
+    )
+    from_status = models.CharField(max_length=30, blank=True, verbose_name='Estado origen')
+    to_status = models.CharField(max_length=30, choices=PrintRequestStatus.choices, db_index=True, verbose_name='Estado destino')
+    action = models.CharField(max_length=40, db_index=True, verbose_name='Accion')
+    performed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        verbose_name='Realizado por',
+    )
+    performed_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name='Fecha')
+    comment = models.TextField(blank=True, verbose_name='Comentario')
+    payload = models.JSONField(default=dict, blank=True, verbose_name='Payload')
+
+    class Meta:
+        db_table = 'tba_print_request_status_history'
+        verbose_name = 'Historial de estado de impresion'
+        verbose_name_plural = 'Historial de estados de impresion'
+        ordering = ['-performed_at', '-id']
+        indexes = [
+            models.Index(fields=['request', 'performed_at']),
+            models.Index(fields=['performed_by', 'performed_at']),
+        ]
+
+
+class PrintRequestComment(BaseModel):
+    request = models.ForeignKey(
+        PrintRequest,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Solicitud',
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name='print_request_comments',
+        verbose_name='Autor',
+    )
+    comment_type = models.CharField(max_length=20, choices=PrintCommentType.choices, default=PrintCommentType.GENERAL)
+    body = models.TextField(verbose_name='Comentario')
+    is_internal = models.BooleanField(default=False, verbose_name='Interno')
+
+    class Meta:
+        db_table = 'tba_print_request_comment'
+        verbose_name = 'Comentario de solicitud de impresion'
+        verbose_name_plural = 'Comentarios de solicitudes de impresion'
+        ordering = ['fecha_creacion', 'id']
+
+
+class PrintRequestAttachment(BaseModel):
+    request = models.ForeignKey(
+        PrintRequest,
+        on_delete=models.CASCADE,
+        related_name='attachments',
+        verbose_name='Solicitud',
+    )
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name='print_request_attachments',
+        verbose_name='Subido por',
+    )
+    file = models.FileField(upload_to='fotocopiadora/requests/%Y/%m/', verbose_name='Archivo')
+    original_name = models.CharField(max_length=255, verbose_name='Nombre original')
+    mime_type = models.CharField(max_length=120, blank=True, verbose_name='Tipo MIME')
+    size_bytes = models.PositiveBigIntegerField(default=0, verbose_name='Tamano en bytes')
+
+    class Meta:
+        db_table = 'tba_print_request_attachment'
+        verbose_name = 'Adjunto de solicitud de impresion'
+        verbose_name_plural = 'Adjuntos de solicitudes de impresion'
+        ordering = ['fecha_creacion', 'id']

@@ -1,0 +1,21 @@
+{% if status == 'DRAFT' %}
+<span class="badge bg-secondary">Borrador</span>
+{% elif status == 'PENDING_APPROVAL' %}
+<span class="badge bg-warning text-dark">Pendiente</span>
+{% elif status == 'APPROVED' %}
+<span class="badge bg-primary">Aprobada</span>
+{% elif status == 'REJECTED' %}
+<span class="badge bg-danger">Rechazada</span>
+{% elif status == 'IN_PROGRESS' %}
+<span class="badge bg-info text-dark">En preparación</span>
+{% elif status == 'READY_FOR_PICKUP' %}
+<span class="badge bg-success-subtle text-success">Lista para retiro</span>
+{% elif status == 'DELIVERED' %}
+<span class="badge bg-success">Entregada</span>
+{% elif status == 'CLOSED' %}
+<span class="badge bg-dark">Cerrada</span>
+{% elif status == 'CANCELLED' %}
+<span class="badge bg-secondary-subtle text-secondary">Cancelada</span>
+{% else %}
+<span class="badge bg-light text-dark">{{ status }}</span>
+{% endif %}

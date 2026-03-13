@@ -3,11 +3,18 @@ from __future__ import annotations
 from decimal import Decimal
 
 from django import forms
-from django.core.exceptions import ValidationError
+from django.forms import BaseInlineFormSet, inlineformset_factory
+from django.utils import timezone
 
 from apps.solicitudes.models import Area, Departamento
 from core.utils import validar_rut, format_rut
-from .models import FotocopiadoraEquipo, TrabajoFotocopia
+from .models import (
+    FotocopiadoraEquipo,
+    PrintRequest,
+    PrintRequestAttachment,
+    PrintRequestItem,
+    TrabajoFotocopia,
+)
 
 
 class FotocopiadoraEquipoForm(forms.ModelForm):
@@ -125,3 +132,159 @@ class FiltroTrabajoFotocopiaForm(forms.Form):
         required=False,
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'RUT'}),
     )
+
+
+class PrintRequestForm(forms.ModelForm):
+    class Meta:
+        model = PrintRequest
+        fields = ['title', 'description', 'request_type', 'priority', 'required_at', 'departamento', 'area']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: Prueba de Historia 7B'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Detalle breve del material a preparar'}),
+            'request_type': forms.Select(attrs={'class': 'form-select'}),
+            'priority': forms.Select(attrs={'class': 'form-select'}),
+            'required_at': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+            'departamento': forms.Select(attrs={'class': 'form-select'}),
+            'area': forms.Select(attrs={'class': 'form-select'}),
+        }
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+        self.fields['departamento'].queryset = Departamento.objects.filter(activo=True, eliminado=False).order_by('codigo')
+        self.fields['area'].queryset = Area.objects.filter(activo=True, eliminado=False).order_by('codigo')
+
+    def clean_required_at(self):
+        value = self.cleaned_data['required_at']
+        if value <= timezone.now():
+            raise forms.ValidationError('La fecha requerida debe ser futura.')
+        return value
+
+
+class PrintRequestItemForm(forms.ModelForm):
+    class Meta:
+        model = PrintRequestItem
+        fields = [
+            'document_title',
+            'page_size',
+            'print_side',
+            'color_mode',
+            'copy_count_requested',
+            'original_page_count',
+            'stapled',
+            'collated',
+            'notes',
+        ]
+        widgets = {
+            'document_title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Documento o guia'}),
+            'page_size': forms.Select(attrs={'class': 'form-select'}),
+            'print_side': forms.Select(attrs={'class': 'form-select'}),
+            'color_mode': forms.Select(attrs={'class': 'form-select'}),
+            'copy_count_requested': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
+            'original_page_count': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
+            'stapled': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'collated': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+        }
+
+
+class BasePrintRequestItemFormSet(BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+        active_forms = [
+            form for form in self.forms
+            if form.cleaned_data and not form.cleaned_data.get('DELETE', False)
+        ]
+        if not active_forms:
+            raise forms.ValidationError('Debe ingresar al menos un detalle de impresión.')
+
+
+PrintRequestItemFormSet = inlineformset_factory(
+    PrintRequest,
+    PrintRequestItem,
+    form=PrintRequestItemForm,
+    formset=BasePrintRequestItemFormSet,
+    extra=1,
+    can_delete=True,
+)
+
+
+class PrintRequestApprovalForm(forms.Form):
+    comment = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Observaciones de aprobacion o rechazo'}),
+        label='Observacion',
+    )
+
+    def __init__(self, *args, request_obj: PrintRequest, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.request_obj = request_obj
+        for item in request_obj.items.all():
+            self.fields[f'item_{item.pk}_approved'] = forms.IntegerField(
+                required=False,
+                min_value=1,
+                initial=item.copy_count_approved or item.copy_count_requested,
+                label=f'Cantidad aprobada para {item.document_title}',
+                widget=forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
+            )
+
+    def clean(self):
+        cleaned = super().clean()
+        for item in self.request_obj.items.all():
+            field_name = f'item_{item.pk}_approved'
+            approved_qty = cleaned.get(field_name)
+            if approved_qty is None:
+                continue
+            if approved_qty > item.copy_count_requested:
+                self.add_error(field_name, 'La cantidad aprobada no puede superar la solicitada.')
+        return cleaned
+
+    def apply(self):
+        partial = False
+        for item in self.request_obj.items.all():
+            field_name = f'item_{item.pk}_approved'
+            approved_qty = self.cleaned_data.get(field_name)
+            if approved_qty is None:
+                approved_qty = item.copy_count_requested
+            item.copy_count_approved = approved_qty
+            if approved_qty < item.copy_count_requested:
+                partial = True
+            item.save(update_fields=['copy_count_approved', 'fecha_actualizacion'])
+        self.request_obj.is_partial_approval = partial
+        self.request_obj.save(update_fields=['is_partial_approval', 'fecha_actualizacion'])
+        return partial
+
+
+class PrintRequestTransitionCommentForm(forms.Form):
+    comment = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Comentario opcional'}),
+        label='Comentario',
+    )
+
+
+class PrintRequestAttachmentForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['file'].required = False
+
+    class Meta:
+        model = PrintRequestAttachment
+        fields = ['file']
+        widgets = {
+            'file': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+        }
+
+    def clean_file(self):
+        file = self.cleaned_data.get('file')
+        if not file:
+            return file
+        allowed_extensions = {'.pdf', '.docx', '.xlsx', '.pptx', '.jpg', '.jpeg', '.png'}
+        extension = ''
+        if hasattr(file, 'name') and '.' in file.name:
+            extension = file.name[file.name.rfind('.'):].lower()
+        if extension not in allowed_extensions:
+            raise forms.ValidationError('Tipo de archivo no permitido.')
+        if hasattr(file, 'size') and file.size > 10 * 1024 * 1024:
+            raise forms.ValidationError('El archivo excede el tamano maximo permitido de 10 MB.')
+        return file
