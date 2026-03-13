@@ -452,6 +452,7 @@ class UserPasswordChangeForm(forms.Form):
 # ========== FORMULARIOS DE GESTIÓN DE GRUPOS/ROLES ==========
 
 from django.contrib.auth.models import Group, Permission
+from .role_catalog import get_official_role_names
 
 class GroupForm(forms.ModelForm):
     """Formulario para crear/editar grupos (roles)."""
@@ -493,7 +494,7 @@ class GroupPermissionsForm(forms.ModelForm):
 class UserGroupsForm(forms.ModelForm):
     """Formulario para asignar grupos a un usuario."""
     groups = forms.ModelMultipleChoiceField(
-        queryset=Group.objects.all(),
+        queryset=Group.objects.none(),
         widget=forms.CheckboxSelectMultiple,
         required=False,
         label='Roles/Grupos'
@@ -502,6 +503,14 @@ class UserGroupsForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['groups']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        official_names = get_official_role_names()
+        official_groups = list(Group.objects.filter(name__in=official_names))
+        official_groups.sort(key=lambda group: official_names.index(group.name))
+        ordered_ids = [group.id for group in official_groups]
+        self.fields['groups'].queryset = Group.objects.filter(id__in=ordered_ids)
 
 
 class UserPermissionsForm(forms.ModelForm):
@@ -1002,4 +1011,3 @@ class UserCargoForm(forms.ModelForm):
             })
         
         return cleaned_data
-
