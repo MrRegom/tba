@@ -12,6 +12,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMix
 from django.db import transaction
 from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse
+from django.core.exceptions import PermissionDenied
 from core.utils import registrar_log_auditoria
 
 
@@ -171,6 +172,21 @@ class BaseAuditedViewMixin(
     - Mensajes de éxito
     """
     pass
+
+
+class ScopedObjectPermissionMixin:
+    """
+    Agrega autorización por objeto a CBVs de detalle/edición.
+    """
+
+    def has_object_permission(self, obj: Any) -> bool:
+        raise NotImplementedError('Debe implementar has_object_permission().')
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)
+        if not self.has_object_permission(obj):
+            raise PermissionDenied('No tiene permisos para acceder a este registro.')
+        return obj
 
 
 class PaginatedListMixin:
