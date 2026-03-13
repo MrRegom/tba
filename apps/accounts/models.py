@@ -294,6 +294,113 @@ class UserCargo(BaseModel):
         return self.fecha_fin is None
 
 
+class AccessScope(models.TextChoices):
+    """
+    Niveles de visualización/alcance para los datos operativos.
+
+    El rol funcional vive en los grupos de Django. Este enum define
+    el alcance de los datos que dicho rol puede consultar u operar.
+    """
+    GLOBAL = 'GLOBAL', 'Global'
+    DEPARTAMENTO = 'DEPARTAMENTO', 'Departamento'
+    AREA = 'AREA', 'Area'
+    BODEGA = 'BODEGA', 'Bodega'
+    OWN = 'OWN', 'Propio'
+
+
+class UserAccessProfile(BaseModel):
+    """
+    Perfil complementario de autorización por ámbito.
+
+    Se usa junto a Groups/Permissions para separar:
+    - rol funcional
+    - alcance de visualización y operación
+    - excepciones controladas de aprobación/administración
+    """
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='access_profile',
+        verbose_name='Usuario',
+    )
+    scope_level = models.CharField(
+        max_length=20,
+        choices=AccessScope.choices,
+        default=AccessScope.OWN,
+        verbose_name='Nivel de alcance',
+        help_text='Define si el usuario ve todo, su departamento, su área, su bodega o solo lo propio.',
+    )
+    departamento = models.ForeignKey(
+        'solicitudes.Departamento',
+        on_delete=models.PROTECT,
+        related_name='usuarios_con_acceso',
+        verbose_name='Departamento de alcance',
+        blank=True,
+        null=True,
+    )
+    area = models.ForeignKey(
+        'solicitudes.Area',
+        on_delete=models.PROTECT,
+        related_name='usuarios_con_acceso',
+        verbose_name='Area de alcance',
+        blank=True,
+        null=True,
+    )
+    bodega = models.ForeignKey(
+        'bodega.Bodega',
+        on_delete=models.PROTECT,
+        related_name='usuarios_con_acceso',
+        verbose_name='Bodega de alcance',
+        blank=True,
+        null=True,
+    )
+    puede_aprobar_propias = models.BooleanField(
+        default=False,
+        verbose_name='Puede aprobar propias',
+        help_text='Excepción de alto riesgo. Mantener en False salvo caso formalmente aprobado.',
+    )
+    puede_administrar_autorizacion = models.BooleanField(
+        default=False,
+        verbose_name='Puede administrar autorización',
+        help_text='Permite gestionar roles oficiales y perfiles de acceso.',
+    )
+
+    class Meta:
+        db_table = 'tba_user_access_profile'
+        verbose_name = 'Perfil de acceso'
+        verbose_name_plural = 'Perfiles de acceso'
+        indexes = [
+            models.Index(fields=['user']),
+            models.Index(fields=['scope_level']),
+            models.Index(fields=['departamento']),
+            models.Index(fields=['area']),
+            models.Index(fields=['bodega']),
+            models.Index(fields=['activo', 'eliminado']),
+        ]
+        permissions = [
+            ('manage_access_profiles', 'Puede administrar perfiles de acceso'),
+            ('view_all_auditoria', 'Puede ver auditoría global'),
+            ('export_sensitive_reports', 'Puede exportar reportes sensibles'),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.get_scope_level_display()}"
+
+    def clean(self):
+        """
+        Fuerza consistencia mínima entre el nivel de alcance y sus referencias.
+        """
+        from django.core.exceptions import ValidationError
+
+        if self.scope_level == AccessScope.DEPARTAMENTO and not self.departamento_id:
+            raise ValidationError({'departamento': 'Debe asignar un departamento para este alcance.'})
+        if self.scope_level == AccessScope.AREA and not self.area_id:
+            raise ValidationError({'area': 'Debe asignar un área para este alcance.'})
+        if self.scope_level == AccessScope.BODEGA and not self.bodega_id:
+            raise ValidationError({'bodega': 'Debe asignar una bodega para este alcance.'})
+
+
 class UserSecure(BaseModel):
     """
     Gestión de seguridad del usuario: PIN y control de intentos fallidos.
