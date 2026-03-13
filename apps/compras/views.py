@@ -20,7 +20,14 @@ from django.core.exceptions import ValidationError
 from decimal import Decimal
 from core.mixins import (
     BaseAuditedViewMixin, AtomicTransactionMixin, SoftDeleteMixin,
+    ScopedObjectPermissionMixin,
     PaginatedListMixin, FilteredListMixin
+)
+from core.authz import (
+    can_approve_purchase,
+    can_view_orden_compra,
+    scope_ordenes_compra_for_user,
+    scope_solicitudes_for_user,
 )
 from .models import (
     Proveedor, OrdenCompra, DetalleOrdenCompraArticulo, DetalleOrdenCompra,
@@ -316,7 +323,7 @@ class OrdenCompraListView(BaseAuditedViewMixin, PaginatedListMixin, FilteredList
     def get_queryset(self) -> QuerySet:
         """Retorna órdenes usando repository con filtros."""
         orden_repo = OrdenCompraRepository()
-        queryset = orden_repo.get_all()
+        queryset = scope_ordenes_compra_for_user(orden_repo.get_all(), self.request.user)
 
         # Aplicar filtros del formulario
         form = self.filter_form_class(self.request.GET)
@@ -345,7 +352,7 @@ class OrdenCompraListView(BaseAuditedViewMixin, PaginatedListMixin, FilteredList
         return context
 
 
-class OrdenCompraDetailView(BaseAuditedViewMixin, DetailView):
+class OrdenCompraDetailView(ScopedObjectPermissionMixin, BaseAuditedViewMixin, DetailView):
     """
     Vista para ver el detalle de una orden de compra.
 
@@ -358,9 +365,15 @@ class OrdenCompraDetailView(BaseAuditedViewMixin, DetailView):
 
     def get_queryset(self) -> QuerySet:
         """Optimiza consultas con select_related."""
-        return super().get_queryset().select_related(
+        return scope_ordenes_compra_for_user(
+            super().get_queryset().select_related(
             'proveedor', 'estado', 'solicitante', 'aprobador', 'bodega_destino'
+            ),
+            self.request.user
         )
+
+    def has_object_permission(self, obj) -> bool:
+        return can_view_orden_compra(self.request.user, obj)
 
     def get_context_data(self, **kwargs) -> dict:
         """Agrega detalles al contexto."""
@@ -780,10 +793,10 @@ class OrdenCompraDeleteView(BaseAuditedViewMixin, DeleteView):
 class CambiarEstadoOrdenCompraView(BaseAuditedViewMixin, View):
     """
     Cambia el estado de una Orden de Compra vía POST (soporta AJAX).
-    Permisos: compras.change_ordencompra
+    Permisos: compras.aprobar_ordencompra / compras.rechazar_ordencompra
     Transiciones: PENDIENTE → APROBADA | RECHAZAR, APROBADA → PENDIENTE | RECHAZAR
     """
-    permission_required = 'compras.change_ordencompra'
+    permission_required = 'compras.view_ordencompra'
 
     TRANSICIONES_VALIDAS = {
         'PENDIENTE': ['APROBADA', 'RECHAZAR'],
@@ -801,6 +814,12 @@ class CambiarEstadoOrdenCompraView(BaseAuditedViewMixin, View):
             if self._is_ajax():
                 return JsonResponse({'success': False, 'error': 'Orden no encontrada.'}, status=404)
             messages.error(request, 'Orden no encontrada.')
+            return redirect('compras:orden_compra_lista')
+
+        if not can_view_orden_compra(request.user, orden):
+            if self._is_ajax():
+                return JsonResponse({'success': False, 'error': 'No autorizado para operar esta orden.'}, status=403)
+            messages.error(request, 'No autorizado para operar esta orden.')
             return redirect('compras:orden_compra_lista')
 
         nuevo_codigo = request.POST.get('estado_codigo', '').strip().upper()
@@ -822,9 +841,26 @@ class CambiarEstadoOrdenCompraView(BaseAuditedViewMixin, View):
             messages.error(request, msg)
             return redirect('compras:orden_compra_lista')
 
+        if nuevo_codigo == 'APROBADA' and not can_approve_purchase(request.user, orden):
+            msg = 'No tiene permisos para aprobar esta orden de compra.'
+            if self._is_ajax():
+                return JsonResponse({'success': False, 'error': msg}, status=403)
+            messages.error(request, msg)
+            return redirect('compras:orden_compra_lista')
+        if nuevo_codigo == 'RECHAZAR' and not request.user.has_perm('compras.rechazar_ordencompra'):
+            msg = 'No tiene permisos para rechazar esta orden de compra.'
+            if self._is_ajax():
+                return JsonResponse({'success': False, 'error': msg}, status=403)
+            messages.error(request, msg)
+            return redirect('compras:orden_compra_lista')
+
         estado_anterior_nombre = orden.estado.nombre
         orden.estado = nuevo_estado
-        orden.save(update_fields=['estado'])
+        if nuevo_codigo == 'APROBADA':
+            orden.aprobador = request.user
+            orden.save(update_fields=['estado', 'aprobador'])
+        else:
+            orden.save(update_fields=['estado'])
 
         msg = f'Orden {orden.numero} cambiada a "{nuevo_estado.nombre}".'
         messages.success(request, msg)
@@ -842,11 +878,12 @@ class CambiarEstadoOrdenCompraView(BaseAuditedViewMixin, View):
         return redirect('compras:orden_compra_lista')
 
 
-class ObtenerDetallesSolicitudesView(View):
+class ObtenerDetallesSolicitudesView(BaseAuditedViewMixin, View):
     """
     Vista AJAX para obtener los detalles de solicitudes seleccionadas.
     Retorna JSON con los artículos/activos de las solicitudes.
     """
+    permission_required = 'solicitudes.view_solicitud'
 
     def get(self, request, *args, **kwargs):
         """Retorna los detalles de las solicitudes en formato JSON."""
@@ -860,9 +897,13 @@ class ObtenerDetallesSolicitudesView(View):
 
         detalles_data = []
 
-        for solicitud_id in solicitud_ids:
+        solicitudes_visibles = scope_solicitudes_for_user(
+            Solicitud.objects.filter(id__in=solicitud_ids, eliminado=False),
+            request.user
+        )
+
+        for solicitud in solicitudes_visibles:
             try:
-                solicitud = Solicitud.objects.get(id=solicitud_id, eliminado=False)
                 # Obtener detalles con cantidad aprobada o solicitada > 0
                 detalles = solicitud.detalles.filter(eliminado=False)
 
