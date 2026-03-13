@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 from django.db import transaction
 from apps.accounts.models import UserSecure, AuditoriaPin, Persona
 from .forms import ProfileForm, UserPINForm
+from .manual_profiles import resolve_manual_profiles
 
 # Create your views here.
 
@@ -42,7 +43,26 @@ pages_coming_soon= pagesview.as_view(template_name = "pages/pages-coming-soon.ht
 pages_privacy_policy= pagesview.as_view(template_name = "pages/pages-privacy-policy.html")
 pages_term_conditions= pagesview.as_view(template_name = "pages/pages-term-conditions.html")
 pages_web_apps = pagesview.as_view(template_name = "pages/pages-web-apps.html")
-pages_manual = pagesview.as_view(template_name = "pages/manual-usuario.html")
+
+
+class ManualUsuarioView(LoginRequiredMixin, TemplateView):
+    template_name = "pages/manual-usuario.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        group_names = list(
+            self.request.user.groups.values_list('name', flat=True)
+        )
+        manual_profiles = resolve_manual_profiles(group_names)
+
+        context['manual_profiles'] = manual_profiles
+        context['manual_profile_keys'] = [profile['key'] for profile in manual_profiles]
+        context['manual_default_profile'] = manual_profiles[0]['key'] if len(manual_profiles) == 1 else 'todos'
+        context['manual_has_role_filter'] = bool(manual_profiles)
+        return context
+
+
+pages_manual = ManualUsuarioView.as_view()
 
 
 # ============================================================================
@@ -457,4 +477,3 @@ class ProfileView(LoginRequiredMixin, TemplateView):
 
 # Vista de profile usando la nueva clase funcional
 pages_profile = ProfileView.as_view()
-
