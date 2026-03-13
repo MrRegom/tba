@@ -1,37 +1,259 @@
-﻿{% extends 'partials/base.html' %}
+{% extends 'partials/base.html' %}
 {% load static %}
 
 {% block title %}{{ titulo }}{% endblock %}
 
 {% block content %}
-        <div class="row">
-            <div class="col-12">
-                <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                    <h4 class="mb-sm-0">{{ titulo }}</h4>
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <div>
+                <h4 class="mb-sm-0">{{ titulo }}</h4>
+                <p class="text-muted mb-0">Asigne roles oficiales por categoría y use el buscador para localizar un rol rápido.</p>
+            </div>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard_analytics' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'accounts:menu_usuarios' %}">Usuarios</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'accounts:lista_usuarios' %}">Tabla</a></li>
+                    <li class="breadcrumb-item active">Roles</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm role-hero-card">
+                <div class="card-body p-4">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-xl-6">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="role-avatar">
+                                    {{ usuario_detalle.username|slice:":2"|upper }}
+                                </div>
+                                <div>
+                                    <h5 class="mb-1">{{ usuario_detalle.get_full_name|default:usuario_detalle.username }}</h5>
+                                    <div class="text-muted">
+                                        Usuario: <strong>{{ usuario_detalle.username }}</strong>
+                                        {% if usuario_detalle.email %} | {{ usuario_detalle.email }}{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6">
+                            <label for="roleSearch" class="form-label text-muted small text-uppercase mb-2">Buscar rol</label>
+                            <div class="search-box">
+                                <input type="text" class="form-control search" id="roleSearch" placeholder="Ej: bodega, compras, auditor...">
+                                <i class="ri-search-line search-icon"></i>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6">
+                            <div class="selection-indicator">
+                                <span class="selection-indicator-label">Seleccionados</span>
+                                <div class="selection-indicator-value" id="selectedRoleCount">{{ selected_group_ids|length }}</div>
+                                <small class="text-muted">roles activos para este usuario</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <form method="post">
-            {% csrf_token %}
-            <div class="row">
-                <div class="col-lg-8 offset-lg-2">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">Seleccione los Roles para: {{ usuario_detalle.username }}</h5>
-                        </div>
-                        <div class="card-body">
-                            {{ form.groups }}
+        <div class="col-12">
+            <div class="accordion role-accordion" id="rolesAccordion">
+                {% for categoria, roles in grouped_official_roles.items %}
+                <div class="accordion-item border-0 shadow-sm mb-3 role-category" data-category="{{ categoria|lower }}">
+                    <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+                        <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ forloop.counter }}">
+                            <span class="d-flex align-items-center justify-content-between w-100 me-3">
+                                <span>
+                                    <span class="fw-semibold">{{ categoria }}</span>
+                                    <small class="text-muted ms-2">{{ roles|length }} rol{{ roles|length|pluralize:"es" }}</small>
+                                </span>
+                                <span class="badge rounded-pill text-bg-light">{{ categoria }}</span>
+                            </span>
+                        </button>
+                    </h2>
+                    <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading{{ forloop.counter }}" data-bs-parent="#rolesAccordion">
+                        <div class="accordion-body">
+                            <div class="row g-3">
+                                {% for item in roles %}
+                                <div class="col-xl-4 col-lg-6 role-card-item" data-role-search="{{ item.group.name|lower }} {{ item.meta.description|default:''|lower }} {{ item.meta.scope|default:''|lower }} {{ categoria|lower }}">
+                                    <label class="card h-100 role-option {% if item.selected %}role-selected{% endif %}" for="role_{{ item.group.pk }}">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-start gap-3">
+                                                <div class="form-check mt-1">
+                                                    <input
+                                                        class="form-check-input role-checkbox"
+                                                        type="checkbox"
+                                                        name="groups"
+                                                        value="{{ item.group.pk }}"
+                                                        id="role_{{ item.group.pk }}"
+                                                        {% if item.selected %}checked{% endif %}
+                                                    >
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+                                                        <h5 class="fs-15 mb-0">{{ item.group.name }}</h5>
+                                                        <span class="badge bg-light text-dark">Ámbito: {{ item.meta.scope|default:"Definir" }}</span>
+                                                        {% if item.meta.can_approve %}
+                                                        <span class="badge role-badge-approve">Aprobación</span>
+                                                        {% else %}
+                                                        <span class="badge role-badge-execute">Ejecución</span>
+                                                        {% endif %}
+                                                    </div>
+                                                    <p class="text-muted mb-0">{{ item.meta.description }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
 
-                    <div class="text-end">
-                        <a href="{% url 'accounts:detalle_usuario' usuario_detalle.pk %}" class="btn btn-light">Cancelar</a>
-                        <button type="submit" class="btn btn-primary">Guardar</button>
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div class="text-muted">
+                        Después de asignar roles, complete el alcance del usuario con su perfil de acceso.
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'accounts:lista_usuarios' %}" class="btn btn-light">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Guardar Roles</button>
                     </div>
                 </div>
             </div>
-        </form>
+        </div>
     </div>
-</div>
+</form>
+
+<style>
+    .role-hero-card {
+        background:
+            radial-gradient(circle at top right, rgba(37, 99, 235, .12), transparent 28%),
+            linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+    }
+
+    .role-avatar {
+        width: 56px;
+        height: 56px;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #1d4ed8, #0f766e);
+        color: #fff;
+        font-weight: 700;
+        letter-spacing: .06em;
+    }
+
+    .selection-indicator {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: .85rem 1rem;
+        text-align: center;
+    }
+
+    .selection-indicator-label {
+        display: block;
+        font-size: .72rem;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        color: #64748b;
+        margin-bottom: .25rem;
+    }
+
+    .selection-indicator-value {
+        font-size: 1.9rem;
+        line-height: 1;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .role-option {
+        cursor: pointer;
+        border: 1px solid #e2e8f0;
+        transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+    }
+
+    .role-option:hover {
+        border-color: #3b82f6;
+        box-shadow: 0 .75rem 1.5rem rgba(15, 23, 42, .08);
+        transform: translateY(-2px);
+    }
+
+    .role-selected {
+        border-color: #2563eb;
+        box-shadow: 0 .75rem 1.75rem rgba(37, 99, 235, .10);
+        background: linear-gradient(180deg, rgba(239, 246, 255, .9), #fff);
+    }
+
+    .role-badge-approve {
+        background: rgba(22, 163, 74, .12);
+        color: #15803d;
+    }
+
+    .role-badge-execute {
+        background: rgba(37, 99, 235, .12);
+        color: #1d4ed8;
+    }
+
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('roleSearch');
+    const checkboxes = document.querySelectorAll('.role-checkbox');
+    const countNode = document.getElementById('selectedRoleCount');
+    const roleCards = document.querySelectorAll('.role-card-item');
+    const categoryBlocks = document.querySelectorAll('.role-category');
+
+    function updateSelectionState() {
+        let count = 0;
+        checkboxes.forEach((checkbox) => {
+            if (checkbox.checked) {
+                count += 1;
+            }
+            const card = checkbox.closest('.role-option');
+            if (card) {
+                card.classList.toggle('role-selected', checkbox.checked);
+            }
+        });
+        countNode.textContent = count;
+    }
+
+    function filterRoles() {
+        const query = (searchInput.value || '').trim().toLowerCase();
+
+        roleCards.forEach((item) => {
+            const haystack = item.dataset.roleSearch || '';
+            item.style.display = haystack.includes(query) ? '' : 'none';
+        });
+
+        categoryBlocks.forEach((block) => {
+            const visibleItems = block.querySelectorAll('.role-card-item:not([style*="display: none"])');
+            block.style.display = visibleItems.length ? '' : 'none';
+        });
+    }
+
+    checkboxes.forEach((checkbox) => {
+        checkbox.addEventListener('change', updateSelectionState);
+    });
+
+    searchInput.addEventListener('input', filterRoles);
+
+    updateSelectionState();
+});
+</script>
 {% endblock %}
