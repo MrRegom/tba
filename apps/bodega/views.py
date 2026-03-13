@@ -26,8 +26,10 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from core.mixins import (
     BaseAuditedViewMixin, AtomicTransactionMixin, SoftDeleteMixin,
+    ScopedObjectPermissionMixin,
     PaginatedListMixin, FilteredListMixin
 )
+from core.authz import can_view_articulo, scope_articulos_for_user
 from .models import (
     Bodega, UnidadMedida, Categoria, Marca, Articulo, Operacion,
     TipoMovimiento, Movimiento, TipoEntrega, EstadoEntrega,
@@ -92,7 +94,10 @@ class MenuBodegaView(LoginRequiredMixin, TemplateView):
         user = self.request.user
 
         # Querysets para cada tab
-        context['articulos'] = Articulo.objects.select_related('categoria', 'unidad_medida', 'marca').all()
+        context['articulos'] = scope_articulos_for_user(
+            Articulo.objects.select_related('categoria', 'unidad_medida', 'marca').all(),
+            user
+        )
         context['categorias'] = Categoria.objects.all()
         context['operaciones'] = Operacion.objects.all()
         context['tipos_movimiento'] = TipoMovimiento.objects.all()
@@ -112,7 +117,6 @@ class MenuBodegaView(LoginRequiredMixin, TemplateView):
             'puede_crear_estado_recepcion': user.has_perm('bodega.add_estadorecepcion'),
             'puede_crear_tipo_recepcion': user.has_perm('bodega.add_tiporecepcion'),
         }
-
         context['titulo'] = 'Gestores - Bodega'
         return context
 
@@ -423,10 +427,13 @@ class ArticuloListView(BaseAuditedViewMixin, PaginatedListMixin, ListView):
 
         Optimización N+1: Usa select_related para evitar queries adicionales.
         """
-        queryset = super().get_queryset().filter(
+        queryset = scope_articulos_for_user(
+            super().get_queryset().filter(
             eliminado=False
         ).select_related(
             'categoria', 'ubicacion_fisica'
+            ),
+            self.request.user
         )
 
         # Aplicar filtros del formulario
@@ -592,7 +599,7 @@ class ArticuloDeleteView(BaseAuditedViewMixin, SoftDeleteMixin, DeleteView):
         return context
 
 
-class ArticuloDetailView(BaseAuditedViewMixin, DetailView):
+class ArticuloDetailView(ScopedObjectPermissionMixin, BaseAuditedViewMixin, DetailView):
     """
     Vista para ver el detalle de un artículo con su historial de movimientos.
 
@@ -606,7 +613,10 @@ class ArticuloDetailView(BaseAuditedViewMixin, DetailView):
 
     def get_queryset(self) -> QuerySet[Articulo]:
         """Usa repository para consultas optimizadas."""
-        return ArticuloRepository().get_all()
+        return scope_articulos_for_user(ArticuloRepository().get_all(), self.request.user)
+
+    def has_object_permission(self, obj) -> bool:
+        return can_view_articulo(self.request.user, obj)
 
     def get_context_data(self, **kwargs) -> dict:
         """Agrega movimientos recientes usando MovimientoService."""
@@ -631,9 +641,12 @@ class ArticuloModalDetalle(LoginRequiredMixin, DetailView):
     context_object_name = 'articulo'
 
     def get_queryset(self):
-        return Articulo.objects.select_related(
-            'categoria', 'marca', 'unidad_medida', 'ubicacion_fisica'
-        ).filter(eliminado=False)
+        return scope_articulos_for_user(
+            Articulo.objects.select_related(
+                'categoria', 'marca', 'unidad_medida', 'ubicacion_fisica'
+            ).filter(eliminado=False),
+            self.request.user
+        )
 
 
 class ArticuloModalEditar(LoginRequiredMixin, UpdateView):
@@ -644,7 +657,10 @@ class ArticuloModalEditar(LoginRequiredMixin, UpdateView):
     context_object_name = 'articulo'
 
     def get_queryset(self):
-        return Articulo.objects.filter(eliminado=False)
+        return scope_articulos_for_user(
+            Articulo.objects.filter(eliminado=False),
+            self.request.user
+        )
 
     def form_valid(self, form):
         form.save()
@@ -663,7 +679,10 @@ class ArticuloModalEliminar(LoginRequiredMixin, DetailView):
     context_object_name = 'articulo'
 
     def get_queryset(self):
-        return Articulo.objects.select_related('categoria').filter(eliminado=False)
+        return scope_articulos_for_user(
+            Articulo.objects.select_related('categoria').filter(eliminado=False),
+            self.request.user
+        )
 
     def post(self, request, *args, **kwargs):
         articulo = self.get_object()
@@ -679,7 +698,10 @@ class ArticuloModalMovimientos(LoginRequiredMixin, DetailView):
     context_object_name = 'articulo'
 
     def get_queryset(self):
-        return Articulo.objects.filter(eliminado=False)
+        return scope_articulos_for_user(
+            Articulo.objects.filter(eliminado=False),
+            self.request.user
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
