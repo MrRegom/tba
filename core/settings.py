@@ -185,6 +185,13 @@ ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = True
 ACCOUNT_ADAPTER = 'apps.accounts.adapters.CustomAccountAdapter'
 SITE_ID = 1
 
+# Session management
+# Se parametriza desde .env para evitar valores mágicos en código y permitir
+# ajustar el tiempo de expiración por ambiente.
+SESSION_COOKIE_AGE = env.int('SESSION_COOKIE_AGE', default=1200)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = env.bool('SESSION_EXPIRE_AT_BROWSER_CLOSE', default=False)
+SESSION_SAVE_EVERY_REQUEST = env.bool('SESSION_SAVE_EVERY_REQUEST', default=False)
+
 # SMTP Configuration
 EMAIL_BACKEND = env('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
 EMAIL_HOST = env('EMAIL_HOST', default='localhost')
