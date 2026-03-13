@@ -233,7 +233,7 @@
                 <!-- Gestores: solo staff                                          -->
                 <!-- nav_en_gestores=True → expandido y cada item marcado activo  -->
                 <!-- ============================================================ -->
-                {% if request.user.is_staff %}
+                {% if perms.solicitudes.gestionar_solicitudes or perms.solicitudes.ver_todas_solicitudes or perms.compras.view_estadoordencompra or perms.bodega.view_articulo or perms.activos.view_activo or perms.bajas_inventario.view_motivobaja or perms.activos.view_ubicacion or perms.auth.view_user %}
                 <li class="nav-item">
                     <a class="nav-link menu-link {% if not nav_en_gestores %}collapsed{% endif %}"
                        href="#sidebarGestores"
@@ -307,7 +307,7 @@
                 {% endif %}
 
                 <!-- Auditoría (solo administradores) -->
-                {% if request.user.is_staff or request.user.is_superuser %}
+                {% if request.user.is_staff or request.user.is_superuser or perms.accounts.view_all_auditoria %}
                 <li class="nav-item">
                     <a class="nav-link menu-link {% if '/auditoria/' in request.path %}active{% endif %}"
                        href="#sidebarAuditoria"
