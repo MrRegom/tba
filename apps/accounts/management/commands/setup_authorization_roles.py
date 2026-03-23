@@ -30,8 +30,11 @@ ROLE_DEFINITIONS = {
             'fotocopiadora.view_all_printrequest',
             'fotocopiadora.manage_print_settings',
             'fotocopiadora.manage_print_cost_centers',
+            'fotocopiadora.manage_print_memberships',
             'fotocopiadora.view_printrequeststatushistory',
             'fotocopiadora.view_printrequestattachment',
+            'fotocopiadora.view_fotocopiadoraequipo',
+            'fotocopiadora.gestionar_equipos_fotocopiadora',
         ],
     },
     'Solicitante': {
@@ -160,11 +163,7 @@ ROLE_DEFINITIONS = {
             'fotocopiadora.close_printrequest',
             'fotocopiadora.view_printrequestattachment',
             'fotocopiadora.view_printrequeststatushistory',
-            'fotocopiadora.view_trabajofotocopia',
-            'fotocopiadora.add_trabajofotocopia',
-            'fotocopiadora.change_trabajofotocopia',
             'fotocopiadora.view_fotocopiadoraequipo',
-            'fotocopiadora.gestionar_equipos_fotocopiadora',
         ],
     },
     'Encargado de Bajas': {
