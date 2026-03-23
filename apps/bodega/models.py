@@ -9,37 +9,40 @@ Convención de nomenclatura:
 - Se sigue nomenclatura Pascal Case para clases
 - Se usan type hints en métodos __str__
 """
+
 from typing import Optional
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.contrib.auth.models import User
-from core.models import BaseModel
+from core.models import AutoCodeMixin, BaseModel
 from apps.activos.models import Activo
 
 
 class Bodega(BaseModel):
     """Modelo para gestionar las bodegas del sistema"""
-    codigo = models.CharField(max_length=20, unique=True, verbose_name='Código')
-    nombre = models.CharField(max_length=100, verbose_name='Nombre')
-    descripcion = models.TextField(blank=True, null=True, verbose_name='Descripción')
+
+    codigo = models.CharField(max_length=20, unique=True, verbose_name="Código")
+    nombre = models.CharField(max_length=100, verbose_name="Nombre")
+    descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción")
     responsable = models.ForeignKey(
         User,
         on_delete=models.PROTECT,
-        related_name='bodegas_responsable',
-        verbose_name='Responsable'
+        related_name="bodegas_responsable",
+        verbose_name="Responsable",
     )
 
     class Meta:
-        db_table = 'tba_bodega_conf_bodega'
-        verbose_name = 'Bodega'
-        verbose_name_plural = 'Bodegas'
-        ordering = ['codigo']
+        db_table = "tba_bodega_conf_bodega"
+        verbose_name = "Bodega"
+        verbose_name_plural = "Bodegas"
+        ordering = ["codigo"]
 
     def __str__(self) -> str:
         """Representación en cadena de la bodega."""
         return f"{self.codigo} - {self.nombre}"
 
-class UnidadMedida(BaseModel):
+
+class UnidadMedida(AutoCodeMixin, BaseModel):
     """
     Catálogo de unidades de medida para artículos de bodega.
 
@@ -48,38 +51,45 @@ class UnidadMedida(BaseModel):
 
     Hereda de BaseModel para soft delete y auditoría.
     """
-    codigo = models.CharField(max_length=10, unique=True, verbose_name='Código')
-    nombre = models.CharField(max_length=50, verbose_name='Nombre')
-    simbolo = models.CharField(max_length=10, verbose_name='Símbolo')
+
+    AUTO_CODE_PREFIX = "UDM"
+
+    codigo = models.CharField(max_length=10, unique=True, verbose_name="Código")
+    nombre = models.CharField(max_length=50, verbose_name="Nombre")
+    simbolo = models.CharField(max_length=10, verbose_name="Símbolo")
 
     class Meta:
-        db_table = 'tba_bodega_unidad_medida'
-        verbose_name = 'Unidad de Medida'
-        verbose_name_plural = 'Unidades de Medida'
-        ordering = ['codigo']
+        db_table = "tba_bodega_unidad_medida"
+        verbose_name = "Unidad de Medida"
+        verbose_name_plural = "Unidades de Medida"
+        ordering = ["codigo"]
 
     def __str__(self) -> str:
         """Representación en cadena de la unidad de medida."""
         return f"{self.codigo} - {self.nombre} ({self.simbolo})"
 
-class Categoria(BaseModel):
+
+class Categoria(AutoCodeMixin, BaseModel):
     """Modelo para gestionar categorías de artículos"""
-    codigo = models.CharField(max_length=20, unique=True, verbose_name='Código')
-    nombre = models.CharField(max_length=100, verbose_name='Nombre')
-    descripcion = models.TextField(blank=True, null=True, verbose_name='Descripción')
+
+    AUTO_CODE_PREFIX = "CAB"
+
+    codigo = models.CharField(max_length=20, unique=True, verbose_name="Código")
+    nombre = models.CharField(max_length=100, verbose_name="Nombre")
+    descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción")
 
     class Meta:
-        db_table = 'tba_bodega_conf_categoria'
-        verbose_name = 'Categoría'
-        verbose_name_plural = 'Categorías'
-        ordering = ['codigo']
+        db_table = "tba_bodega_conf_categoria"
+        verbose_name = "Categoría"
+        verbose_name_plural = "Categorías"
+        ordering = ["codigo"]
 
     def __str__(self) -> str:
         """Representación en cadena de la categoría."""
         return f"{self.codigo} - {self.nombre}"
 
 
-class Marca(BaseModel):
+class Marca(AutoCodeMixin, BaseModel):
     """
     Catálogo de marcas para artículos de bodega.
 
@@ -88,22 +98,25 @@ class Marca(BaseModel):
 
     Hereda de BaseModel para soft delete y auditoría.
     """
-    codigo = models.CharField(max_length=20, unique=True, verbose_name='Código')
-    nombre = models.CharField(max_length=100, verbose_name='Nombre')
-    descripcion = models.TextField(blank=True, null=True, verbose_name='Descripción')
+
+    AUTO_CODE_PREFIX = "MRB"
+
+    codigo = models.CharField(max_length=20, unique=True, verbose_name="Código")
+    nombre = models.CharField(max_length=100, verbose_name="Nombre")
+    descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción")
 
     class Meta:
-        db_table = 'tba_bodega_marca'
-        verbose_name = 'Marca'
-        verbose_name_plural = 'Marcas'
-        ordering = ['codigo']
+        db_table = "tba_bodega_marca"
+        verbose_name = "Marca"
+        verbose_name_plural = "Marcas"
+        ordering = ["codigo"]
 
     def __str__(self) -> str:
         """Representación en cadena de la marca."""
         return f"{self.codigo} - {self.nombre}"
 
 
-class Articulo(BaseModel):
+class Articulo(AutoCodeMixin, BaseModel):
     """
     Modelo para gestionar artículos en bodega.
 
@@ -126,76 +139,77 @@ class Articulo(BaseModel):
         ubicacion_fisica: Bodega donde se almacena el artículo.
         observaciones: Observaciones adicionales.
     """
-    codigo = models.CharField(max_length=50, unique=True, verbose_name='Código')
-    nombre = models.CharField(max_length=200, verbose_name='Nombre')
-    descripcion = models.TextField(blank=True, null=True, verbose_name='Descripción')
+
+    AUTO_CODE_PREFIX = "ART"
+
+    codigo = models.CharField(max_length=50, unique=True, verbose_name="Código")
+    nombre = models.CharField(max_length=200, verbose_name="Nombre")
+    descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción")
     marca = models.ForeignKey(
-        'Marca',
+        "Marca",
         on_delete=models.PROTECT,
-        related_name='articulos',
+        related_name="articulos",
         blank=True,
         null=True,
-        verbose_name='Marca',
-        help_text='Marca del artículo'
+        verbose_name="Marca",
+        help_text="Marca del artículo",
     )
     codigo_barras = models.CharField(
         max_length=100,
         blank=True,
         null=True,
         unique=True,
-        verbose_name='Código de Barras',
-        help_text='Código de barras del producto (dejar vacío para auto-generar)'
+        verbose_name="Código de Barras",
+        help_text="Código de barras del producto (dejar vacío para auto-generar)",
     )
     categoria = models.ForeignKey(
         Categoria,
         on_delete=models.PROTECT,
-        related_name='articulos',
-        verbose_name='Categoría'
+        related_name="articulos",
+        verbose_name="Categoría",
     )
     stock_actual = models.IntegerField(
-        default=0,
-        validators=[MinValueValidator(0)],
-        verbose_name='Stock Actual'
+        default=0, validators=[MinValueValidator(0)], verbose_name="Stock Actual"
     )
     stock_minimo = models.IntegerField(
-        default=0,
-        validators=[MinValueValidator(0)],
-        verbose_name='Stock Mínimo'
+        default=0, validators=[MinValueValidator(0)], verbose_name="Stock Mínimo"
     )
     stock_maximo = models.IntegerField(
         blank=True,
         null=True,
         validators=[MinValueValidator(0)],
-        verbose_name='Stock Máximo'
+        verbose_name="Stock Máximo",
     )
     punto_reorden = models.IntegerField(
         blank=True,
         null=True,
         validators=[MinValueValidator(0)],
-        verbose_name='Punto de Reorden'
+        verbose_name="Punto de Reorden",
     )
     unidad_medida = models.ForeignKey(
         UnidadMedida,
         on_delete=models.PROTECT,
-        related_name='articulos',
+        related_name="articulos",
         blank=True,
         null=True,
-        verbose_name='Unidad de Medida',
-        help_text='Unidad de medida del artículo'
+        verbose_name="Unidad de Medida",
+        help_text="Unidad de medida del artículo",
     )
     ubicacion_fisica = models.ForeignKey(
         Bodega,
         on_delete=models.PROTECT,
-        related_name='articulos',
-        verbose_name='Ubicación Física (Bodega)'
+        related_name="articulos",
+        verbose_name="Ubicación Física (Bodega)",
     )
-    observaciones = models.TextField(blank=True, null=True, verbose_name='Observaciones')
+    observaciones = models.TextField(
+        blank=True, null=True, verbose_name="Observaciones"
+    )
 
     class Meta:
-        db_table = 'tba_bodega_articulos'
-        verbose_name = 'Artículo'
-        verbose_name_plural = 'Artículos'
-        ordering = ['codigo']
+        db_table = "tba_bodega_articulos"
+        verbose_name = "Artículo"
+        verbose_name_plural = "Artículos"
+        ordering = ["codigo"]
 
     def __str__(self) -> str:
         """Representación en cadena del artículo."""
@@ -203,13 +217,12 @@ class Articulo(BaseModel):
 
     def save(self, *args, **kwargs) -> None:
         """
-        Guarda el artículo, auto-genera código UUID y código de barras si no se proporcionan.
+        Guarda el artículo.
+
+        El código se genera automáticamente via AutoCodeMixin con prefijo 'ART-XXXXXX'.
+        El código de barras se auto-genera desde el código si no se proporciona.
         """
-        import uuid
-        if not self.codigo:
-            self.codigo = str(uuid.uuid4())
-        if not self.codigo_barras:
-            self.codigo_barras = f"COD{self.codigo.replace('-', '').replace('_', '').upper()[:12]}"
+        # Llamar primero al mixin (que genera el código si está vacío)
         super().save(*args, **kwargs)
 
 
@@ -222,24 +235,25 @@ class Operacion(BaseModel):
 
     Hereda de BaseModel para soft delete y auditoría.
     """
-    codigo = models.CharField(max_length=20, unique=True, verbose_name='Código')
-    nombre = models.CharField(max_length=50, verbose_name='Nombre')
+
+    codigo = models.CharField(max_length=20, unique=True, verbose_name="Código")
+    nombre = models.CharField(max_length=50, verbose_name="Nombre")
     tipo = models.CharField(
         max_length=20,
         choices=[
-            ('ENTRADA', 'Entrada'),
-            ('SALIDA', 'Salida'),
+            ("ENTRADA", "Entrada"),
+            ("SALIDA", "Salida"),
         ],
-        verbose_name='Tipo de Operación',
-        help_text='Define si la operación suma o resta del stock'
+        verbose_name="Tipo de Operación",
+        help_text="Define si la operación suma o resta del stock",
     )
-    descripcion = models.TextField(blank=True, null=True, verbose_name='Descripción')
+    descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción")
 
     class Meta:
-        db_table = 'tba_bodega_operacion'
-        verbose_name = 'Operación'
-        verbose_name_plural = 'Operaciones'
-        ordering = ['codigo']
+        db_table = "tba_bodega_operacion"
+        verbose_name = "Operación"
+        verbose_name_plural = "Operaciones"
+        ordering = ["codigo"]
 
     def __str__(self) -> str:
         """Representación en cadena de la operación."""
@@ -248,15 +262,16 @@ class Operacion(BaseModel):
 
 class TipoMovimiento(BaseModel):
     """Catálogo de tipos de movimiento de inventario"""
-    codigo = models.CharField(max_length=20, unique=True, verbose_name='Código')
-    nombre = models.CharField(max_length=100, verbose_name='Nombre')
-    descripcion = models.TextField(blank=True, null=True, verbose_name='Descripción')
+
+    codigo = models.CharField(max_length=20, unique=True, verbose_name="Código")
+    nombre = models.CharField(max_length=100, verbose_name="Nombre")
+    descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción")
 
     class Meta:
-        db_table = 'tba_bodega_conf_tipomovimiento'
-        verbose_name = 'Tipo de Movimiento'
-        verbose_name_plural = 'Tipos de Movimiento'
-        ordering = ['codigo']
+        db_table = "tba_bodega_conf_tipomovimiento"
+        verbose_name = "Tipo de Movimiento"
+        verbose_name_plural = "Tipos de Movimiento"
+        ordering = ["codigo"]
 
     def __str__(self) -> str:
         """Representación en cadena del tipo de movimiento."""
@@ -265,54 +280,50 @@ class TipoMovimiento(BaseModel):
 
 class Movimiento(BaseModel):
     """Modelo para registrar movimientos de inventario"""
+
     articulo = models.ForeignKey(
         Articulo,
         on_delete=models.PROTECT,
-        related_name='movimientos',
-        verbose_name='Artículo'
+        related_name="movimientos",
+        verbose_name="Artículo",
     )
     tipo = models.ForeignKey(
         TipoMovimiento,
         on_delete=models.PROTECT,
-        related_name='movimientos',
-        verbose_name='Tipo de Movimiento'
+        related_name="movimientos",
+        verbose_name="Tipo de Movimiento",
     )
     cantidad = models.IntegerField(
-        validators=[MinValueValidator(1)],
-        verbose_name='Cantidad'
+        validators=[MinValueValidator(1)], verbose_name="Cantidad"
     )
     operacion = models.ForeignKey(
         Operacion,
         on_delete=models.PROTECT,
-        related_name='movimientos',
-        verbose_name='Operación',
-        help_text='Operación que determina si es entrada o salida'
+        related_name="movimientos",
+        verbose_name="Operación",
+        help_text="Operación que determina si es entrada o salida",
     )
     usuario = models.ForeignKey(
         User,
         on_delete=models.PROTECT,
-        related_name='movimientos_bodega',
-        verbose_name='Usuario'
+        related_name="movimientos_bodega",
+        verbose_name="Usuario",
     )
-    motivo = models.TextField(verbose_name='Motivo')
-    stock_antes = models.IntegerField(
-        verbose_name='Stock Antes'
-    )
-    stock_despues = models.IntegerField(
-        verbose_name='Stock Después'
-    )
+    motivo = models.TextField(verbose_name="Motivo")
+    stock_antes = models.IntegerField(verbose_name="Stock Antes")
+    stock_despues = models.IntegerField(verbose_name="Stock Después")
 
     class Meta:
-        db_table = 'tba_bodega_movimientos'
-        verbose_name = 'Movimiento'
-        verbose_name_plural = 'Movimientos'
-        ordering = ['-fecha_creacion']
+        db_table = "tba_bodega_movimientos"
+        verbose_name = "Movimiento"
+        verbose_name_plural = "Movimientos"
+        ordering = ["-fecha_creacion"]
         permissions = [
-            ('registrar_entrada', 'Puede registrar entradas de inventario'),
-            ('registrar_salida', 'Puede registrar salidas de inventario'),
-            ('ajustar_stock', 'Puede realizar ajustes de stock'),
-            ('ver_historial_movimientos', 'Puede ver historial de movimientos'),
-            ('ver_reportes_inventario', 'Puede ver reportes de inventario'),
+            ("registrar_entrada", "Puede registrar entradas de inventario"),
+            ("registrar_salida", "Puede registrar salidas de inventario"),
+            ("ajustar_stock", "Puede realizar ajustes de stock"),
+            ("ver_historial_movimientos", "Puede ver historial de movimientos"),
+            ("ver_reportes_inventario", "Puede ver reportes de inventario"),
         ]
 
     def __str__(self) -> str:
@@ -322,6 +333,7 @@ class Movimiento(BaseModel):
 
 # ==================== ENTREGA DE ARTÍCULOS Y BIENES ====================
 
+
 class EntregaBase(BaseModel):
     """
     Modelo base abstracto para entregas (artículos y bienes).
@@ -329,43 +341,50 @@ class EntregaBase(BaseModel):
 
     Principio DRY: Evita duplicación de código entre EntregaArticulo y EntregaBien.
     """
-    numero = models.CharField(max_length=30, unique=True, verbose_name='Número de Entrega')
-    fecha_entrega = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de Entrega')
+
+    numero = models.CharField(
+        max_length=30, unique=True, verbose_name="Número de Entrega"
+    )
+    fecha_entrega = models.DateTimeField(
+        auto_now_add=True, verbose_name="Fecha de Entrega"
+    )
     tipo = models.ForeignKey(
-        'TipoEntrega',
+        "TipoEntrega",
         on_delete=models.PROTECT,
-        related_name='%(class)s_set',  # Nombre dinámico según clase hija
-        verbose_name='Tipo de Entrega'
+        related_name="%(class)s_set",  # Nombre dinámico según clase hija
+        verbose_name="Tipo de Entrega",
     )
     estado = models.ForeignKey(
-        'EstadoEntrega',
+        "EstadoEntrega",
         on_delete=models.PROTECT,
-        related_name='%(class)s_set',
-        verbose_name='Estado'
+        related_name="%(class)s_set",
+        verbose_name="Estado",
     )
     entregado_por = models.ForeignKey(
         User,
         on_delete=models.PROTECT,
-        related_name='%(class)s_entregadas_por',
-        verbose_name='Entregado Por'
+        related_name="%(class)s_entregadas_por",
+        verbose_name="Entregado Por",
     )
     recibido_por = models.ForeignKey(
         User,
         on_delete=models.PROTECT,
-        related_name='%(class)s_recibidas_por',
-        verbose_name='Recibido Por',
-        help_text='Usuario que recibe la entrega'
+        related_name="%(class)s_recibidas_por",
+        verbose_name="Recibido Por",
+        help_text="Usuario que recibe la entrega",
     )
     departamento_destino = models.ForeignKey(
-        'solicitudes.Departamento',
+        "solicitudes.Departamento",
         on_delete=models.PROTECT,
-        related_name='%(class)s_entregas',
+        related_name="%(class)s_entregas",
         blank=True,
         null=True,
-        verbose_name='Departamento Destino'
+        verbose_name="Departamento Destino",
     )
-    motivo = models.TextField(verbose_name='Motivo de la Entrega')
-    observaciones = models.TextField(blank=True, null=True, verbose_name='Observaciones')
+    motivo = models.TextField(verbose_name="Motivo de la Entrega")
+    observaciones = models.TextField(
+        blank=True, null=True, verbose_name="Observaciones"
+    )
 
     class Meta:
         abstract = True  # Modelo abstracto, no crea tabla en BD
@@ -382,11 +401,13 @@ class DetalleEntregaBase(BaseModel):
 
     Principio DRY: Evita duplicación entre DetalleEntregaArticulo y DetalleEntregaBien.
     """
+
     cantidad = models.IntegerField(
-        validators=[MinValueValidator(1)],
-        verbose_name='Cantidad Entregada'
+        validators=[MinValueValidator(1)], verbose_name="Cantidad Entregada"
     )
-    observaciones = models.TextField(blank=True, null=True, verbose_name='Observaciones')
+    observaciones = models.TextField(
+        blank=True, null=True, verbose_name="Observaciones"
+    )
 
     class Meta:
         abstract = True
@@ -398,18 +419,21 @@ class DetalleEntregaBase(BaseModel):
 
 class EstadoEntrega(BaseModel):
     """Catálogo de estados de entrega"""
-    codigo = models.CharField(max_length=20, unique=True, verbose_name='Código')
-    nombre = models.CharField(max_length=100, verbose_name='Nombre')
-    descripcion = models.TextField(blank=True, null=True, verbose_name='Descripción')
-    color = models.CharField(max_length=7, default='#6c757d', verbose_name='Color (Hex)')
-    es_inicial = models.BooleanField(default=False, verbose_name='Estado Inicial')
-    es_final = models.BooleanField(default=False, verbose_name='Estado Final')
+
+    codigo = models.CharField(max_length=20, unique=True, verbose_name="Código")
+    nombre = models.CharField(max_length=100, verbose_name="Nombre")
+    descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción")
+    color = models.CharField(
+        max_length=7, default="#6c757d", verbose_name="Color (Hex)"
+    )
+    es_inicial = models.BooleanField(default=False, verbose_name="Estado Inicial")
+    es_final = models.BooleanField(default=False, verbose_name="Estado Final")
 
     class Meta:
-        db_table = 'tba_bodega_estado_entrega'
-        verbose_name = 'Estado de Entrega'
-        verbose_name_plural = 'Estados de Entrega'
-        ordering = ['codigo']
+        db_table = "tba_bodega_estado_entrega"
+        verbose_name = "Estado de Entrega"
+        verbose_name_plural = "Estados de Entrega"
+        ordering = ["codigo"]
 
     def __str__(self) -> str:
         """Representación en cadena del estado de entrega."""
@@ -418,16 +442,19 @@ class EstadoEntrega(BaseModel):
 
 class TipoEntrega(BaseModel):
     """Catálogo de tipos de entrega"""
-    codigo = models.CharField(max_length=20, unique=True, verbose_name='Código')
-    nombre = models.CharField(max_length=100, verbose_name='Nombre')
-    descripcion = models.TextField(blank=True, null=True, verbose_name='Descripción')
-    requiere_autorizacion = models.BooleanField(default=False, verbose_name='Requiere Autorización')
+
+    codigo = models.CharField(max_length=20, unique=True, verbose_name="Código")
+    nombre = models.CharField(max_length=100, verbose_name="Nombre")
+    descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción")
+    requiere_autorizacion = models.BooleanField(
+        default=False, verbose_name="Requiere Autorización"
+    )
 
     class Meta:
-        db_table = 'tba_bodega_conf_tipoentrega'
-        verbose_name = 'Tipo de Entrega'
-        verbose_name_plural = 'Tipos de Entrega'
-        ordering = ['codigo']
+        db_table = "tba_bodega_conf_tipoentrega"
+        verbose_name = "Tipo de Entrega"
+        verbose_name_plural = "Tipos de Entrega"
+        ordering = ["codigo"]
 
     def __str__(self) -> str:
         """Representación en cadena del tipo de entrega."""
@@ -442,32 +469,36 @@ class EntregaArticulo(EntregaBase):
     Puede estar vinculada opcionalmente a una Solicitud de artículos,
     permitiendo entregas totales o parciales de la solicitud.
     """
+
     bodega_origen = models.ForeignKey(
         Bodega,
         on_delete=models.PROTECT,
-        related_name='entregas_articulos',
-        verbose_name='Bodega de Origen'
+        related_name="entregas_articulos",
+        verbose_name="Bodega de Origen",
     )
     solicitud = models.ForeignKey(
-        'solicitudes.Solicitud',
+        "solicitudes.Solicitud",
         on_delete=models.PROTECT,
-        related_name='entregas_articulos',
+        related_name="entregas_articulos",
         blank=True,
         null=True,
-        verbose_name='Solicitud Asociada',
-        help_text='Solicitud de artículos asociada a esta entrega (opcional)'
+        verbose_name="Solicitud Asociada",
+        help_text="Solicitud de artículos asociada a esta entrega (opcional)",
     )
 
     class Meta:
-        db_table = 'tba_bodega_entrega_articulo'
-        verbose_name = 'Entrega de Artículo'
-        verbose_name_plural = 'Entregas de Artículos'
-        ordering = ['-fecha_entrega']
+        db_table = "tba_bodega_entrega_articulo"
+        verbose_name = "Entrega de Artículo"
+        verbose_name_plural = "Entregas de Artículos"
+        ordering = ["-fecha_entrega"]
         permissions = [
-            ('registrar_entrega_articulo', 'Puede registrar entrega de artículos'),
-            ('aprobar_entrega_articulo', 'Puede aprobar entrega de artículos'),
-            ('cancelar_entrega_articulo', 'Puede cancelar entrega de artículos'),
-            ('ver_todas_entregas_articulos', 'Puede ver todas las entregas de artículos'),
+            ("registrar_entrega_articulo", "Puede registrar entrega de artículos"),
+            ("aprobar_entrega_articulo", "Puede aprobar entrega de artículos"),
+            ("cancelar_entrega_articulo", "Puede cancelar entrega de artículos"),
+            (
+                "ver_todas_entregas_articulos",
+                "Puede ver todas las entregas de artículos",
+            ),
         ]
 
     def __str__(self) -> str:
@@ -483,34 +514,35 @@ class DetalleEntregaArticulo(DetalleEntregaBase):
     Puede estar vinculado a un DetalleSolicitud para rastrear el despacho
     de solicitudes específicas.
     """
+
     entrega = models.ForeignKey(
         EntregaArticulo,
         on_delete=models.CASCADE,
-        related_name='detalles',
-        verbose_name='Entrega'
+        related_name="detalles",
+        verbose_name="Entrega",
     )
     articulo = models.ForeignKey(
         Articulo,
         on_delete=models.PROTECT,
-        related_name='entregas',
-        verbose_name='Artículo'
+        related_name="entregas",
+        verbose_name="Artículo",
     )
-    lote = models.CharField(max_length=50, blank=True, null=True, verbose_name='Lote')
+    lote = models.CharField(max_length=50, blank=True, null=True, verbose_name="Lote")
     detalle_solicitud = models.ForeignKey(
-        'solicitudes.DetalleSolicitud',
+        "solicitudes.DetalleSolicitud",
         on_delete=models.PROTECT,
-        related_name='detalles_entregas',
+        related_name="detalles_entregas",
         blank=True,
         null=True,
-        verbose_name='Detalle de Solicitud',
-        help_text='Vincula con línea específica de solicitud (opcional)'
+        verbose_name="Detalle de Solicitud",
+        help_text="Vincula con línea específica de solicitud (opcional)",
     )
 
     class Meta:
-        db_table = 'tba_bodega_entrega_articulo_detalle'
-        verbose_name = 'Detalle Entrega Artículo'
-        verbose_name_plural = 'Detalles Entrega Artículos'
-        ordering = ['entrega', 'id']
+        db_table = "tba_bodega_entrega_articulo_detalle"
+        verbose_name = "Detalle Entrega Artículo"
+        verbose_name_plural = "Detalles Entrega Artículos"
+        ordering = ["entrega", "id"]
 
     def __str__(self) -> str:
         """Representación en cadena del detalle de entrega de artículo."""
@@ -518,6 +550,7 @@ class DetalleEntregaArticulo(DetalleEntregaBase):
 
 
 # ==================== ENTREGA DE BIENES (ACTIVOS) ====================
+
 
 class EntregaBien(EntregaBase):
     """
@@ -530,26 +563,27 @@ class EntregaBien(EntregaBase):
     Diferencia con EntregaArticulo: No requiere bodega de origen.
     Los bienes pueden ser activos que no están en bodega.
     """
+
     solicitud = models.ForeignKey(
-        'solicitudes.Solicitud',
+        "solicitudes.Solicitud",
         on_delete=models.PROTECT,
-        related_name='entregas_bienes',
+        related_name="entregas_bienes",
         blank=True,
         null=True,
-        verbose_name='Solicitud Asociada',
-        help_text='Solicitud de activos asociada a esta entrega (opcional)'
+        verbose_name="Solicitud Asociada",
+        help_text="Solicitud de activos asociada a esta entrega (opcional)",
     )
 
     class Meta:
-        db_table = 'tba_bodega_entrega_bien'
-        verbose_name = 'Entrega de Bien/Activo'
-        verbose_name_plural = 'Entregas de Bienes/Activos'
-        ordering = ['-fecha_entrega']
+        db_table = "tba_bodega_entrega_bien"
+        verbose_name = "Entrega de Bien/Activo"
+        verbose_name_plural = "Entregas de Bienes/Activos"
+        ordering = ["-fecha_entrega"]
         permissions = [
-            ('registrar_entrega_bien', 'Puede registrar entrega de bienes'),
-            ('aprobar_entrega_bien', 'Puede aprobar entrega de bienes'),
-            ('cancelar_entrega_bien', 'Puede cancelar entrega de bienes'),
-            ('ver_todas_entregas_bienes', 'Puede ver todas las entregas de bienes'),
+            ("registrar_entrega_bien", "Puede registrar entrega de bienes"),
+            ("aprobar_entrega_bien", "Puede aprobar entrega de bienes"),
+            ("cancelar_entrega_bien", "Puede cancelar entrega de bienes"),
+            ("ver_todas_entregas_bienes", "Puede ver todas las entregas de bienes"),
         ]
 
     def __str__(self) -> str:
@@ -565,47 +599,48 @@ class DetalleEntregaBien(DetalleEntregaBase):
     Puede estar vinculado a un DetalleSolicitud para rastrear el despacho
     de solicitudes específicas.
     """
+
     entrega = models.ForeignKey(
         EntregaBien,
         on_delete=models.CASCADE,
-        related_name='detalles',
-        verbose_name='Entrega'
+        related_name="detalles",
+        verbose_name="Entrega",
     )
     activo = models.ForeignKey(
-        'activos.Activo',
+        "activos.Activo",
         on_delete=models.PROTECT,
-        related_name='entregas_bienes',
-        verbose_name='Activo/Bien'
+        related_name="entregas_bienes",
+        verbose_name="Activo/Bien",
     )
     numero_serie = models.CharField(
         max_length=100,
         blank=True,
         null=True,
-        verbose_name='Número de Serie',
-        help_text='Número de serie del bien entregado'
+        verbose_name="Número de Serie",
+        help_text="Número de serie del bien entregado",
     )
     estado_fisico = models.CharField(
         max_length=50,
         blank=True,
         null=True,
-        verbose_name='Estado Físico',
-        help_text='Estado físico del bien al momento de la entrega'
+        verbose_name="Estado Físico",
+        help_text="Estado físico del bien al momento de la entrega",
     )
     detalle_solicitud = models.ForeignKey(
-        'solicitudes.DetalleSolicitud',
+        "solicitudes.DetalleSolicitud",
         on_delete=models.PROTECT,
-        related_name='detalles_entregas_bienes',
+        related_name="detalles_entregas_bienes",
         blank=True,
         null=True,
-        verbose_name='Detalle de Solicitud',
-        help_text='Vincula con línea específica de solicitud (opcional)'
+        verbose_name="Detalle de Solicitud",
+        help_text="Vincula con línea específica de solicitud (opcional)",
     )
 
     class Meta:
-        db_table = 'tba_bodega_entrega_bien_detalle'
-        verbose_name = 'Detalle Entrega Bien'
-        verbose_name_plural = 'Detalles Entrega Bienes'
-        ordering = ['entrega', 'id']
+        db_table = "tba_bodega_entrega_bien_detalle"
+        verbose_name = "Detalle Entrega Bien"
+        verbose_name_plural = "Detalles Entrega Bienes"
+        ordering = ["entrega", "id"]
 
     def __str__(self) -> str:
         """Representación en cadena del detalle de entrega de bien."""
@@ -613,6 +648,7 @@ class DetalleEntregaBien(DetalleEntregaBase):
 
 
 # ==================== RECEPCIÓN DE ARTÍCULOS Y BIENES ====================
+
 
 class RecepcionBase(BaseModel):
     """
@@ -624,43 +660,49 @@ class RecepcionBase(BaseModel):
     Este modelo no crea tabla en la base de datos (abstract=True).
     """
 
-    numero = models.CharField(max_length=30, unique=True, verbose_name='Número de Recepción')
-    fecha_recepcion = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de Recepción')
+    numero = models.CharField(
+        max_length=30, unique=True, verbose_name="Número de Recepción"
+    )
+    fecha_recepcion = models.DateTimeField(
+        auto_now_add=True, verbose_name="Fecha de Recepción"
+    )
     tipo = models.ForeignKey(
-        'TipoRecepcion',
+        "TipoRecepcion",
         on_delete=models.PROTECT,
-        related_name='%(class)s_set',  # Nombre dinámico según clase hija
-        verbose_name='Tipo de Recepción',
+        related_name="%(class)s_set",  # Nombre dinámico según clase hija
+        verbose_name="Tipo de Recepción",
         null=True,
-        blank=True
+        blank=True,
     )
     orden_compra = models.ForeignKey(
-        'compras.OrdenCompra',
+        "compras.OrdenCompra",
         on_delete=models.PROTECT,
-        related_name='%(class)s_set',
-        verbose_name='Orden de Compra',
+        related_name="%(class)s_set",
+        verbose_name="Orden de Compra",
         blank=True,
-        null=True
+        null=True,
     )
     estado = models.ForeignKey(
-        'EstadoRecepcion',
+        "EstadoRecepcion",
         on_delete=models.PROTECT,
-        related_name='%(class)s_set',
-        verbose_name='Estado'
+        related_name="%(class)s_set",
+        verbose_name="Estado",
     )
     recibido_por = models.ForeignKey(
         User,
         on_delete=models.PROTECT,
-        related_name='%(class)s_recibidas',
-        verbose_name='Recibido Por'
+        related_name="%(class)s_recibidas",
+        verbose_name="Recibido Por",
     )
     documento_referencia = models.CharField(
         max_length=50,
         blank=True,
         null=True,
-        verbose_name='Documento Referencia (Guía/Factura)'
+        verbose_name="Documento Referencia (Guía/Factura)",
     )
-    observaciones = models.TextField(blank=True, null=True, verbose_name='Observaciones')
+    observaciones = models.TextField(
+        blank=True, null=True, verbose_name="Observaciones"
+    )
 
     class Meta:
         abstract = True  # Modelo abstracto, no crea tabla en BD
@@ -680,10 +722,11 @@ class DetalleRecepcionBase(BaseModel):
     """
 
     cantidad = models.IntegerField(
-        validators=[MinValueValidator(1)],
-        verbose_name='Cantidad Recibida'
+        validators=[MinValueValidator(1)], verbose_name="Cantidad Recibida"
     )
-    observaciones = models.TextField(blank=True, null=True, verbose_name='Observaciones')
+    observaciones = models.TextField(
+        blank=True, null=True, verbose_name="Observaciones"
+    )
 
     class Meta:
         abstract = True
@@ -700,22 +743,24 @@ class EstadoRecepcion(BaseModel):
     o activos (ej: PENDIENTE, COMPLETADA, CANCELADA).
     """
 
-    codigo = models.CharField(max_length=20, unique=True, verbose_name='Código')
-    nombre = models.CharField(max_length=100, verbose_name='Nombre')
-    descripcion = models.TextField(blank=True, null=True, verbose_name='Descripción')
-    color = models.CharField(max_length=7, default='#6c757d', verbose_name='Color (Hex)')
+    codigo = models.CharField(max_length=20, unique=True, verbose_name="Código")
+    nombre = models.CharField(max_length=100, verbose_name="Nombre")
+    descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción")
+    color = models.CharField(
+        max_length=7, default="#6c757d", verbose_name="Color (Hex)"
+    )
 
     class Meta:
-        db_table = 'tba_bodega_estado_recepcion'
-        verbose_name = 'Estado de Recepción'
-        verbose_name_plural = 'Estados de Recepción'
-        ordering = ['codigo']
+        db_table = "tba_bodega_estado_recepcion"
+        verbose_name = "Estado de Recepción"
+        verbose_name_plural = "Estados de Recepción"
+        ordering = ["codigo"]
 
     def __str__(self) -> str:
         return f"{self.codigo} - {self.nombre}"
 
 
-class TipoRecepcion(BaseModel):
+class TipoRecepcion(AutoCodeMixin, BaseModel):
     """
     Catálogo de tipos de recepción.
 
@@ -723,16 +768,20 @@ class TipoRecepcion(BaseModel):
     (ej: CON_OC, SIN_OC, DONACION, DEVOLUCION).
     """
 
-    codigo = models.CharField(max_length=20, unique=True, verbose_name='Código')
-    nombre = models.CharField(max_length=100, verbose_name='Nombre')
-    descripcion = models.TextField(blank=True, null=True, verbose_name='Descripción')
-    requiere_orden = models.BooleanField(default=False, verbose_name='Requiere Orden de Compra')
+    AUTO_CODE_PREFIX = "TRC"
+
+    codigo = models.CharField(max_length=20, unique=True, verbose_name="Código")
+    nombre = models.CharField(max_length=100, verbose_name="Nombre")
+    descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción")
+    requiere_orden = models.BooleanField(
+        default=False, verbose_name="Requiere Orden de Compra"
+    )
 
     class Meta:
-        db_table = 'tba_bodega_tipo_recepcion'
-        verbose_name = 'Tipo de Recepción'
-        verbose_name_plural = 'Tipos de Recepción'
-        ordering = ['codigo']
+        db_table = "tba_bodega_tipo_recepcion"
+        verbose_name = "Tipo de Recepción"
+        verbose_name_plural = "Tipos de Recepción"
+        ordering = ["codigo"]
 
     def __str__(self) -> str:
         return f"{self.codigo} - {self.nombre}"
@@ -749,20 +798,23 @@ class RecepcionArticulo(RecepcionBase):
     bodega = models.ForeignKey(
         Bodega,
         on_delete=models.PROTECT,
-        related_name='recepciones_articulos',
-        verbose_name='Bodega'
+        related_name="recepciones_articulos",
+        verbose_name="Bodega",
     )
 
     class Meta:
-        db_table = 'tba_bodega_recepcion_articulo'
-        verbose_name = 'Recepción de Artículo'
-        verbose_name_plural = 'Recepciones de Artículos'
-        ordering = ['-fecha_recepcion']
+        db_table = "tba_bodega_recepcion_articulo"
+        verbose_name = "Recepción de Artículo"
+        verbose_name_plural = "Recepciones de Artículos"
+        ordering = ["-fecha_recepcion"]
         permissions = [
-            ('registrar_recepcion_articulo', 'Puede registrar recepción de artículos'),
-            ('aprobar_recepcion_articulo', 'Puede aprobar recepción de artículos'),
-            ('rechazar_recepcion_articulo', 'Puede rechazar recepción de artículos'),
-            ('ver_todas_recepciones_articulos', 'Puede ver todas las recepciones de artículos'),
+            ("registrar_recepcion_articulo", "Puede registrar recepción de artículos"),
+            ("aprobar_recepcion_articulo", "Puede aprobar recepción de artículos"),
+            ("rechazar_recepcion_articulo", "Puede rechazar recepción de artículos"),
+            (
+                "ver_todas_recepciones_articulos",
+                "Puede ver todas las recepciones de artículos",
+            ),
         ]
 
     def __str__(self) -> str:
@@ -780,30 +832,33 @@ class DetalleRecepcionArticulo(DetalleRecepcionBase):
     recepcion = models.ForeignKey(
         RecepcionArticulo,
         on_delete=models.CASCADE,
-        related_name='detalles',
-        verbose_name='Recepción'
+        related_name="detalles",
+        verbose_name="Recepción",
     )
     articulo = models.ForeignKey(
         Articulo,
         on_delete=models.PROTECT,
-        related_name='recepciones',
-        verbose_name='Artículo'
+        related_name="recepciones",
+        verbose_name="Artículo",
     )
     # Campos específicos de artículos (no se encuentran en activos)
-    lote = models.CharField(max_length=50, blank=True, null=True, verbose_name='Lote')
-    fecha_vencimiento = models.DateField(blank=True, null=True, verbose_name='Fecha de Vencimiento')
+    lote = models.CharField(max_length=50, blank=True, null=True, verbose_name="Lote")
+    fecha_vencimiento = models.DateField(
+        blank=True, null=True, verbose_name="Fecha de Vencimiento"
+    )
 
     class Meta:
-        db_table = 'tba_bodega_recepcion_articulo_detalle'
-        verbose_name = 'Detalle Recepción Artículo'
-        verbose_name_plural = 'Detalles Recepción Artículos'
-        ordering = ['recepcion', 'id']
+        db_table = "tba_bodega_recepcion_articulo_detalle"
+        verbose_name = "Detalle Recepción Artículo"
+        verbose_name_plural = "Detalles Recepción Artículos"
+        ordering = ["recepcion", "id"]
 
     def __str__(self) -> str:
         return f"{self.recepcion.numero} - {self.articulo.codigo} ({self.cantidad})"
 
 
 # ==================== RECEPCIÓN DE BIENES (ACTIVOS) ====================
+
 
 class RecepcionActivo(RecepcionBase):
     """
@@ -815,15 +870,18 @@ class RecepcionActivo(RecepcionBase):
     """
 
     class Meta:
-        db_table = 'tba_bodega_recepcion_activo'
-        verbose_name = 'Recepción de Bien/Activo'
-        verbose_name_plural = 'Recepciones de Bienes/Activos'
-        ordering = ['-fecha_recepcion']
+        db_table = "tba_bodega_recepcion_activo"
+        verbose_name = "Recepción de Bien/Activo"
+        verbose_name_plural = "Recepciones de Bienes/Activos"
+        ordering = ["-fecha_recepcion"]
         permissions = [
-            ('registrar_recepcion_activo', 'Puede registrar recepción de activos'),
-            ('aprobar_recepcion_activo', 'Puede aprobar recepción de activos'),
-            ('rechazar_recepcion_activo', 'Puede rechazar recepción de activos'),
-            ('ver_todas_recepciones_activos', 'Puede ver todas las recepciones de activos'),
+            ("registrar_recepcion_activo", "Puede registrar recepción de activos"),
+            ("aprobar_recepcion_activo", "Puede aprobar recepción de activos"),
+            ("rechazar_recepcion_activo", "Puede rechazar recepción de activos"),
+            (
+                "ver_todas_recepciones_activos",
+                "Puede ver todas las recepciones de activos",
+            ),
         ]
 
     def __str__(self) -> str:
@@ -841,25 +899,25 @@ class DetalleRecepcionActivo(DetalleRecepcionBase):
     recepcion = models.ForeignKey(
         RecepcionActivo,
         on_delete=models.CASCADE,
-        related_name='detalles',
-        verbose_name='Recepción'
+        related_name="detalles",
+        verbose_name="Recepción",
     )
     activo = models.ForeignKey(
         Activo,
         on_delete=models.PROTECT,
-        related_name='recepciones',
-        verbose_name='Activo/Bien'
+        related_name="recepciones",
+        verbose_name="Activo/Bien",
     )
     # Campo específico de activos (no se encuentra en artículos)
-    numero_serie = models.CharField(max_length=100, blank=True, null=True, verbose_name='Número de Serie')
+    numero_serie = models.CharField(
+        max_length=100, blank=True, null=True, verbose_name="Número de Serie"
+    )
 
     class Meta:
-        db_table = 'tba_bodega_recepcion_activo_detalle'
-        verbose_name = 'Detalle Recepción Activo'
-        verbose_name_plural = 'Detalles Recepción Activos'
-        ordering = ['recepcion', 'id']
+        db_table = "tba_bodega_recepcion_activo_detalle"
+        verbose_name = "Detalle Recepción Activo"
+        verbose_name_plural = "Detalles Recepción Activos"
+        ordering = ["recepcion", "id"]
 
     def __str__(self) -> str:
         return f"{self.recepcion.numero} - {self.activo.codigo} ({self.cantidad})"
-
-

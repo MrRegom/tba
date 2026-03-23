@@ -6,15 +6,14 @@
     <h5>{{ titulo }}</h5>
     <form method="post">{% csrf_token %}
       <div class="row g-3">
-        <div class="col-md-3"><label class="form-label">Codigo</label>{{ form.codigo }}</div>
-        <div class="col-md-4"><label class="form-label">Nombre</label>{{ form.nombre }}</div>
+        <div class="col-md-6"><label class="form-label">Nombre</label>{{ form.nombre }}</div>
         <div class="col-md-5"><label class="form-label">Ubicacion</label>{{ form.ubicacion }}</div>
         <div class="col-md-12"><label class="form-label">Descripcion</label>{{ form.descripcion }}</div>
         <div class="col-md-12"><div class="form-check">{{ form.activo }}<label class="form-check-label" for="{{ form.activo.id_for_label }}">Activo</label></div></div>
       </div>
       {% if form.errors %}<div class="alert alert-danger mt-3">{{ form.errors }}</div>{% endif %}
       <div class="text-end mt-3">
-        <a href="{% url 'fotocopiadora:lista_equipos' %}" class="btn btn-light">Cancelar</a>
+        <a href="{% url 'fotocopiadora:menu_fotocopiadora' %}" class="btn btn-light">Cancelar</a>
         <button type="submit" class="btn btn-primary">{{ action }}</button>
       </div>
     </form>
