@@ -7,7 +7,7 @@
       <h4 class="mb-sm-0">{{ titulo }}</h4>
       <div class="page-title-right">
         <ol class="breadcrumb m-0">
-          <li class="breadcrumb-item"><a href="{% url 'fotocopiadora:lista_trabajos' %}">Trabajos</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'fotocopiadora:menu_fotocopiadora' %}">Trabajos</a></li>
           <li class="breadcrumb-item active">{{ trabajo.numero }}</li>
         </ol>
       </div>
@@ -34,7 +34,7 @@
   </div>
   <div class="card-footer text-end">
     <a href="{% url 'fotocopiadora:editar_trabajo' trabajo.pk %}" class="btn btn-secondary">Editar</a>
-    <a href="{% url 'fotocopiadora:lista_trabajos' %}" class="btn btn-light">Volver</a>
+    <a href="{% url 'fotocopiadora:menu_fotocopiadora' %}" class="btn btn-light">Volver</a>
   </div>
 </div>
 {% endblock %}

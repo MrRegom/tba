@@ -11,7 +11,7 @@
                     <h4 class="mb-sm-0">{{ titulo }}</h4>
                     <div class="page-title-right">
                         <ol class="breadcrumb m-0">
-                            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
                             <li class="breadcrumb-item"><a href="{% url 'accounts:menu_usuarios' %}">Gestión de Usuarios</a></li>
                             <li class="breadcrumb-item"><a href="{% url 'accounts:lista_permisos' %}">Permisos</a></li>
                             <li class="breadcrumb-item active">{{ action }}</li>
@@ -93,7 +93,7 @@
                     </div>
 
                     <div class="text-end">
-                        <a href="{% url 'accounts:lista_permisos' %}" class="btn btn-secondary">
+                        <a href="{% url 'accounts:menu_administracion' %}" class="btn btn-secondary">
                             <i class="ri-close-line align-bottom me-1"></i> Cancelar
                         </a>
                         <button type="submit" class="btn btn-primary">
@@ -161,3 +161,4 @@
     </div>
 </div>
 {% endblock %}
+
