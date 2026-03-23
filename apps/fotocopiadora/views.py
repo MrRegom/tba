@@ -1,32 +1,27 @@
 from __future__ import annotations
 
-from datetime import timedelta
-from decimal import Decimal
 from typing import Any
 
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db.models import Q, Sum
 from django.db.models.query import QuerySet
-from django.http import HttpResponseForbidden, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
-from django.utils import timezone
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView, UpdateView
 
 from core.mixins import BaseAuditedViewMixin, PaginatedListMixin, ScopedObjectPermissionMixin, SoftDeleteMixin
 
 from .forms import (
-    FiltroTrabajoFotocopiaForm,
     FotocopiadoraEquipoForm,
     PrintRequestApprovalForm,
     PrintRequestAttachmentForm,
     PrintRequestForm,
     PrintRequestItemFormSet,
+    PrintRoleMembershipForm,
     PrintRequestTransitionCommentForm,
-    TrabajoFotocopiaForm,
 )
-from .models import FotocopiadoraEquipo, PrintRequest, PrintRequestAttachment, PrintRequestStatus, TrabajoFotocopia
+from .models import FotocopiadoraEquipo, PrintMembershipRole, PrintRequest, PrintRequestAttachment, PrintRequestStatus, PrintRoleMembership
 from .services import PrintRequestQueryService, PrintRequestTransitionService
 
 
@@ -35,53 +30,87 @@ class MenuFotocopiadoraView(BaseAuditedViewMixin, TemplateView):
     permission_required = 'fotocopiadora.view_printrequest'
 
     def has_permission(self):
-        user = self.request.user
-        return user.has_perm('fotocopiadora.view_printrequest') or user.has_perm('fotocopiadora.view_trabajofotocopia')
+        return self.request.user.has_perm('fotocopiadora.view_printrequest')
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        hoy = timezone.localdate()
-        inicio_mes = hoy.replace(day=1)
-
-        trabajos_mes = TrabajoFotocopia.objects.filter(
-            eliminado=False,
-            fecha_hora__date__gte=inicio_mes,
-            fecha_hora__date__lte=hoy,
+        user = self.request.user
+        workflow_qs = PrintRequestQueryService.for_user(
+            PrintRequest.objects.filter(eliminado=False),
+            user,
         )
+        profile = PrintRequestQueryService.module_profile(user)
+        primary_membership = PrintRequestQueryService.primary_membership(user)
 
         context['titulo'] = 'Fotocopiadora'
         context['stats'] = {
-            'total_copias_mes': trabajos_mes.aggregate(total=Sum('cantidad_copias'))['total'] or 0,
-            'copias_internas_mes': trabajos_mes.filter(tipo_uso=TrabajoFotocopia.TipoUso.INTERNO).aggregate(total=Sum('cantidad_copias'))['total'] or 0,
-            'copias_cobro_mes': trabajos_mes.filter(tipo_uso__in=[TrabajoFotocopia.TipoUso.PERSONAL, TrabajoFotocopia.TipoUso.EXTERNO]).aggregate(total=Sum('cantidad_copias'))['total'] or 0,
-            'monto_informativo_mes': trabajos_mes.aggregate(total=Sum('monto_total'))['total'] or Decimal('0'),
-            'equipos_activos': FotocopiadoraEquipo.objects.filter(eliminado=False, activo=True).count(),
-        }
-        workflow_qs = PrintRequestQueryService.for_user(
-            PrintRequest.objects.filter(eliminado=False),
-            self.request.user,
-        )
-        context['workflow_stats'] = {
-            'mis_solicitudes': workflow_qs.filter(requester=self.request.user).count(),
+            'mis_solicitudes': workflow_qs.filter(requester=user).count(),
             'pendientes_aprobacion': workflow_qs.filter(status=PrintRequestStatus.PENDING_APPROVAL).count(),
-            'pendientes_operacion': workflow_qs.filter(
-                status__in=[PrintRequestStatus.APPROVED, PrintRequestStatus.IN_PROGRESS]
-            ).count(),
+            'pendientes_operacion': workflow_qs.filter(status__in=[PrintRequestStatus.APPROVED, PrintRequestStatus.IN_PROGRESS]).count(),
             'listas_retiro': workflow_qs.filter(status=PrintRequestStatus.READY_FOR_PICKUP).count(),
         }
-
-        user = self.request.user
-        context['permisos'] = {
-            'puede_crear': user.has_perm('fotocopiadora.add_trabajofotocopia'),
-            'puede_gestionar': user.has_perm('fotocopiadora.change_trabajofotocopia'),
-            'puede_gestionar_equipos': user.has_perm('fotocopiadora.gestionar_equipos_fotocopiadora'),
-            'puede_reportes': user.has_perm('fotocopiadora.ver_reportes_fotocopiadora'),
-            'puede_crear_solicitud': user.has_perm('fotocopiadora.add_printrequest'),
-            'puede_ver_solicitudes': user.has_perm('fotocopiadora.view_printrequest'),
-            'puede_aprobar': user.has_perm('fotocopiadora.approve_printrequest'),
-            'puede_operar_bandeja': user.has_perm('fotocopiadora.view_operational_queue_printrequest'),
-            'puede_ver_todo_workflow': user.has_perm('fotocopiadora.view_all_printrequest'),
+        context['module_profile'] = profile
+        context['primary_membership'] = primary_membership
+        card_definitions = {
+            'my_requests': {
+                'tag': 'Solicitud docente',
+                'title': 'Mis Solicitudes',
+                'description': 'Consulte el estado, historial y observaciones de sus requerimientos.',
+                'actions': [
+                    {'label': 'Ver bandeja', 'url': reverse('fotocopiadora:mis_solicitudes_impresion'), 'style': 'primary'},
+                    {'label': 'Nueva', 'url': reverse('fotocopiadora:crear_solicitud_impresion'), 'style': 'outline'},
+                ],
+            },
+            'approval_queue': {
+                'tag': 'Aprobación',
+                'title': 'Bandeja de Aprobación',
+                'description': 'Revise las solicitudes del área, apruebe, rechace o ajuste cantidades.',
+                'actions': [
+                    {'label': 'Gestionar', 'url': reverse('fotocopiadora:bandeja_aprobacion_impresion'), 'style': 'primary'},
+                ],
+            },
+            'operator_queue': {
+                'tag': 'Operación',
+                'title': 'Bandeja Operativa',
+                'description': 'Tome trabajos aprobados, marque preparación, retiro y entrega.',
+                'actions': [
+                    {'label': 'Abrir bandeja', 'url': reverse('fotocopiadora:bandeja_operativa_impresion'), 'style': 'primary'},
+                ],
+            },
+            'admin_overview': {
+                'tag': 'Supervisión',
+                'title': 'Control Global',
+                'description': 'Supervise todas las solicitudes del módulo con trazabilidad completa.',
+                'actions': [
+                    {'label': 'Ver todas', 'url': reverse('fotocopiadora:lista_solicitudes_impresion'), 'style': 'primary'},
+                ],
+            },
+            'memberships_admin': {
+                'tag': 'Administración',
+                'title': 'Memberships',
+                'description': 'Administre perfiles principales, ámbitos y vigencias del módulo.',
+                'actions': [
+                    {'label': 'Gestionar', 'url': reverse('fotocopiadora:lista_memberships'), 'style': 'primary'},
+                ],
+            },
+            'equipment_admin': {
+                'tag': 'Parámetros',
+                'title': 'Equipos',
+                'description': 'Administre equipos, ubicaciones y capacidad operativa del módulo.',
+                'actions': [
+                    {'label': 'Gestionar equipos', 'url': reverse('fotocopiadora:lista_equipos'), 'style': 'primary'},
+                ],
+            },
+            'audit_overview': {
+                'tag': 'Consulta',
+                'title': 'Consulta Global',
+                'description': 'Revise solicitudes, historial y trazabilidad sin acciones operativas.',
+                'actions': [
+                    {'label': 'Ver solicitudes', 'url': reverse('fotocopiadora:lista_solicitudes_impresion'), 'style': 'primary'},
+                ],
+            },
         }
+        context['cards'] = [card_definitions[key] for key in PrintRequestQueryService.home_cards_for_user(user) if key in card_definitions]
         return context
 
 
@@ -95,11 +124,23 @@ class PrintRequestScopedMixin:
         return PrintRequestQueryService.for_user(self.get_base_queryset(), self.request.user)
 
 
-class MyPrintRequestListView(BaseAuditedViewMixin, PrintRequestScopedMixin, PaginatedListMixin, ListView):
+class ModuleProfileRequiredMixin:
+    allowed_profiles: tuple[str, ...] = tuple()
+
+    def dispatch(self, request, *args, **kwargs):
+        profile = PrintRequestQueryService.module_profile(request.user)
+        if self.allowed_profiles and profile not in self.allowed_profiles and not request.user.is_superuser:
+            messages.error(request, 'Su perfil principal del modulo no permite acceder a esta pantalla.')
+            return redirect('fotocopiadora:menu_fotocopiadora')
+        return super().dispatch(request, *args, **kwargs)
+
+
+class MyPrintRequestListView(ModuleProfileRequiredMixin, BaseAuditedViewMixin, PrintRequestScopedMixin, PaginatedListMixin, ListView):
     template_name = 'fotocopiadora/requests/my_list.html'
     context_object_name = 'requests'
     paginate_by = 20
     permission_required = 'fotocopiadora.view_printrequest'
+    allowed_profiles = (PrintMembershipRole.REQUESTER, PrintMembershipRole.ADMIN, PrintMembershipRole.SUPERADMIN)
 
     def get_queryset(self):
         return super().get_queryset().filter(requester=self.request.user).order_by('-fecha_creacion')
@@ -111,11 +152,12 @@ class MyPrintRequestListView(BaseAuditedViewMixin, PrintRequestScopedMixin, Pagi
         return context
 
 
-class ApprovalQueueListView(BaseAuditedViewMixin, PrintRequestScopedMixin, PaginatedListMixin, ListView):
+class ApprovalQueueListView(ModuleProfileRequiredMixin, BaseAuditedViewMixin, PrintRequestScopedMixin, PaginatedListMixin, ListView):
     template_name = 'fotocopiadora/requests/approval_queue.html'
     context_object_name = 'requests'
     paginate_by = 20
     permission_required = 'fotocopiadora.view_department_printrequest'
+    allowed_profiles = (PrintMembershipRole.APPROVER, PrintMembershipRole.ADMIN, PrintMembershipRole.SUPERADMIN)
 
     def get_queryset(self):
         return super().get_queryset().filter(status=PrintRequestStatus.PENDING_APPROVAL).order_by('required_at', '-priority')
@@ -126,11 +168,12 @@ class ApprovalQueueListView(BaseAuditedViewMixin, PrintRequestScopedMixin, Pagin
         return context
 
 
-class OperatorQueueListView(BaseAuditedViewMixin, PrintRequestScopedMixin, PaginatedListMixin, ListView):
+class OperatorQueueListView(ModuleProfileRequiredMixin, BaseAuditedViewMixin, PrintRequestScopedMixin, PaginatedListMixin, ListView):
     template_name = 'fotocopiadora/requests/operator_queue.html'
     context_object_name = 'requests'
     paginate_by = 20
     permission_required = 'fotocopiadora.view_operational_queue_printrequest'
+    allowed_profiles = (PrintMembershipRole.OPERATOR, PrintMembershipRole.ADMIN, PrintMembershipRole.SUPERADMIN)
 
     def get_queryset(self):
         return super().get_queryset().filter(
@@ -148,16 +191,89 @@ class OperatorQueueListView(BaseAuditedViewMixin, PrintRequestScopedMixin, Pagin
         return context
 
 
-class WorkflowAdminListView(BaseAuditedViewMixin, PrintRequestScopedMixin, PaginatedListMixin, ListView):
+class WorkflowAdminListView(ModuleProfileRequiredMixin, BaseAuditedViewMixin, PrintRequestScopedMixin, PaginatedListMixin, ListView):
     template_name = 'fotocopiadora/requests/admin_list.html'
     context_object_name = 'requests'
     paginate_by = 25
     permission_required = 'fotocopiadora.view_all_printrequest'
+    allowed_profiles = (PrintMembershipRole.ADMIN, PrintMembershipRole.AUDITOR, PrintMembershipRole.SUPERADMIN)
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context['titulo'] = 'Todas las Solicitudes de Impresion'
         return context
+
+
+class MembershipListView(ModuleProfileRequiredMixin, BaseAuditedViewMixin, PaginatedListMixin, ListView):
+    model = PrintRoleMembership
+    template_name = 'fotocopiadora/memberships/list.html'
+    context_object_name = 'memberships'
+    paginate_by = 25
+    permission_required = 'fotocopiadora.manage_print_memberships'
+    allowed_profiles = (PrintMembershipRole.ADMIN, PrintMembershipRole.SUPERADMIN)
+
+    def get_queryset(self):
+        return PrintRoleMembership.objects.filter(eliminado=False).select_related(
+            'user', 'departamento', 'area', 'equipo', 'cost_center'
+        ).order_by('user__username', 'role')
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context['titulo'] = 'Memberships de Fotocopiadora'
+        return context
+
+
+class MembershipCreateView(ModuleProfileRequiredMixin, BaseAuditedViewMixin, CreateView):
+    model = PrintRoleMembership
+    form_class = PrintRoleMembershipForm
+    template_name = 'fotocopiadora/memberships/form.html'
+    permission_required = 'fotocopiadora.manage_print_memberships'
+    success_url = reverse_lazy('fotocopiadora:lista_memberships')
+    allowed_profiles = (PrintMembershipRole.ADMIN, PrintMembershipRole.SUPERADMIN)
+    audit_action = 'CREAR'
+    audit_description_template = 'Creo membership de fotocopiadora {obj}'
+    success_message = 'Membership creado correctamente.'
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context['titulo'] = 'Nuevo Membership'
+        context['action'] = 'Crear'
+        return context
+
+
+class MembershipUpdateView(ModuleProfileRequiredMixin, BaseAuditedViewMixin, UpdateView):
+    model = PrintRoleMembership
+    form_class = PrintRoleMembershipForm
+    template_name = 'fotocopiadora/memberships/form.html'
+    permission_required = 'fotocopiadora.manage_print_memberships'
+    success_url = reverse_lazy('fotocopiadora:lista_memberships')
+    allowed_profiles = (PrintMembershipRole.ADMIN, PrintMembershipRole.SUPERADMIN)
+    audit_action = 'EDITAR'
+    audit_description_template = 'Edito membership de fotocopiadora {obj}'
+    success_message = 'Membership actualizado correctamente.'
+
+    def get_queryset(self):
+        return PrintRoleMembership.objects.filter(eliminado=False)
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context['titulo'] = 'Editar Membership'
+        context['action'] = 'Guardar cambios'
+        return context
+
+
+class MembershipDeleteView(ModuleProfileRequiredMixin, BaseAuditedViewMixin, SoftDeleteMixin, DeleteView):
+    model = PrintRoleMembership
+    template_name = 'fotocopiadora/memberships/delete.html'
+    permission_required = 'fotocopiadora.manage_print_memberships'
+    success_url = reverse_lazy('fotocopiadora:lista_memberships')
+    allowed_profiles = (PrintMembershipRole.ADMIN, PrintMembershipRole.SUPERADMIN)
+    audit_action = 'ELIMINAR'
+    audit_description_template = 'Desactivo membership de fotocopiadora {obj}'
+    success_message = 'Membership desactivado correctamente.'
+
+    def get_queryset(self):
+        return PrintRoleMembership.objects.filter(eliminado=False)
 
 
 class PrintRequestDetailView(ScopedObjectPermissionMixin, BaseAuditedViewMixin, DetailView):
@@ -197,12 +313,13 @@ class PrintRequestDetailView(ScopedObjectPermissionMixin, BaseAuditedViewMixin, 
         return context
 
 
-class PrintRequestCreateView(BaseAuditedViewMixin, CreateView):
+class PrintRequestCreateView(ModuleProfileRequiredMixin, BaseAuditedViewMixin, CreateView):
     model = PrintRequest
     form_class = PrintRequestForm
     template_name = 'fotocopiadora/requests/form.html'
     permission_required = 'fotocopiadora.add_printrequest'
     success_url = reverse_lazy('fotocopiadora:mis_solicitudes_impresion')
+    allowed_profiles = (PrintMembershipRole.REQUESTER, PrintMembershipRole.ADMIN, PrintMembershipRole.SUPERADMIN)
     audit_action = 'CREAR'
     audit_description_template = 'Creo solicitud de impresion {obj.numero}'
     success_message = 'Solicitud {obj.numero} creada exitosamente.'
@@ -262,12 +379,13 @@ class PrintRequestCreateView(BaseAuditedViewMixin, CreateView):
         return HttpResponseRedirect(self.get_success_url())
 
 
-class PrintRequestUpdateView(ScopedObjectPermissionMixin, BaseAuditedViewMixin, UpdateView):
+class PrintRequestUpdateView(ModuleProfileRequiredMixin, ScopedObjectPermissionMixin, BaseAuditedViewMixin, UpdateView):
     model = PrintRequest
     form_class = PrintRequestForm
     template_name = 'fotocopiadora/requests/form.html'
     permission_required = 'fotocopiadora.change_printrequest'
     success_url = reverse_lazy('fotocopiadora:mis_solicitudes_impresion')
+    allowed_profiles = (PrintMembershipRole.REQUESTER, PrintMembershipRole.ADMIN, PrintMembershipRole.SUPERADMIN)
     audit_action = 'EDITAR'
     audit_description_template = 'Edito solicitud de impresion {obj.numero}'
     success_message = 'Solicitud {obj.numero} actualizada exitosamente.'
@@ -375,142 +493,15 @@ class PrintRequestTransitionView(ScopedObjectPermissionMixin, BaseAuditedViewMix
         return redirect('fotocopiadora:detalle_solicitud_impresion', pk=self.object.pk)
 
 
-class TrabajoFotocopiaListView(BaseAuditedViewMixin, PaginatedListMixin, ListView):
-    model = TrabajoFotocopia
-    template_name = 'fotocopiadora/lista_trabajos.html'
-    context_object_name = 'trabajos'
-    permission_required = 'fotocopiadora.view_trabajofotocopia'
-    paginate_by = 25
-
-    def get_queryset(self) -> QuerySet[TrabajoFotocopia]:
-        queryset = TrabajoFotocopia.objects.filter(eliminado=False).select_related(
-            'equipo', 'solicitante_usuario', 'departamento', 'area'
-        )
-
-        form = FiltroTrabajoFotocopiaForm(self.request.GET)
-        if form.is_valid():
-            data = form.cleaned_data
-            if data.get('fecha_desde'):
-                queryset = queryset.filter(fecha_hora__date__gte=data['fecha_desde'])
-            if data.get('fecha_hasta'):
-                queryset = queryset.filter(fecha_hora__date__lte=data['fecha_hasta'])
-            if data.get('equipo'):
-                queryset = queryset.filter(equipo=data['equipo'])
-            if data.get('tipo_uso'):
-                queryset = queryset.filter(tipo_uso=data['tipo_uso'])
-            if data.get('solicitante'):
-                q = data['solicitante']
-                queryset = queryset.filter(
-                    Q(solicitante_nombre__icontains=q) |
-                    Q(solicitante_usuario__username__icontains=q)
-                )
-            if data.get('rut'):
-                queryset = queryset.filter(rut_solicitante__icontains=data['rut'])
-
-        return queryset.order_by('-fecha_hora', '-numero')
-
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-        context['titulo'] = 'Trabajos de Fotocopiadora'
-        context['form'] = FiltroTrabajoFotocopiaForm(self.request.GET)
-        user = self.request.user
-        context['permisos'] = {
-            'puede_crear': user.has_perm('fotocopiadora.add_trabajofotocopia'),
-            'puede_editar': user.has_perm('fotocopiadora.change_trabajofotocopia'),
-            'puede_anular': user.has_perm('fotocopiadora.anular_trabajo_fotocopia'),
-        }
-        return context
-
-
-class TrabajoFotocopiaDetailView(BaseAuditedViewMixin, DetailView):
-    model = TrabajoFotocopia
-    template_name = 'fotocopiadora/detalle_trabajo.html'
-    context_object_name = 'trabajo'
-    permission_required = 'fotocopiadora.view_trabajofotocopia'
-
-    def get_queryset(self) -> QuerySet[TrabajoFotocopia]:
-        return TrabajoFotocopia.objects.filter(eliminado=False).select_related(
-            'equipo', 'solicitante_usuario', 'departamento', 'area'
-        )
-
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-        context['titulo'] = f'Trabajo {self.object.numero}'
-        return context
-
-
-class TrabajoFotocopiaCreateView(BaseAuditedViewMixin, CreateView):
-    model = TrabajoFotocopia
-    form_class = TrabajoFotocopiaForm
-    template_name = 'fotocopiadora/form_trabajo.html'
-    permission_required = 'fotocopiadora.add_trabajofotocopia'
-    success_url = reverse_lazy('fotocopiadora:lista_trabajos')
-    audit_action = 'CREAR'
-    audit_description_template = 'Creo trabajo de fotocopiadora {obj.numero}'
-    success_message = 'Trabajo {obj.numero} registrado exitosamente.'
-
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-        context['titulo'] = 'Nuevo Trabajo de Fotocopiadora'
-        context['action'] = 'Crear'
-        return context
-
-    def form_valid(self, form):
-        self.object = form.save(commit=False)
-        if not self.object.solicitante_usuario:
-            self.object.solicitante_usuario = self.request.user
-        response = super().form_valid(form)
-        self.log_action(self.object, self.request)
-        return response
-
-
-class TrabajoFotocopiaUpdateView(BaseAuditedViewMixin, UpdateView):
-    model = TrabajoFotocopia
-    form_class = TrabajoFotocopiaForm
-    template_name = 'fotocopiadora/form_trabajo.html'
-    permission_required = 'fotocopiadora.change_trabajofotocopia'
-    success_url = reverse_lazy('fotocopiadora:lista_trabajos')
-    audit_action = 'EDITAR'
-    audit_description_template = 'Edito trabajo de fotocopiadora {obj.numero}'
-    success_message = 'Trabajo {obj.numero} actualizado exitosamente.'
-
-    def get_queryset(self) -> QuerySet[TrabajoFotocopia]:
-        return TrabajoFotocopia.objects.filter(eliminado=False)
+class LegacyWorkflowRetiredView(BaseAuditedViewMixin, TemplateView):
+    permission_required = 'fotocopiadora.view_printrequest'
 
     def dispatch(self, request, *args, **kwargs):
-        obj = self.get_object()
-        if request.user.has_perm('fotocopiadora.gestionar_equipos_fotocopiadora'):
-            return super().dispatch(request, *args, **kwargs)
-
-        limite = timezone.now() - timedelta(hours=24)
-        if obj.solicitante_usuario_id != request.user.id or obj.fecha_hora < limite:
-            return HttpResponseForbidden('No tiene permisos para editar este trabajo.')
-
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-        context['titulo'] = f'Editar Trabajo {self.object.numero}'
-        context['action'] = 'Editar'
-        return context
-
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        self.log_action(self.object, self.request)
-        return response
-
-
-class TrabajoFotocopiaDeleteView(BaseAuditedViewMixin, SoftDeleteMixin, DeleteView):
-    model = TrabajoFotocopia
-    template_name = 'fotocopiadora/eliminar_trabajo.html'
-    permission_required = 'fotocopiadora.anular_trabajo_fotocopia'
-    success_url = reverse_lazy('fotocopiadora:lista_trabajos')
-    audit_action = 'ELIMINAR'
-    audit_description_template = 'Anulo trabajo de fotocopiadora {obj.numero}'
-    success_message = 'Trabajo {obj.numero} anulado correctamente.'
-
-    def get_queryset(self) -> QuerySet[TrabajoFotocopia]:
-        return TrabajoFotocopia.objects.filter(eliminado=False)
+        messages.warning(
+            request,
+            'El flujo manual de fotocopiadora fue retirado. Use exclusivamente el workflow oficial del modulo.'
+        )
+        return redirect('fotocopiadora:menu_fotocopiadora')
 
 
 class EquipoListView(BaseAuditedViewMixin, PaginatedListMixin, ListView):

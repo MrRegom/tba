@@ -21,6 +21,15 @@ from .models import (
 
 
 class PrintRequestQueryService:
+    ROLE_PRECEDENCE = (
+        PrintMembershipRole.SUPERADMIN,
+        PrintMembershipRole.ADMIN,
+        PrintMembershipRole.OPERATOR,
+        PrintMembershipRole.APPROVER,
+        PrintMembershipRole.REQUESTER,
+        PrintMembershipRole.AUDITOR,
+    )
+
     @staticmethod
     def role_memberships(user, role: str | None = None):
         qs = PrintRoleMembership.objects.filter(user=user, activo=True, eliminado=False)
@@ -29,15 +38,70 @@ class PrintRequestQueryService:
         return qs
 
     @staticmethod
+    def active_memberships(user):
+        return PrintRoleMembership.objects.filter(user=user, activo=True, eliminado=False).select_related(
+            'departamento', 'area', 'equipo', 'cost_center'
+        )
+
+    @classmethod
+    def primary_membership(cls, user):
+        if not getattr(user, 'is_authenticated', False):
+            return None
+        if user.is_superuser:
+            return {'role': PrintMembershipRole.SUPERADMIN, 'is_primary': True}
+
+        memberships = list(cls.active_memberships(user))
+        primary = [membership for membership in memberships if membership.is_primary]
+        if len(primary) == 1:
+            return primary[0]
+        if len(primary) > 1:
+            return None
+        if len(memberships) == 1:
+            return memberships[0]
+        for role in cls.ROLE_PRECEDENCE:
+            for membership in memberships:
+                if membership.role == role:
+                    return membership
+        return None
+
+    @classmethod
+    def module_profile(cls, user) -> str | None:
+        membership = cls.primary_membership(user)
+        if membership is None:
+            if getattr(user, 'is_superuser', False):
+                return PrintMembershipRole.SUPERADMIN
+            if (
+                user.has_perm('fotocopiadora.manage_print_memberships')
+                or user.has_perm('fotocopiadora.manage_print_settings')
+                or user.has_perm('fotocopiadora.manage_print_cost_centers')
+            ):
+                return PrintMembershipRole.ADMIN
+            if user.has_perm('fotocopiadora.view_all_printrequest'):
+                return PrintMembershipRole.AUDITOR
+            if user.has_perm('fotocopiadora.add_printrequest') or user.has_perm('fotocopiadora.view_printrequest'):
+                return PrintMembershipRole.REQUESTER
+            return None
+        return membership['role'] if isinstance(membership, dict) else membership.role
+
+    @staticmethod
     def for_user(queryset, user):
         if not user.is_authenticated:
             return queryset.none()
 
-        if user.is_superuser or user.has_perm('fotocopiadora.view_all_printrequest'):
+        if user.is_superuser:
             return queryset
 
-        if user.has_perm('fotocopiadora.view_department_printrequest'):
+        profile = PrintRequestQueryService.module_profile(user)
+        if profile in {PrintMembershipRole.ADMIN, PrintMembershipRole.AUDITOR, PrintMembershipRole.SUPERADMIN}:
+            return queryset
+
+        if user.has_perm('fotocopiadora.manage_print_memberships') or user.has_perm('fotocopiadora.manage_print_settings'):
+            return queryset
+
+        if profile == PrintMembershipRole.APPROVER:
             memberships = PrintRequestQueryService.role_memberships(user, PrintMembershipRole.APPROVER)
+            if not memberships.exists():
+                return queryset.none()
             department_ids = list(memberships.exclude(departamento=None).values_list('departamento_id', flat=True))
             area_ids = list(memberships.exclude(area=None).values_list('area_id', flat=True))
             return queryset.filter(
@@ -47,8 +111,10 @@ class PrintRequestQueryService:
                 models.Q(approver=user)
             ).distinct()
 
-        if user.has_perm('fotocopiadora.view_operational_queue_printrequest'):
+        if profile == PrintMembershipRole.OPERATOR:
             memberships = PrintRequestQueryService.role_memberships(user, PrintMembershipRole.OPERATOR)
+            if not memberships.exists():
+                return queryset.none()
             equipment_ids = list(memberships.exclude(equipo=None).values_list('equipo_id', flat=True))
             base = queryset.filter(
                 status__in=[
@@ -63,6 +129,23 @@ class PrintRequestQueryService:
             return base.distinct()
 
         return queryset.filter(requester=user)
+
+    @classmethod
+    def home_cards_for_user(cls, user):
+        profile = cls.module_profile(user)
+        if profile == PrintMembershipRole.REQUESTER:
+            return ['my_requests']
+        if profile == PrintMembershipRole.APPROVER:
+            return ['approval_queue']
+        if profile == PrintMembershipRole.OPERATOR:
+            return ['operator_queue']
+        if profile == PrintMembershipRole.ADMIN:
+            return ['admin_overview', 'memberships_admin', 'equipment_admin']
+        if profile == PrintMembershipRole.AUDITOR:
+            return ['audit_overview']
+        if profile == PrintMembershipRole.SUPERADMIN:
+            return ['my_requests', 'approval_queue', 'operator_queue', 'admin_overview', 'memberships_admin', 'equipment_admin']
+        return []
 
     @staticmethod
     def can_view(user, request_obj: PrintRequest) -> bool:
@@ -94,7 +177,7 @@ class PrintRequestQueryService:
 
         memberships = PrintRequestQueryService.role_memberships(user, PrintMembershipRole.OPERATOR)
         if not memberships.exists():
-            return True
+            return False
         if request_obj.equipo_id and memberships.filter(equipo_id=request_obj.equipo_id).exists():
             return True
         return memberships.filter(equipo=None).exists()
@@ -200,6 +283,10 @@ class PrintRequestTransitionService:
     @transaction.atomic
     def transition(cls, *, request_obj: PrintRequest, action: str, actor, request, comment: str = '') -> PrintRequest:
         action = action.upper()
+        request_obj = PrintRequest.objects.select_for_update().prefetch_related('items').get(
+            pk=request_obj.pk,
+            eliminado=False,
+        )
         if action not in cls.RULES:
             raise ValidationError('Accion de flujo no soportada.')
 
@@ -231,6 +318,8 @@ class PrintRequestTransitionService:
                     partial = True
             request_obj.is_partial_approval = partial
         elif action == 'REJECT':
+            if not comment.strip():
+                raise ValidationError('Debe registrar una observacion de rechazo.')
             request_obj.approver = actor
             request_obj.rejected_at = now
             request_obj.rejection_reason = comment
@@ -245,8 +334,13 @@ class PrintRequestTransitionService:
             request_obj.delivered_at = now
             request_obj.delivery_comment = comment
         elif action == 'CLOSE':
+            request_obj.closed_by = actor
             request_obj.closed_at = now
+            request_obj.close_reason = comment
         elif action == 'CANCEL':
+            if not comment.strip():
+                raise ValidationError('Debe registrar una observacion de cancelacion.')
+            request_obj.cancelled_by = actor
             request_obj.cancelled_at = now
 
         request_obj.full_clean()

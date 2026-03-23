@@ -12,6 +12,7 @@ from apps.fotocopiadora.models import (
     PrintRequestStatus,
     PrintRoleMembership,
 )
+from apps.fotocopiadora.services import PrintRequestQueryService
 from apps.solicitudes.models import Area, Departamento
 
 
@@ -165,6 +166,11 @@ def test_operator_can_complete_operational_flow(client):
         'fotocopiadora.deliver_printrequest',
         'fotocopiadora.close_printrequest',
     )
+    PrintRoleMembership.objects.create(
+        user=operator,
+        role=PrintMembershipRole.OPERATOR,
+        is_primary=True,
+    )
 
     request_obj = PrintRequest.objects.create(
         numero='PR-OP-1',
@@ -251,3 +257,63 @@ def test_approver_cannot_view_or_approve_request_outside_scope(client):
 
     request_obj.refresh_from_db()
     assert request_obj.status == PrintRequestStatus.PENDING_APPROVAL
+
+
+@pytest.mark.django_db
+def test_primary_module_profile_uses_membership_priority_over_permissions():
+    user = User.objects.create_user(username='perfil-principal', password='x')
+    departamento = Departamento.objects.create(codigo='DEP-PROF-1', nombre='Lenguaje')
+
+    grant_permissions(
+        user,
+        'fotocopiadora.view_printrequest',
+        'fotocopiadora.view_department_printrequest',
+        'fotocopiadora.approve_printrequest',
+    )
+    PrintRoleMembership.objects.create(
+        user=user,
+        role=PrintMembershipRole.APPROVER,
+        departamento=departamento,
+        is_primary=True,
+    )
+
+    assert PrintRequestQueryService.module_profile(user) == PrintMembershipRole.APPROVER
+
+
+@pytest.mark.django_db
+def test_legacy_routes_redirect_to_official_module_home(client):
+    user = User.objects.create_user(username='legacy-blocked', password='x')
+    grant_permissions(user, 'fotocopiadora.view_printrequest')
+    client.force_login(user)
+
+    response = client.get(reverse('fotocopiadora:lista_trabajos'))
+
+    assert response.status_code == 302
+    assert response.url == reverse('fotocopiadora:menu_fotocopiadora')
+
+
+@pytest.mark.django_db
+def test_module_home_uses_primary_profile_cards(client):
+    user = User.objects.create_user(username='jefe-home-print', password='x')
+    departamento = Departamento.objects.create(codigo='DEP-HOME-1', nombre='Ciencias')
+    grant_permissions(
+        user,
+        'fotocopiadora.view_printrequest',
+        'fotocopiadora.view_department_printrequest',
+        'fotocopiadora.approve_printrequest',
+    )
+    PrintRoleMembership.objects.create(
+        user=user,
+        role=PrintMembershipRole.APPROVER,
+        departamento=departamento,
+        is_primary=True,
+    )
+    client.force_login(user)
+
+    response = client.get(reverse('fotocopiadora:menu_fotocopiadora'))
+
+    assert response.status_code == 200
+    page = response.content.decode('utf-8')
+    assert 'Bandeja de Aprobación' in page
+    assert 'Bandeja Operativa' not in page
+    assert 'Control Global' not in page
