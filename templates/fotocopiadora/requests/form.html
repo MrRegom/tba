@@ -1,0 +1,87 @@
+{% extends 'partials/base.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+      <h4 class="mb-sm-0">{{ titulo }}</h4>
+      <a href="{% url 'fotocopiadora:mis_solicitudes_impresion' %}" class="btn btn-light">Volver</a>
+    </div>
+  </div>
+</div>
+
+<form method="post" enctype="multipart/form-data" novalidate>
+  {% csrf_token %}
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header"><h5 class="mb-0">Datos de la solicitud</h5></div>
+        <div class="card-body">
+          <div class="row g-3">
+            {% for field in form %}
+            <div class="col-md-{% if field.name == 'description' %}12{% else %}6{% endif %}">
+              <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h5 class="mb-0">Detalle de impresión</h5></div>
+        <div class="card-body">
+          {{ formset.management_form }}
+          <div class="row g-3">
+            {% for item_form in formset %}
+            <div class="col-12 border rounded p-3">
+              {% if item_form.non_field_errors %}
+              <div class="alert alert-danger py-2">{{ item_form.non_field_errors }}</div>
+              {% endif %}
+              {% if item_form.instance.pk %}{{ item_form.id }}{% endif %}
+              <div class="row g-3">
+                {% for field in item_form.visible_fields %}
+                <div class="col-md-{% if field.name == 'notes' %}12{% elif field.name == 'document_title' %}6{% else %}3{% endif %}">
+                  {% if field.name == 'DELETE' %}
+                  <div class="form-check pt-4">{{ field }} <label class="form-check-label" for="{{ field.id_for_label }}">Eliminar</label></div>
+                  {% else %}
+                  <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                  {{ field }}
+                  {% endif %}
+                  {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-header"><h5 class="mb-0">Adjunto opcional</h5></div>
+        <div class="card-body">
+          {% for field in attachment_form %}
+          <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+          {% endfor %}
+          <p class="text-muted small mb-0 mt-2">Formatos permitidos: PDF, Office e imágenes. Máximo 10 MB.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body d-grid gap-2">
+          <button type="submit" class="btn btn-primary">{{ action }}</button>
+          <a href="{% url 'fotocopiadora:mis_solicitudes_impresion' %}" class="btn btn-light">Cancelar</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}

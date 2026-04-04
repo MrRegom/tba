@@ -1,0 +1,41 @@
+{% load static %}
+<div class="table-responsive">
+  <table class="table table-striped align-middle">
+    <thead>
+      <tr>
+        <th>Número</th>
+        <th>Título</th>
+        <th>Solicitante</th>
+        <th>Fecha requerida</th>
+        <th>Prioridad</th>
+        <th>Estado</th>
+        <th class="text-end">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for request_obj in requests %}
+      <tr>
+        <td>{{ request_obj.numero }}</td>
+        <td>
+          <div class="fw-semibold">{{ request_obj.title }}</div>
+          <small class="text-muted">{{ request_obj.get_request_type_display }}</small>
+        </td>
+        <td>{{ request_obj.requester.get_full_name|default:request_obj.requester.username }}</td>
+        <td>{{ request_obj.required_at|date:'d/m/Y H:i' }}</td>
+        <td>{{ request_obj.get_priority_display }}</td>
+        <td>{% include 'fotocopiadora/requests/_status_badge.html' with status=request_obj.status %}</td>
+        <td class="text-end">
+          <a href="{% url 'fotocopiadora:detalle_solicitud_impresion' request_obj.pk %}" class="btn btn-sm btn-light">Ver</a>
+          {% if request_obj.requester_id == request.user.id and request_obj.status == 'DRAFT' %}
+          <a href="{% url 'fotocopiadora:editar_solicitud_impresion' request_obj.pk %}" class="btn btn-sm btn-soft-secondary">Editar</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" class="text-center text-muted py-4">No hay solicitudes para mostrar.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

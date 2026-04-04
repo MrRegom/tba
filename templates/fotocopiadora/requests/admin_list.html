@@ -1,0 +1,23 @@
+{% extends 'partials/base.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+      <h4 class="mb-sm-0">{{ titulo }}</h4>
+      <a href="{% url 'fotocopiadora:menu_fotocopiadora' %}" class="btn btn-light">Volver</a>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h5 class="mb-0">Vista global del workflow</h5>
+  </div>
+  <div class="card-body">
+    {% include 'fotocopiadora/requests/_list_table.html' %}
+  </div>
+</div>
+{% endblock %}

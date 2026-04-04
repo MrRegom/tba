@@ -4,8 +4,10 @@ Utilidades de lógica de negocio reutilizables.
 Contiene funciones para validación de RUT, generación de códigos,
 formateo de texto y otras utilidades de negocio.
 """
+
 from typing import Optional
 import re
+from django.db import transaction
 
 
 def format_rut(rut: str) -> str:
@@ -23,10 +25,10 @@ def format_rut(rut: str) -> str:
         '12.345.678-9'
     """
     # Limpiar RUT: remover puntos, guiones y espacios
-    rut_limpio: str = rut.replace('.', '').replace('-', '').replace(' ', '').upper()
+    rut_limpio: str = rut.replace(".", "").replace("-", "").replace(" ", "").upper()
 
     if not rut_limpio:
-        return ''
+        return ""
 
     # Separar número y dígito verificador
     if len(rut_limpio) < 2:
@@ -36,16 +38,16 @@ def format_rut(rut: str) -> str:
     dv: str = rut_limpio[-1]
 
     # Formatear con puntos de miles
-    numero_formateado: str = ''
+    numero_formateado: str = ""
     contador: int = 0
 
     for digito in reversed(numero):
         if contador > 0 and contador % 3 == 0:
-            numero_formateado = f'.{numero_formateado}'
-        numero_formateado = f'{digito}{numero_formateado}'
+            numero_formateado = f".{numero_formateado}"
+        numero_formateado = f"{digito}{numero_formateado}"
         contador += 1
 
-    return f'{numero_formateado}-{dv}'
+    return f"{numero_formateado}-{dv}"
 
 
 def validar_rut(rut: str) -> bool:
@@ -67,7 +69,7 @@ def validar_rut(rut: str) -> bool:
         False
     """
     # Limpiar RUT
-    rut_limpio: str = rut.replace('.', '').replace('-', '').replace(' ', '').upper()
+    rut_limpio: str = rut.replace(".", "").replace("-", "").replace(" ", "").upper()
 
     if len(rut_limpio) < 2:
         return False
@@ -96,15 +98,15 @@ def validar_rut(rut: str) -> bool:
     dv_calculado: str = str(11 - resto)
 
     # Casos especiales
-    if dv_calculado == '11':
-        dv_calculado = '0'
-    elif dv_calculado == '10':
-        dv_calculado = 'K'
+    if dv_calculado == "11":
+        dv_calculado = "0"
+    elif dv_calculado == "10":
+        dv_calculado = "K"
 
     return dv_ingresado == dv_calculado
 
 
-def truncar_texto(texto: str, longitud: int = 100, sufijo: str = '...') -> str:
+def truncar_texto(texto: str, longitud: int = 100, sufijo: str = "...") -> str:
     """
     Trunca un texto a una longitud máxima agregando un sufijo.
 
@@ -121,28 +123,36 @@ def truncar_texto(texto: str, longitud: int = 100, sufijo: str = '...') -> str:
         'Este es...'
     """
     if not texto:
-        return ''
+        return ""
 
     if len(texto) <= longitud:
         return texto
 
-    return texto[:longitud - len(sufijo)].strip() + sufijo
+    return texto[: longitud - len(sufijo)].strip() + sufijo
 
 
 def generar_codigo_unico(
     prefijo: str,
     modelo,
-    campo: str = 'codigo',
-    longitud: int = 6
+    campo: str = "codigo",
+    longitud: int = 6,
+    max_retries: int = 5,  # reservado para compatibilidad; retry vive en AutoCodeMixin
 ) -> str:
     """
-    Genera un código único para un modelo usando un prefijo.
+    Genera el siguiente código secuencial único para un modelo y prefijo dados.
+
+    Determina el número máximo actual analizando todos los registros con ese
+    prefijo y devuelve el siguiente en la secuencia.  El parámetro
+    ``max_retries`` es aceptado por compatibilidad con llamadas existentes pero
+    **no** se usa aquí — la lógica de reintento ante ``IntegrityError`` vive en
+    ``AutoCodeMixin.save()``.
 
     Args:
         prefijo: Prefijo del código (ej: 'ART', 'CAT', 'MOV')
         modelo: Clase del modelo Django
         campo: Nombre del campo que contiene el código (default: 'codigo')
-        longitud: Longitud del número secuencial (default: 6)
+        longitud: Longitud del número secuencial con ceros a la izquierda (default: 6)
+        max_retries: Parámetro reservado para compatibilidad (no utilizado aquí)
 
     Returns:
         str: Código único generado (ej: 'ART-000001')
@@ -152,43 +162,60 @@ def generar_codigo_unico(
         >>> codigo = generar_codigo_unico('ART', Articulo)
         >>> codigo
         'ART-000001'
-    """
-    # Buscar el último código con ese prefijo
-    ultimos = modelo.objects.filter(
-        **{f'{campo}__startswith': f'{prefijo}-'}
-    ).order_by(f'-{campo}')[:1]
 
-    if ultimos.exists():
-        ultimo_codigo: str = getattr(ultimos[0], campo)
-        # Extraer el número del código
-        match = re.search(r'(\d+)$', ultimo_codigo)
-        if match:
-            ultimo_numero: int = int(match.group(1))
-            nuevo_numero: int = ultimo_numero + 1
-        else:
-            nuevo_numero = 1
-    else:
-        nuevo_numero = 1
+    Note:
+        Usa ``select_for_update()`` para serializar lecturas concurrentes del
+        contador cuando se invoca dentro de ``transaction.atomic()`` (que
+        ``AutoCodeMixin`` siempre provee).  Fuera de una transacción el lock
+        es un no-op, pero la constraint UNIQUE de la DB sigue siendo el
+        árbitro final.
+    """
+    # select_for_update() serializa la lectura del máximo cuando se ejecuta
+    # dentro de transaction.atomic() (AutoCodeMixin siempre lo provee).
+    codigos_existentes = (
+        modelo.objects.select_for_update()
+        .filter(**{f"{campo}__startswith": f"{prefijo}-"})
+        .values_list(campo, flat=True)
+    )
+
+    nuevo_numero: int = 1
+
+    if codigos_existentes.exists():
+        # Extraer todos los números y tomar el máximo para evitar errores de
+        # ordenación alfabética ('ART-9' > 'ART-10' lexicográficamente).
+        max_numero: int = 0
+        for codigo_existente in codigos_existentes:
+            match = re.search(r"(\d+)$", str(codigo_existente))
+            if match:
+                num = int(match.group(1))
+                if num > max_numero:
+                    max_numero = num
+        nuevo_numero = max_numero + 1
 
     # Formatear con ceros a la izquierda
-    return f'{prefijo}-{nuevo_numero:0{longitud}d}'
+    return f"{prefijo}-{nuevo_numero:0{longitud}d}"
 
 
 def generar_codigo_con_anio(
     prefijo: str,
     modelo,
-    campo: str = 'numero',
-    longitud: int = 6
+    campo: str = "numero",
+    longitud: int = 6,
+    max_retries: int = 5,  # reservado para compatibilidad; retry vive en el llamador
 ) -> str:
     """
     Genera un código único para un modelo usando un prefijo y el año actual.
     El correlativo se reinicia cada año.
+
+    El parámetro ``max_retries`` es aceptado por compatibilidad con llamadas
+    existentes pero no se usa aquí.
 
     Args:
         prefijo: Prefijo del código (ej: 'OC', 'SOL', 'FAC')
         modelo: Clase del modelo Django
         campo: Nombre del campo que contiene el código (default: 'numero')
         longitud: Longitud del número secuencial (default: 6)
+        max_retries: Parámetro reservado para compatibilidad (no utilizado aquí)
 
     Returns:
         str: Código único generado (ej: 'OC-2025-000001')
@@ -204,23 +231,26 @@ def generar_codigo_con_anio(
     # Obtener el año actual
     anio_actual: int = datetime.now().year
 
-    # Buscar el último código con ese prefijo y año
-    patron_busqueda: str = f'{prefijo}-{anio_actual}-'
-    ultimos = modelo.objects.filter(
-        **{f'{campo}__startswith': patron_busqueda}
-    ).order_by(f'-{campo}')[:1]
+    # Buscar todos los códigos con ese prefijo y año para calcular el máximo
+    # usando comparación numérica (evita errores de orden lexicográfico).
+    patron_busqueda: str = f"{prefijo}-{anio_actual}-"
+    codigos_existentes = (
+        modelo.objects.select_for_update()
+        .filter(**{f"{campo}__startswith": patron_busqueda})
+        .values_list(campo, flat=True)
+    )
 
-    if ultimos.exists():
-        ultimo_codigo: str = getattr(ultimos[0], campo)
-        # Extraer el número del código (después del segundo guion)
-        match = re.search(r'(\d+)$', ultimo_codigo)
-        if match:
-            ultimo_numero: int = int(match.group(1))
-            nuevo_numero: int = ultimo_numero + 1
-        else:
-            nuevo_numero = 1
-    else:
-        nuevo_numero = 1
+    nuevo_numero: int = 1
+
+    if codigos_existentes.exists():
+        max_numero: int = 0
+        for codigo_existente in codigos_existentes:
+            match = re.search(r"(\d+)$", str(codigo_existente))
+            if match:
+                num = int(match.group(1))
+                if num > max_numero:
+                    max_numero = num
+        nuevo_numero = max_numero + 1
 
     # Formatear con ceros a la izquierda
-    return f'{prefijo}-{anio_actual}-{nuevo_numero:0{longitud}d}'
+    return f"{prefijo}-{anio_actual}-{nuevo_numero:0{longitud}d}"

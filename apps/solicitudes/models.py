@@ -6,12 +6,13 @@ from django.db import models
 
 from apps.activos.models import Activo
 from apps.bodega.models import Articulo, Bodega
-from core.models import BaseModel
+from core.models import AutoCodeMixin, BaseModel
 
 User = get_user_model()
 
 
-class Departamento(BaseModel):
+class Departamento(AutoCodeMixin, BaseModel):
+    AUTO_CODE_PREFIX = "DEP"
     """
     Catálogo de departamentos de la institución.
 
@@ -30,38 +31,38 @@ class Departamento(BaseModel):
     codigo = models.CharField(
         max_length=20,
         unique=True,
-        verbose_name='Código',
-        help_text='Código único del departamento'
+        verbose_name="Código",
+        help_text="Código único del departamento",
     )
     nombre = models.CharField(
         max_length=100,
-        verbose_name='Nombre',
-        help_text='Nombre descriptivo del departamento'
+        verbose_name="Nombre",
+        help_text="Nombre descriptivo del departamento",
     )
     descripcion = models.TextField(
         blank=True,
         null=True,
-        verbose_name='Descripción',
-        help_text='Descripción detallada del departamento'
+        verbose_name="Descripción",
+        help_text="Descripción detallada del departamento",
     )
     responsable = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
-        related_name='departamentos_responsable',
-        verbose_name='Responsable',
+        related_name="departamentos_responsable",
+        verbose_name="Responsable",
         blank=True,
         null=True,
-        help_text='Usuario responsable del departamento'
+        help_text="Usuario responsable del departamento",
     )
 
     class Meta:
-        db_table = 'tba_solicitudes_conf_departamento'
-        verbose_name = 'Departamento'
-        verbose_name_plural = 'Departamentos'
-        ordering = ['codigo']
+        db_table = "tba_solicitudes_conf_departamento"
+        verbose_name = "Departamento"
+        verbose_name_plural = "Departamentos"
+        ordering = ["codigo"]
         indexes = [
-            models.Index(fields=['codigo']),
-            models.Index(fields=['activo', 'eliminado']),
+            models.Index(fields=["codigo"]),
+            models.Index(fields=["activo", "eliminado"]),
         ]
 
     def __str__(self) -> str:
@@ -69,7 +70,7 @@ class Departamento(BaseModel):
         return f"{self.codigo} - {self.nombre}"
 
 
-class Area(BaseModel):
+class Area(AutoCodeMixin, BaseModel):
     """
     Catálogo de áreas dentro de los departamentos.
 
@@ -85,49 +86,49 @@ class Area(BaseModel):
         activo: Indica si el área está activa (heredado de BaseModel).
     """
 
+    AUTO_CODE_PREFIX = "ARE"
+
     codigo = models.CharField(
         max_length=20,
         unique=True,
-        verbose_name='Código',
-        help_text='Código único del área'
+        verbose_name="Código",
+        help_text="Código único del área",
     )
     nombre = models.CharField(
-        max_length=100,
-        verbose_name='Nombre',
-        help_text='Nombre descriptivo del área'
+        max_length=100, verbose_name="Nombre", help_text="Nombre descriptivo del área"
     )
     descripcion = models.TextField(
         blank=True,
         null=True,
-        verbose_name='Descripción',
-        help_text='Descripción detallada del área'
+        verbose_name="Descripción",
+        help_text="Descripción detallada del área",
     )
     departamento = models.ForeignKey(
         Departamento,
         on_delete=models.CASCADE,
-        related_name='areas',
-        verbose_name='Departamento',
-        help_text='Departamento al que pertenece el área'
+        related_name="areas",
+        verbose_name="Departamento",
+        help_text="Departamento al que pertenece el área",
     )
     responsable = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
-        related_name='areas_responsable',
-        verbose_name='Responsable',
+        related_name="areas_responsable",
+        verbose_name="Responsable",
         blank=True,
         null=True,
-        help_text='Usuario responsable del área'
+        help_text="Usuario responsable del área",
     )
 
     class Meta:
-        db_table = 'tba_solicitudes_conf_area'
-        verbose_name = 'Área'
-        verbose_name_plural = 'Áreas'
-        ordering = ['codigo']
+        db_table = "tba_solicitudes_conf_area"
+        verbose_name = "Área"
+        verbose_name_plural = "Áreas"
+        ordering = ["codigo"]
         indexes = [
-            models.Index(fields=['codigo']),
-            models.Index(fields=['departamento']),
-            models.Index(fields=['activo', 'eliminado']),
+            models.Index(fields=["codigo"]),
+            models.Index(fields=["departamento"]),
+            models.Index(fields=["activo", "eliminado"]),
         ]
 
     def __str__(self) -> str:
@@ -135,7 +136,7 @@ class Area(BaseModel):
         return f"{self.codigo} - {self.nombre}"
 
 
-class TipoSolicitud(BaseModel):
+class TipoSolicitud(AutoCodeMixin, BaseModel):
     """
     Catálogo de tipos de solicitud.
 
@@ -150,37 +151,37 @@ class TipoSolicitud(BaseModel):
         activo: Indica si el tipo está activo (heredado de BaseModel).
     """
 
+    AUTO_CODE_PREFIX = "TSO"
+
     codigo = models.CharField(
         max_length=20,
         unique=True,
-        verbose_name='Código',
-        help_text='Código único del tipo de solicitud'
+        verbose_name="Código",
+        help_text="Código único del tipo de solicitud",
     )
     nombre = models.CharField(
-        max_length=100,
-        verbose_name='Nombre',
-        help_text='Nombre descriptivo del tipo'
+        max_length=100, verbose_name="Nombre", help_text="Nombre descriptivo del tipo"
     )
     descripcion = models.TextField(
         blank=True,
         null=True,
-        verbose_name='Descripción',
-        help_text='Descripción detallada del tipo'
+        verbose_name="Descripción",
+        help_text="Descripción detallada del tipo",
     )
     requiere_aprobacion = models.BooleanField(
         default=True,
-        verbose_name='Requiere Aprobación',
-        help_text='Indica si las solicitudes de este tipo requieren aprobación'
+        verbose_name="Requiere Aprobación",
+        help_text="Indica si las solicitudes de este tipo requieren aprobación",
     )
 
     class Meta:
-        db_table = 'tba_solicitudes_conf_tipo'
-        verbose_name = 'Tipo de Solicitud'
-        verbose_name_plural = 'Tipos de Solicitud'
-        ordering = ['codigo']
+        db_table = "tba_solicitudes_conf_tipo"
+        verbose_name = "Tipo de Solicitud"
+        verbose_name_plural = "Tipos de Solicitud"
+        ordering = ["codigo"]
         indexes = [
-            models.Index(fields=['codigo']),
-            models.Index(fields=['activo', 'eliminado']),
+            models.Index(fields=["codigo"]),
+            models.Index(fields=["activo", "eliminado"]),
         ]
 
     def __str__(self) -> str:
@@ -209,52 +210,50 @@ class EstadoSolicitud(BaseModel):
     codigo = models.CharField(
         max_length=20,
         unique=True,
-        verbose_name='Código',
-        help_text='Código único del estado'
+        verbose_name="Código",
+        help_text="Código único del estado",
     )
     nombre = models.CharField(
-        max_length=100,
-        verbose_name='Nombre',
-        help_text='Nombre descriptivo del estado'
+        max_length=100, verbose_name="Nombre", help_text="Nombre descriptivo del estado"
     )
     descripcion = models.TextField(
         blank=True,
         null=True,
-        verbose_name='Descripción',
-        help_text='Descripción detallada del estado'
+        verbose_name="Descripción",
+        help_text="Descripción detallada del estado",
     )
     color = models.CharField(
         max_length=7,
-        default='#6c757d',
-        verbose_name='Color (Hex)',
-        help_text='Color hexadecimal para representación visual'
+        default="#6c757d",
+        verbose_name="Color (Hex)",
+        help_text="Color hexadecimal para representación visual",
     )
     es_inicial = models.BooleanField(
         default=False,
-        verbose_name='Estado Inicial',
-        help_text='Indica si es un estado inicial'
+        verbose_name="Estado Inicial",
+        help_text="Indica si es un estado inicial",
     )
     es_final = models.BooleanField(
         default=False,
-        verbose_name='Estado Final',
-        help_text='Indica si es un estado final'
+        verbose_name="Estado Final",
+        help_text="Indica si es un estado final",
     )
     requiere_accion = models.BooleanField(
         default=False,
-        verbose_name='Requiere Acción',
-        help_text='Indica si el estado requiere acción del usuario'
+        verbose_name="Requiere Acción",
+        help_text="Indica si el estado requiere acción del usuario",
     )
 
     class Meta:
-        db_table = 'tba_solicitudes_conf_estado'
-        verbose_name = 'Estado de Solicitud'
-        verbose_name_plural = 'Estados de Solicitudes'
-        ordering = ['codigo']
+        db_table = "tba_solicitudes_conf_estado"
+        verbose_name = "Estado de Solicitud"
+        verbose_name_plural = "Estados de Solicitudes"
+        ordering = ["codigo"]
         indexes = [
-            models.Index(fields=['codigo']),
-            models.Index(fields=['es_inicial']),
-            models.Index(fields=['es_final']),
-            models.Index(fields=['activo', 'eliminado']),
+            models.Index(fields=["codigo"]),
+            models.Index(fields=["es_inicial"]),
+            models.Index(fields=["es_final"]),
+            models.Index(fields=["activo", "eliminado"]),
         ]
 
     def __str__(self) -> str:
@@ -294,196 +293,231 @@ class Solicitud(BaseModel):
     """
 
     TIPO_CHOICES = [
-        ('ACTIVO', 'Solicitud de Activos/Bienes'),
-        ('ARTICULO', 'Solicitud de Artículos'),
+        ("ACTIVO", "Solicitud de Activos/Bienes"),
+        ("ARTICULO", "Solicitud de Artículos"),
     ]
 
     tipo = models.CharField(
         max_length=10,
         choices=TIPO_CHOICES,
-        default='ARTICULO',
-        verbose_name='Tipo',
-        help_text='Define si la solicitud es de activos (bienes) o artículos'
+        default="ARTICULO",
+        verbose_name="Tipo",
+        help_text="Define si la solicitud es de activos (bienes) o artículos",
     )
     numero = models.CharField(
         max_length=20,
         unique=True,
-        verbose_name='Número de Solicitud',
-        help_text='Número único de la solicitud'
+        verbose_name="Número de Solicitud",
+        help_text="Número único de la solicitud",
     )
     fecha_solicitud = models.DateTimeField(
         auto_now_add=True,
-        verbose_name='Fecha de Solicitud',
-        help_text='Fecha y hora de creación de la solicitud'
+        verbose_name="Fecha de Solicitud",
+        help_text="Fecha y hora de creación de la solicitud",
     )
     fecha_requerida = models.DateField(
-        verbose_name='Fecha Requerida',
-        help_text='Fecha en que se requieren los materiales'
+        verbose_name="Fecha Requerida",
+        help_text="Fecha en que se requieren los materiales",
     )
 
     tipo_solicitud = models.ForeignKey(
         TipoSolicitud,
         on_delete=models.PROTECT,
-        related_name='solicitudes',
-        verbose_name='Tipo de Solicitud',
-        help_text='Tipo de solicitud según catálogo'
+        related_name="solicitudes",
+        verbose_name="Tipo de Solicitud",
+        help_text="Tipo de solicitud según catálogo",
     )
     estado = models.ForeignKey(
         EstadoSolicitud,
         on_delete=models.PROTECT,
-        related_name='solicitudes',
-        verbose_name='Estado',
-        help_text='Estado actual de la solicitud'
+        related_name="solicitudes",
+        verbose_name="Estado",
+        help_text="Estado actual de la solicitud",
     )
 
     # Información de la actividad
     titulo_actividad = models.CharField(
         max_length=200,
-        verbose_name='Título de la Actividad',
-        help_text='Título descriptivo de la actividad para la cual se solicitan los materiales',
+        verbose_name="Título de la Actividad",
+        help_text="Título descriptivo de la actividad para la cual se solicitan los materiales",
         blank=True,
-        null=True
+        null=True,
     )
     objetivo_actividad = models.TextField(
-        verbose_name='Objetivo de la Actividad',
-        help_text='Objetivo que se busca alcanzar con esta actividad',
+        verbose_name="Objetivo de la Actividad",
+        help_text="Objetivo que se busca alcanzar con esta actividad",
         blank=True,
-        null=True
+        null=True,
     )
 
     # Solicitante y responsables
     solicitante = models.ForeignKey(
         User,
         on_delete=models.PROTECT,
-        related_name='solicitudes_realizadas',
-        verbose_name='Solicitante',
-        help_text='Usuario que realiza la solicitud'
+        related_name="solicitudes_realizadas",
+        verbose_name="Solicitante",
+        help_text="Usuario que realiza la solicitud",
     )
 
     # Referencias a las estructuras organizacionales
     departamento = models.ForeignKey(
         Departamento,
         on_delete=models.PROTECT,
-        related_name='solicitudes',
-        verbose_name='Departamento',
+        related_name="solicitudes",
+        verbose_name="Departamento",
         blank=True,
         null=True,
-        help_text='Departamento asociado a la solicitud'
+        help_text="Departamento asociado a la solicitud",
     )
     area = models.ForeignKey(
         Area,
         on_delete=models.PROTECT,
-        related_name='solicitudes',
-        verbose_name='Área',
+        related_name="solicitudes",
+        verbose_name="Área",
         blank=True,
         null=True,
-        help_text='Área asociada a la solicitud'
+        help_text="Área asociada a la solicitud",
     )
 
     aprobador = models.ForeignKey(
         User,
         on_delete=models.PROTECT,
-        related_name='solicitudes_aprobadas',
-        verbose_name='Aprobador',
+        related_name="solicitudes_aprobadas",
+        verbose_name="Aprobador",
         blank=True,
         null=True,
-        help_text='Usuario que aprobó la solicitud'
+        help_text="Usuario que aprobó la solicitud",
     )
     fecha_aprobacion = models.DateTimeField(
         blank=True,
         null=True,
-        verbose_name='Fecha de Aprobación',
-        help_text='Fecha y hora de aprobación'
+        verbose_name="Fecha de Aprobación",
+        help_text="Fecha y hora de aprobación",
     )
 
     despachador = models.ForeignKey(
         User,
         on_delete=models.PROTECT,
-        related_name='solicitudes_despachadas',
-        verbose_name='Despachador',
+        related_name="solicitudes_despachadas",
+        verbose_name="Despachador",
         blank=True,
         null=True,
-        help_text='Usuario que despachó la solicitud'
+        help_text="Usuario que despachó la solicitud",
     )
     fecha_despacho = models.DateTimeField(
         blank=True,
         null=True,
-        verbose_name='Fecha de Despacho',
-        help_text='Fecha y hora de despacho'
+        verbose_name="Fecha de Despacho",
+        help_text="Fecha y hora de despacho",
     )
 
     # Bodega (solo para solicitudes de artículos)
     bodega_origen = models.ForeignKey(
         Bodega,
         on_delete=models.PROTECT,
-        related_name='solicitudes_origen',
-        verbose_name='Bodega Origen',
+        related_name="solicitudes_origen",
+        verbose_name="Bodega Origen",
         blank=True,
         null=True,
-        help_text='Solo requerido para solicitudes de artículos. Las solicitudes de activos no tienen bodega.'
+        help_text="Solo requerido para solicitudes de artículos. Las solicitudes de activos no tienen bodega.",
     )
 
     # Descripción y observaciones
     motivo = models.TextField(
-        verbose_name='Motivo de la Solicitud',
-        help_text='Justificación de la solicitud'
+        verbose_name="Motivo de la Solicitud", help_text="Justificación de la solicitud"
     )
     observaciones = models.TextField(
         blank=True,
         null=True,
-        verbose_name='Observaciones',
-        help_text='Observaciones adicionales'
+        verbose_name="Observaciones",
+        help_text="Observaciones adicionales",
     )
     notas_aprobacion = models.TextField(
         blank=True,
         null=True,
-        verbose_name='Notas de Aprobación',
-        help_text='Notas del aprobador'
+        verbose_name="Notas de Aprobación",
+        help_text="Notas del aprobador",
     )
     notas_despacho = models.TextField(
         blank=True,
         null=True,
-        verbose_name='Notas de Despacho',
-        help_text='Notas del despachador'
+        verbose_name="Notas de Despacho",
+        help_text="Notas del despachador",
     )
 
     class Meta:
-        db_table = 'tba_solicitudes_solicitud'
-        verbose_name = 'Solicitud'
-        verbose_name_plural = 'Solicitudes'
-        ordering = ['-fecha_solicitud', '-numero']
+        db_table = "tba_solicitudes_solicitud"
+        verbose_name = "Solicitud"
+        verbose_name_plural = "Solicitudes"
+        ordering = ["-fecha_solicitud", "-numero"]
         permissions = [
             # Permisos para GESTIÓN (Administración completa del módulo)
-            ('gestionar_solicitudes', 'Puede administrar completamente el módulo de solicitudes'),
-            ('aprobar_solicitudes', 'Puede aprobar solicitudes pendientes de aprobación'),
-            ('rechazar_solicitudes', 'Puede rechazar solicitudes y agregar observaciones'),
-            ('despachar_solicitudes', 'Puede despachar solicitudes aprobadas y registrar entregas'),
-            ('ver_todas_solicitudes', 'Puede visualizar todas las solicitudes del sistema'),
-            ('editar_cualquier_solicitud', 'Puede editar cualquier solicitud independiente del estado o solicitante'),
-            ('eliminar_cualquier_solicitud', 'Puede eliminar cualquier solicitud independiente del estado o solicitante'),
-
+            (
+                "gestionar_solicitudes",
+                "Puede administrar completamente el módulo de solicitudes",
+            ),
+            (
+                "aprobar_solicitudes",
+                "Puede aprobar solicitudes pendientes de aprobación",
+            ),
+            (
+                "rechazar_solicitudes",
+                "Puede rechazar solicitudes y agregar observaciones",
+            ),
+            (
+                "despachar_solicitudes",
+                "Puede despachar solicitudes aprobadas y registrar entregas",
+            ),
+            (
+                "ver_todas_solicitudes",
+                "Puede visualizar todas las solicitudes del sistema",
+            ),
+            (
+                "editar_cualquier_solicitud",
+                "Puede editar cualquier solicitud independiente del estado o solicitante",
+            ),
+            (
+                "eliminar_cualquier_solicitud",
+                "Puede eliminar cualquier solicitud independiente del estado o solicitante",
+            ),
             # Permisos para SOLICITUD DE ARTÍCULOS
-            ('crear_solicitud_articulos', 'Puede crear nuevas solicitudes de artículos de bodega'),
-            ('ver_solicitudes_articulos', 'Puede ver todas las solicitudes de artículos del sistema'),
-
+            (
+                "crear_solicitud_articulos",
+                "Puede crear nuevas solicitudes de artículos de bodega",
+            ),
+            (
+                "ver_solicitudes_articulos",
+                "Puede ver todas las solicitudes de artículos del sistema",
+            ),
             # Permisos para SOLICITUD DE BIENES
-            ('crear_solicitud_bienes', 'Puede crear nuevas solicitudes de bienes/activos de inventario'),
-            ('ver_solicitudes_bienes', 'Puede ver todas las solicitudes de bienes/activos del sistema'),
-
+            (
+                "crear_solicitud_bienes",
+                "Puede crear nuevas solicitudes de bienes/activos de inventario",
+            ),
+            (
+                "ver_solicitudes_bienes",
+                "Puede ver todas las solicitudes de bienes/activos del sistema",
+            ),
             # Permisos para MIS SOLICITUDES (Gestión de solicitudes propias)
-            ('ver_mis_solicitudes', 'Puede ver sus propias solicitudes creadas'),
-            ('editar_mis_solicitudes', 'Puede editar sus propias solicitudes en estado borrador o pendiente'),
-            ('eliminar_mis_solicitudes', 'Puede eliminar sus propias solicitudes en estado borrador'),
+            ("ver_mis_solicitudes", "Puede ver sus propias solicitudes creadas"),
+            (
+                "editar_mis_solicitudes",
+                "Puede editar sus propias solicitudes en estado borrador o pendiente",
+            ),
+            (
+                "eliminar_mis_solicitudes",
+                "Puede eliminar sus propias solicitudes en estado borrador",
+            ),
         ]
         indexes = [
-            models.Index(fields=['numero']),
-            models.Index(fields=['tipo']),
-            models.Index(fields=['fecha_solicitud']),
-            models.Index(fields=['fecha_requerida']),
-            models.Index(fields=['solicitante']),
-            models.Index(fields=['estado']),
-            models.Index(fields=['tipo_solicitud']),
-            models.Index(fields=['activo', 'eliminado']),
+            models.Index(fields=["numero"]),
+            models.Index(fields=["tipo"]),
+            models.Index(fields=["fecha_solicitud"]),
+            models.Index(fields=["fecha_requerida"]),
+            models.Index(fields=["solicitante"]),
+            models.Index(fields=["estado"]),
+            models.Index(fields=["tipo_solicitud"]),
+            models.Index(fields=["activo", "eliminado"]),
         ]
 
     def __str__(self) -> str:
@@ -515,69 +549,69 @@ class DetalleSolicitud(BaseModel):
     solicitud = models.ForeignKey(
         Solicitud,
         on_delete=models.CASCADE,
-        related_name='detalles',
-        verbose_name='Solicitud',
-        help_text='Solicitud a la que pertenece el detalle'
+        related_name="detalles",
+        verbose_name="Solicitud",
+        help_text="Solicitud a la que pertenece el detalle",
     )
     # FK a Artículo de Bodega (para solicitudes de artículos)
     articulo = models.ForeignKey(
         Articulo,
         on_delete=models.PROTECT,
-        related_name='detalles_solicitud',
-        verbose_name='Artículo',
+        related_name="detalles_solicitud",
+        verbose_name="Artículo",
         blank=True,
         null=True,
-        help_text='Artículo solicitado (solo para solicitudes de artículos)'
+        help_text="Artículo solicitado (solo para solicitudes de artículos)",
     )
     # FK a Activo/Bien de Inventario (para solicitudes de bienes)
     activo = models.ForeignKey(
         Activo,
         on_delete=models.PROTECT,
-        related_name='detalles_solicitud',
-        verbose_name='Bien/Activo',
+        related_name="detalles_solicitud",
+        verbose_name="Bien/Activo",
         blank=True,
         null=True,
-        help_text='Bien o activo solicitado (solo para solicitudes de activos)'
+        help_text="Bien o activo solicitado (solo para solicitudes de activos)",
     )
     cantidad_solicitada = models.IntegerField(
         validators=[MinValueValidator(1)],
-        verbose_name='Cantidad Solicitada',
-        help_text='Cantidad solicitada del artículo o activo'
+        verbose_name="Cantidad Solicitada",
+        help_text="Cantidad solicitada del artículo o activo",
     )
     cantidad_aprobada = models.IntegerField(
         default=0,
         validators=[MinValueValidator(0)],
-        verbose_name='Cantidad Aprobada',
-        help_text='Cantidad aprobada por el aprobador'
+        verbose_name="Cantidad Aprobada",
+        help_text="Cantidad aprobada por el aprobador",
     )
     cantidad_despachada = models.IntegerField(
         default=0,
         validators=[MinValueValidator(0)],
-        verbose_name='Cantidad Despachada',
-        help_text='Cantidad efectivamente despachada'
+        verbose_name="Cantidad Despachada",
+        help_text="Cantidad efectivamente despachada",
     )
     observaciones = models.TextField(
         blank=True,
         null=True,
-        verbose_name='Observaciones',
-        help_text='Observaciones específicas del detalle'
+        verbose_name="Observaciones",
+        help_text="Observaciones específicas del detalle",
     )
 
     class Meta:
-        db_table = 'tba_solicitudes_detalle'
-        verbose_name = 'Detalle de Solicitud'
-        verbose_name_plural = 'Detalles de Solicitudes'
-        ordering = ['solicitud', 'id']
+        db_table = "tba_solicitudes_detalle"
+        verbose_name = "Detalle de Solicitud"
+        verbose_name_plural = "Detalles de Solicitudes"
+        ordering = ["solicitud", "id"]
         indexes = [
-            models.Index(fields=['solicitud']),
-            models.Index(fields=['articulo']),
-            models.Index(fields=['activo']),
+            models.Index(fields=["solicitud"]),
+            models.Index(fields=["articulo"]),
+            models.Index(fields=["activo"]),
         ]
 
     def __str__(self) -> str:
         """Representación en cadena del detalle."""
         producto = self.articulo or self.activo
-        codigo = producto.codigo if producto else 'N/A'
+        codigo = producto.codigo if producto else "N/A"
         return f"{self.solicitud.numero} - {codigo} ({self.cantidad_solicitada})"
 
     def clean(self) -> None:
@@ -594,13 +628,11 @@ class DetalleSolicitud(BaseModel):
         super().clean()
 
         if not self.articulo and not self.activo:
-            raise ValidationError(
-                'Debe especificar un artículo o un bien/activo'
-            )
+            raise ValidationError("Debe especificar un artículo o un bien/activo")
 
         if self.articulo and self.activo:
             raise ValidationError(
-                'No puede especificar tanto artículo como bien/activo simultáneamente'
+                "No puede especificar tanto artículo como bien/activo simultáneamente"
             )
 
     @property
@@ -643,54 +675,54 @@ class HistorialSolicitud(BaseModel):
     solicitud = models.ForeignKey(
         Solicitud,
         on_delete=models.CASCADE,
-        related_name='historial',
-        verbose_name='Solicitud',
-        help_text='Solicitud a la que pertenece el registro'
+        related_name="historial",
+        verbose_name="Solicitud",
+        help_text="Solicitud a la que pertenece el registro",
     )
     estado_anterior = models.ForeignKey(
         EstadoSolicitud,
         on_delete=models.PROTECT,
-        related_name='historiales_anterior',
-        verbose_name='Estado Anterior',
+        related_name="historiales_anterior",
+        verbose_name="Estado Anterior",
         blank=True,
         null=True,
-        help_text='Estado previo al cambio'
+        help_text="Estado previo al cambio",
     )
     estado_nuevo = models.ForeignKey(
         EstadoSolicitud,
         on_delete=models.PROTECT,
-        related_name='historiales_nuevo',
-        verbose_name='Estado Nuevo',
-        help_text='Estado resultante del cambio'
+        related_name="historiales_nuevo",
+        verbose_name="Estado Nuevo",
+        help_text="Estado resultante del cambio",
     )
     usuario = models.ForeignKey(
         User,
         on_delete=models.PROTECT,
-        related_name='cambios_estado_solicitud',
-        verbose_name='Usuario',
-        help_text='Usuario que realizó el cambio de estado'
+        related_name="cambios_estado_solicitud",
+        verbose_name="Usuario",
+        help_text="Usuario que realizó el cambio de estado",
     )
     observaciones = models.TextField(
         blank=True,
         null=True,
-        verbose_name='Observaciones',
-        help_text='Observaciones sobre el cambio de estado'
+        verbose_name="Observaciones",
+        help_text="Observaciones sobre el cambio de estado",
     )
     fecha_cambio = models.DateTimeField(
         auto_now_add=True,
-        verbose_name='Fecha de Cambio',
-        help_text='Fecha y hora del cambio de estado'
+        verbose_name="Fecha de Cambio",
+        help_text="Fecha y hora del cambio de estado",
     )
 
     class Meta:
-        db_table = 'tba_solicitudes_historial'
-        verbose_name = 'Historial de Solicitud'
-        verbose_name_plural = 'Historial de Solicitudes'
-        ordering = ['-fecha_cambio']
+        db_table = "tba_solicitudes_historial"
+        verbose_name = "Historial de Solicitud"
+        verbose_name_plural = "Historial de Solicitudes"
+        ordering = ["-fecha_cambio"]
         indexes = [
-            models.Index(fields=['solicitud']),
-            models.Index(fields=['fecha_cambio']),
-            models.Index(fields=['usuario']),
+            models.Index(fields=["solicitud"]),
+            models.Index(fields=["fecha_cambio"]),
+            models.Index(fields=["usuario"]),
         ]
 
     def __str__(self) -> str:
@@ -719,39 +751,40 @@ class CategoriaPermiso(models.Model):
 
     class Modulo(models.TextChoices):
         """Módulos funcionales del sistema de solicitudes."""
-        GESTION = 'GESTION', 'Gestión'
-        SOLICITUD_ARTICULOS = 'SOLICITUD_ARTICULOS', 'Solicitud Artículos'
-        SOLICITUD_BIENES = 'SOLICITUD_BIENES', 'Solicitud Bienes'
-        MIS_SOLICITUDES = 'MIS_SOLICITUDES', 'Mis Solicitudes'
-        MANTENEDORES = 'MANTENEDORES', 'Mantenedores'
+
+        GESTION = "GESTION", "Gestión"
+        SOLICITUD_ARTICULOS = "SOLICITUD_ARTICULOS", "Solicitud Artículos"
+        SOLICITUD_BIENES = "SOLICITUD_BIENES", "Solicitud Bienes"
+        MIS_SOLICITUDES = "MIS_SOLICITUDES", "Mis Solicitudes"
+        MANTENEDORES = "MANTENEDORES", "Mantenedores"
 
     permiso = models.OneToOneField(
         Permission,
         on_delete=models.CASCADE,
         primary_key=True,
-        related_name='categoria',
-        verbose_name='Permiso'
+        related_name="categoria",
+        verbose_name="Permiso",
     )
     modulo = models.CharField(
         max_length=50,
         choices=Modulo.choices,
-        verbose_name='Módulo',
-        help_text='Módulo funcional al que pertenece el permiso',
-        db_index=True
+        verbose_name="Módulo",
+        help_text="Módulo funcional al que pertenece el permiso",
+        db_index=True,
     )
     orden = models.PositiveSmallIntegerField(
         default=0,
-        verbose_name='Orden',
-        help_text='Orden de visualización dentro del módulo'
+        verbose_name="Orden",
+        help_text="Orden de visualización dentro del módulo",
     )
 
     class Meta:
-        db_table = 'tba_solicitudes_permiso'
-        verbose_name = 'Categoría de Permiso'
-        verbose_name_plural = 'Categorías de Permisos'
-        ordering = ['modulo', 'orden']
+        db_table = "tba_solicitudes_permiso"
+        verbose_name = "Categoría de Permiso"
+        verbose_name_plural = "Categorías de Permisos"
+        ordering = ["modulo", "orden"]
         indexes = [
-            models.Index(fields=['modulo', 'orden']),
+            models.Index(fields=["modulo", "orden"]),
         ]
 
     def __str__(self) -> str:

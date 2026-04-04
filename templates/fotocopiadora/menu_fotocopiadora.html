@@ -4,17 +4,93 @@
 {% block title %}{{ titulo }}{% endblock %}
 
 {% block extra_css %}
-<link href="{% static 'css/modulo-cards.css' %}" rel="stylesheet" type="text/css">
+<style>
+  .copy-kpi-card,
+  .copy-module-card,
+  .copy-flow-card {
+    border: 1px solid #e6ebf1;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+  }
+
+  .copy-kpi-label {
+    font-size: .85rem;
+    color: #6b7280;
+    margin-bottom: .35rem;
+  }
+
+  .copy-kpi-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f2937;
+    line-height: 1;
+  }
+
+  .copy-module-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: .3rem .7rem;
+    border-radius: 999px;
+    background: #f3f4f6;
+    color: #475467;
+    font-size: .72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin-bottom: 1rem;
+  }
+
+  .copy-module-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #101828;
+    margin-bottom: .75rem;
+  }
+
+  .copy-module-text {
+    color: #475467;
+    min-height: 4.8rem;
+    margin-bottom: 1.25rem;
+    line-height: 1.65;
+  }
+
+  .copy-module-actions {
+    display: flex;
+    gap: .75rem;
+    flex-wrap: wrap;
+  }
+
+  .copy-flow-step {
+    border: 1px solid #e8edf3;
+    border-radius: 12px;
+    background: #fcfcfd;
+    padding: 1rem;
+    height: 100%;
+  }
+
+  .copy-flow-step-number {
+    font-size: .75rem;
+    font-weight: 700;
+    color: #667085;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin-bottom: .4rem;
+  }
+</style>
 {% endblock extra_css %}
 
 {% block content %}
 <div class="row">
   <div class="col-12">
     <div class="page-title-box d-sm-flex align-items-center justify-content-between mb-3">
-      <h4 class="mb-sm-0">{{ titulo }}</h4>
+      <div>
+        <h4 class="mb-sm-0">{{ titulo }}</h4>
+        <p class="text-muted mb-0">Workflow oficial único del módulo de fotocopiadora.</p>
+      </div>
       <div class="page-title-right">
         <ol class="breadcrumb m-0">
-          <li class="breadcrumb-item"><a href="{% url 'dashboard_analytics' %}">Dashboard</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
           <li class="breadcrumb-item active">Fotocopiadora</li>
         </ol>
       </div>
@@ -24,44 +100,101 @@
 
 <div class="row g-3 mb-4">
   <div class="col-xl-3 col-md-6">
-    <div class="card card-animate"><div class="card-body"><p class="text-muted mb-1">Copias Mes</p><h3>{{ stats.total_copias_mes }}</h3></div></div>
+    <div class="card copy-kpi-card h-100">
+      <div class="card-body">
+        <div class="copy-kpi-label">Mis solicitudes</div>
+        <div class="copy-kpi-value">{{ stats.mis_solicitudes }}</div>
+      </div>
+    </div>
   </div>
   <div class="col-xl-3 col-md-6">
-    <div class="card card-animate"><div class="card-body"><p class="text-muted mb-1">Copias Internas</p><h3>{{ stats.copias_internas_mes }}</h3></div></div>
+    <div class="card copy-kpi-card h-100">
+      <div class="card-body">
+        <div class="copy-kpi-label">Pendientes de aprobación</div>
+        <div class="copy-kpi-value">{{ stats.pendientes_aprobacion }}</div>
+      </div>
+    </div>
   </div>
   <div class="col-xl-3 col-md-6">
-    <div class="card card-animate"><div class="card-body"><p class="text-muted mb-1">Copias con Cobro</p><h3>{{ stats.copias_cobro_mes }}</h3></div></div>
+    <div class="card copy-kpi-card h-100">
+      <div class="card-body">
+        <div class="copy-kpi-label">Pendientes de operación</div>
+        <div class="copy-kpi-value">{{ stats.pendientes_operacion }}</div>
+      </div>
+    </div>
   </div>
   <div class="col-xl-3 col-md-6">
-    <div class="card card-animate"><div class="card-body"><p class="text-muted mb-1">Monto Informativo Mes</p><h3>${{ stats.monto_informativo_mes|floatformat:0 }}</h3></div></div>
+    <div class="card copy-kpi-card h-100">
+      <div class="card-body">
+        <div class="copy-kpi-label">Listas para retiro</div>
+        <div class="copy-kpi-value">{{ stats.listas_retiro }}</div>
+      </div>
+    </div>
   </div>
 </div>
 
 <div class="row g-3">
+  {% for card in cards %}
   <div class="col-lg-4">
-    <div class="card h-100"><div class="card-body d-grid">
-      <h5>Trabajos</h5>
-      <p class="text-muted">Listado y control de trabajos de copias.</p>
-      <a href="{% url 'fotocopiadora:lista_trabajos' %}" class="btn btn-primary mt-auto">Ver Trabajos</a>
-    </div></div>
+    <div class="card copy-module-card h-100">
+      <div class="card-body d-flex flex-column">
+        <span class="copy-module-tag">{{ card.tag }}</span>
+        <div class="copy-module-title">{{ card.title }}</div>
+        <p class="copy-module-text flex-grow-1">{{ card.description }}</p>
+        <div class="copy-module-actions">
+          {% for action in card.actions %}
+            {% if action.style == 'primary' %}
+            <a href="{{ action.url }}" class="btn btn-primary">{{ action.label }}</a>
+            {% else %}
+            <a href="{{ action.url }}" class="btn btn-outline-secondary">{{ action.label }}</a>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
   </div>
-  {% if permisos.puede_crear %}
-  <div class="col-lg-4">
-    <div class="card h-100"><div class="card-body d-grid">
-      <h5>Nuevo Trabajo</h5>
-      <p class="text-muted">Registrar solicitud interna, personal o externa.</p>
-      <a href="{% url 'fotocopiadora:crear_trabajo' %}" class="btn btn-success mt-auto">Registrar</a>
-    </div></div>
+  {% empty %}
+  <div class="col-12">
+    <div class="alert alert-warning mb-0">
+      Su cuenta no tiene un perfil principal del módulo definido. Solicite revisión administrativa de memberships.
+    </div>
   </div>
-  {% endif %}
-  {% if permisos.puede_gestionar_equipos %}
-  <div class="col-lg-4">
-    <div class="card h-100"><div class="card-body d-grid">
-      <h5>Equipos</h5>
-      <p class="text-muted">Mantenedor de fotocopiadoras y ubicaciones.</p>
-      <a href="{% url 'fotocopiadora:lista_equipos' %}" class="btn btn-info mt-auto">Gestionar Equipos</a>
-    </div></div>
+  {% endfor %}
+</div>
+
+<div class="card copy-flow-card mt-4">
+  <div class="card-body">
+    <h5 class="mb-2">Flujo oficial</h5>
+    <div class="row g-3">
+      <div class="col-md-3">
+        <div class="copy-flow-step">
+          <div class="copy-flow-step-number">Paso 1</div>
+          <p class="fw-semibold mb-1">Solicitante</p>
+          <p class="text-muted mb-0">Crea borrador, adjunta archivos y envía la solicitud a aprobación.</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="copy-flow-step">
+          <div class="copy-flow-step-number">Paso 2</div>
+          <p class="fw-semibold mb-1">Jefatura</p>
+          <p class="text-muted mb-0">Aprueba, rechaza o ajusta cantidades por item dentro de su ámbito.</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="copy-flow-step">
+          <div class="copy-flow-step-number">Paso 3</div>
+          <p class="fw-semibold mb-1">Operadora</p>
+          <p class="text-muted mb-0">Inicia el trabajo, marca preparación, lista y entrega.</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="copy-flow-step">
+          <div class="copy-flow-step-number">Paso 4</div>
+          <p class="fw-semibold mb-1">Trazabilidad</p>
+          <p class="text-muted mb-0">Cada transición queda registrada con usuario, fecha y observaciones.</p>
+        </div>
+      </div>
+    </div>
   </div>
-  {% endif %}
 </div>
 {% endblock %}

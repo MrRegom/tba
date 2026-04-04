@@ -11,7 +11,7 @@
                     <div class="page-title-right">
                         <ol class="breadcrumb m-0">
                             <li class="breadcrumb-item"><a href="{% url 'dashboard_analytics' %}">Dashboard</a></li>
-                            <li class="breadcrumb-item"><a href="{% url 'activos:lista_categorias' %}">Categorías</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'activos:gestores_inventario' %}">Categorías</a></li>
                             <li class="breadcrumb-item active">{{ action }}</li>
                         </ol>
                     </div>
@@ -47,12 +47,7 @@
                         </div>
                         <div class="card-body">
                             <div class="row g-3">
-                                <div class="col-md-4">
-                                    <label class="form-label">{{ form.codigo.label }} <span class="text-danger">*</span></label>
-                                    {{ form.codigo }}
-                                    {% if form.codigo.errors %}<div class="invalid-feedback d-block">{{ form.codigo.errors }}</div>{% endif %}
-                                </div>
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <label class="form-label">{{ form.sigla.label }} <span class="text-danger">*</span></label>
                                     {{ form.sigla }}
                                     {% if form.sigla.help_text %}<small class="form-text text-muted">{{ form.sigla.help_text }}</small>{% endif %}
@@ -81,7 +76,7 @@
                     </div>
 
                     <div class="text-end">
-                        <a href="{% url 'activos:lista_categorias' %}" class="btn btn-light">
+                        <a href="{% url 'activos:gestores_inventario' %}" class="btn btn-light">
                             <i class="ri-close-line"></i> Cancelar
                         </a>
                         <button type="submit" class="btn btn-primary">

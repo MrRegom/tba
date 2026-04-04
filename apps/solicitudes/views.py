@@ -20,9 +20,11 @@ from django.views.generic import (
 )
 from core.mixins import (
     BaseAuditedViewMixin, AtomicTransactionMixin, SoftDeleteMixin,
+    ScopedObjectPermissionMixin,
     PaginatedListMixin, FilteredListMixin
 )
 from core.utils import registrar_log_auditoria
+from core.authz import can_view_solicitud, scope_solicitudes_for_user
 from .mixins import (
     GestionSolicitudesPermissionMixin,
     AprobarSolicitudesPermissionMixin,
@@ -150,6 +152,7 @@ class SolicitudListView(GestionSolicitudesPermissionMixin, BaseAuditedViewMixin,
         queryset = super().get_queryset().select_related(
             'tipo_solicitud', 'estado', 'solicitante', 'bodega_origen'
         )
+        queryset = scope_solicitudes_for_user(queryset, self.request.user)
 
         # Aplicar filtros del formulario
         form = self.filter_form_class(self.request.GET)
@@ -187,7 +190,7 @@ class SolicitudListView(GestionSolicitudesPermissionMixin, BaseAuditedViewMixin,
         return context
 
 
-class SolicitudDetailView(BaseAuditedViewMixin, DetailView):
+class SolicitudDetailView(ScopedObjectPermissionMixin, BaseAuditedViewMixin, DetailView):
     """
     Vista para ver el detalle de una solicitud.
 
@@ -200,10 +203,16 @@ class SolicitudDetailView(BaseAuditedViewMixin, DetailView):
 
     def get_queryset(self) -> QuerySet:
         """Optimiza consultas con select_related."""
-        return super().get_queryset().select_related(
+        return scope_solicitudes_for_user(
+            super().get_queryset().select_related(
             'tipo_solicitud', 'estado', 'solicitante', 'aprobador',
             'despachador', 'bodega_origen', 'departamento', 'area'
+            ),
+            self.request.user
         )
+
+    def has_object_permission(self, obj) -> bool:
+        return can_view_solicitud(self.request.user, obj)
 
     def get_context_data(self, **kwargs) -> dict:
         """Agrega detalles y historial al contexto."""

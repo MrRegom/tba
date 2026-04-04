@@ -1,0 +1,55 @@
+{% extends 'partials/base.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+      <h4 class="mb-sm-0">{{ titulo }}</h4>
+      <div class="d-flex gap-2">
+        <a href="{% url 'fotocopiadora:menu_fotocopiadora' %}" class="btn btn-light">Volver</a>
+        <a href="{% url 'fotocopiadora:crear_membership' %}" class="btn btn-primary">Nuevo membership</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-striped align-middle">
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Rol</th>
+            <th>Ámbito</th>
+            <th>Principal</th>
+            <th>Vigencia</th>
+            <th>Estado</th>
+            <th class="text-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for membership in memberships %}
+          <tr>
+            <td>{{ membership.user.username }}</td>
+            <td>{{ membership.get_role_display }}</td>
+            <td>{{ membership.area|default:membership.departamento|default:membership.equipo|default:membership.cost_center|default:'Global' }}</td>
+            <td>{% if membership.is_primary %}<span class="badge bg-primary">Sí</span>{% else %}<span class="badge bg-light text-dark">No</span>{% endif %}</td>
+            <td>{{ membership.valid_from|default:'-' }} / {{ membership.valid_to|default:'-' }}</td>
+            <td>{% if membership.activo %}<span class="badge bg-success">Activo</span>{% else %}<span class="badge bg-secondary">Inactivo</span>{% endif %}</td>
+            <td class="text-end">
+              <a href="{% url 'fotocopiadora:editar_membership' membership.pk %}" class="btn btn-sm btn-light">Editar</a>
+              <a href="{% url 'fotocopiadora:eliminar_membership' membership.pk %}" class="btn btn-sm btn-outline-danger">Desactivar</a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="7" class="text-center text-muted">No hay memberships configurados.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -20,9 +20,10 @@ from apps.pages.views import (
 urlpatterns = [
     path('admin/', admin.site.urls),
     
-    # dashboard
+    # inicio y dashboard operativo
     path('', view=dashboard_view, name='dashboard'),
     path('dashboard_analytics', view=dashboard_analytics_view, name='dashboard_analytics'),
+    path('dashboard/operativo/', view=dashboard_analytics_view, name='dashboard_operativo'),
     path('dashboard_crypto', view=dashboard_crypto_view, name='dashboard_crypto'),
 
     # apps

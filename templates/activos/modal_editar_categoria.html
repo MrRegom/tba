@@ -14,11 +14,6 @@
         {% endif %}
         <div class="row g-3">
             <div class="col-md-4">
-                <label class="form-label">Código</label>
-                <input type="text" class="form-control" value="{{ object.codigo }}" readonly>
-                <input type="hidden" name="codigo" value="{{ object.codigo }}">
-            </div>
-            <div class="col-md-4">
                 <label class="form-label">Sigla</label>
                 <input type="text" name="sigla" class="form-control" value="{{ form.sigla.value|default:'' }}">
             </div>

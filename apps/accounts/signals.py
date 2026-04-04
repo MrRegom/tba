@@ -5,7 +5,7 @@ from django.db.models.signals import pre_save, post_save, post_delete
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
 from django.contrib.auth.models import User
-from .models import AuthLogs, AuthLogAccion, HistorialLogin
+from .models import AuthLogs, AuthLogAccion, HistorialLogin, UserAccessProfile
 from .utils import get_client_ip
 from .middleware import get_current_user
 
@@ -90,3 +90,9 @@ def log_user_login_failed(sender, credentials, request, **kwargs):
         agente=agente,
     )
 
+
+@receiver(post_save, sender=User)
+def ensure_user_access_profile(sender, instance, created, **kwargs):
+    """Garantiza que cada usuario tenga su perfil de acceso complementario."""
+    if created:
+        UserAccessProfile.objects.get_or_create(user=instance)

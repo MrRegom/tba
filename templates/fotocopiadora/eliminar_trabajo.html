@@ -6,7 +6,7 @@
     <h5>Anular trabajo {{ object.numero }}</h5>
     <p>Esta accion marcara el trabajo como eliminado.</p>
     <form method="post">{% csrf_token %}
-      <a href="{% url 'fotocopiadora:lista_trabajos' %}" class="btn btn-light">Cancelar</a>
+      <a href="{% url 'fotocopiadora:menu_fotocopiadora' %}" class="btn btn-light">Cancelar</a>
       <button class="btn btn-danger" type="submit">Anular</button>
     </form>
   </div>

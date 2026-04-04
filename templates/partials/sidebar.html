@@ -13,14 +13,24 @@
                 {# nav_gs_sol, nav_gs_bod, nav_gs_comp, nav_gs_inv, nav_gs_org, nav_gs_usr,  #}
                 {# nav_en_gestores son inyectados por apps.accounts.context_processors.sidebar_nav #}
 
-                <!-- Home: visible para todos los usuarios autenticados -->
+                <!-- Inicio: visible para todos los usuarios autenticados -->
                 <li class="nav-item">
                     <a class="nav-link menu-link {% if request.path == '/' %}active{% endif %}"
                        href="{% url 'dashboard' %}">
                         <i class="ri-home-4-line"></i>
-                        <span>Home</span>
+                        <span>Inicio</span>
                     </a>
                 </li>
+
+                {% if can_view_operational_dashboard %}
+                <li class="nav-item">
+                    <a class="nav-link menu-link {% if 'dashboard_analytics' in request.path or '/dashboard/operativo/' in request.path %}active{% endif %}"
+                       href="{% url 'dashboard_operativo' %}">
+                        <i class="ri-line-chart-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                {% endif %}
 
                 <!-- Reportes -->
                 {% if perms.reportes.view_reporte or request.user.is_staff %}
@@ -219,7 +229,7 @@
                 <!-- ============================================================ -->
                 <!-- Fotocopiadora                                                -->
                 <!-- ============================================================ -->
-                {% if perms.fotocopiadora.view_trabajofotocopia %}
+                {% if perms.fotocopiadora.view_trabajofotocopia or perms.fotocopiadora.view_printrequest or perms.fotocopiadora.add_printrequest %}
                 <li class="nav-item">
                     <a class="nav-link menu-link {% if '/fotocopiadora/' in request.path %}active{% endif %}"
                        href="{% url 'fotocopiadora:menu_fotocopiadora' %}">
@@ -233,7 +243,7 @@
                 <!-- Gestores: solo staff                                          -->
                 <!-- nav_en_gestores=True → expandido y cada item marcado activo  -->
                 <!-- ============================================================ -->
-                {% if request.user.is_staff %}
+                {% if perms.solicitudes.gestionar_solicitudes or perms.solicitudes.ver_todas_solicitudes or perms.compras.view_estadoordencompra or perms.bodega.view_articulo or perms.activos.view_activo or perms.bajas_inventario.view_motivobaja or perms.activos.view_ubicacion or perms.auth.view_user %}
                 <li class="nav-item">
                     <a class="nav-link menu-link {% if not nav_en_gestores %}collapsed{% endif %}"
                        href="#sidebarGestores"
@@ -307,7 +317,7 @@
                 {% endif %}
 
                 <!-- Auditoría (solo administradores) -->
-                {% if request.user.is_staff or request.user.is_superuser %}
+                {% if request.user.is_staff or request.user.is_superuser or perms.accounts.view_all_auditoria %}
                 <li class="nav-item">
                     <a class="nav-link menu-link {% if '/auditoria/' in request.path %}active{% endif %}"
                        href="#sidebarAuditoria"
