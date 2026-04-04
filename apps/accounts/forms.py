@@ -382,6 +382,25 @@ class UserUpdateForm(forms.ModelForm):
         })
     )
 
+    # ── Contraseña (opcional) ──────────────────────────────────────────────────
+    password1 = forms.CharField(
+        label='Nueva Contraseña',
+        required=False,
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Dejar vacío para no cambiar'
+        }),
+        help_text='Mínimo 8 caracteres si desea cambiarla.'
+    )
+    password2 = forms.CharField(
+        label='Confirmar Contraseña',
+        required=False,
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Confirme la nueva contraseña'
+        })
+    )
+
     class Meta:
         model = User
         fields = ['username', 'email', 'is_active', 'is_staff', 'is_superuser']
@@ -422,6 +441,18 @@ class UserUpdateForm(forms.ModelForm):
             raise forms.ValidationError('Debe ingresar el PIN primero.')
         
         return pin_confirmacion
+
+    def clean_password2(self):
+        """Validar que las contraseñas coincidan."""
+        p1 = self.cleaned_data.get('password1')
+        p2 = self.cleaned_data.get('password2')
+        if p1 and p2 and p1 != p2:
+            raise forms.ValidationError("Las contraseñas no coinciden.")
+        
+        if p1 and len(p1) < 8:
+            raise forms.ValidationError("La contraseña es muy corta (mínimo 8 caracteres).")
+            
+        return p2
 
 
 class UserPasswordChangeForm(forms.Form):

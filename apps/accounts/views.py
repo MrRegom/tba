@@ -397,6 +397,12 @@ def editar_usuario(request, pk):
                         persona_data['foto_perfil'] = foto
                     Persona.objects.create(user=usuario, **persona_data)
 
+                # Actualizar Contraseña si se proporcionó
+                password_texto = form.cleaned_data.get('password1')
+                if password_texto:
+                    usuario.set_password(password_texto)
+                    usuario.save()
+
                 # Actualizar PIN si se proporcionó
                 pin_texto = form.cleaned_data.get('pin', '').strip()
                 if pin_texto:
@@ -417,14 +423,21 @@ def editar_usuario(request, pk):
                         user_agent=request.META.get('HTTP_USER_AGENT', ''),
                         detalles={'accion': 'PIN configurado' if not tiene_pin_anterior else 'PIN cambiado'},
                     )
-                    pin_texto = pin_texto
                 else:
                     pin_texto = ''
 
             registrar_log_auditoria(request.user, 'ACTUALIZAR', f'Usuario actualizado: {usuario.username}', request)
-            mensaje = f'Usuario {usuario.username} actualizado exitosamente.'
+            
+            mensajes_adicionales = []
+            if password_texto:
+                mensajes_adicionales.append('Contraseña actualizada')
             if pin_texto:
-                mensaje += ' PIN actualizado.'
+                mensajes_adicionales.append('PIN actualizado')
+                
+            mensaje = f'Usuario {usuario.username} actualizado exitosamente.'
+            if mensajes_adicionales:
+                mensaje += f" ({', '.join(mensajes_adicionales)})."
+                
             messages.success(request, mensaje)
             return redirect('accounts:gestores_usuarios')
     else:
