@@ -11,6 +11,7 @@ from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView, UpdateView
 
 from core.mixins import BaseAuditedViewMixin, PaginatedListMixin, ScopedObjectPermissionMixin, SoftDeleteMixin
+from apps.solicitudes.models import Area, Departamento
 
 from .forms import (
     FotocopiadoraEquipoForm,
