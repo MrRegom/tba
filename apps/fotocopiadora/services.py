@@ -78,6 +78,10 @@ class PrintRequestQueryService:
                 return PrintMembershipRole.ADMIN
             if user.has_perm('fotocopiadora.view_all_printrequest'):
                 return PrintMembershipRole.AUDITOR
+            if user.has_perm('fotocopiadora.operate_printrequest'):
+                return PrintMembershipRole.OPERATOR
+            if user.has_perm('fotocopiadora.approve_printrequest'):
+                return PrintMembershipRole.APPROVER
             if user.has_perm('fotocopiadora.add_printrequest') or user.has_perm('fotocopiadora.view_printrequest'):
                 return PrintMembershipRole.REQUESTER
             return None
