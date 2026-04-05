@@ -1,270 +1,100 @@
 {% extends 'partials/base.html' %}
 {% load static %}
 
-{% block title %}Bandeja Operativa de Fotocopiadora{% endblock %}
+{% block title %}Bandeja de Fotocopiadora{% endblock %}
 
 {% block extra_css %}
 <style>
     .status-badge {
         padding: 5px 12px;
         border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 600;
+        font-size: 0.85rem;
+        font-weight: 700;
         text-transform: uppercase;
     }
-    .priority-urgent {
-        border-left: 5px solid #efae4e;
-        background-color: #fffaf0;
-    }
-    .priority-normal {
-        border-left: 5px solid #3b71ca;
-    }
-    .use-type-personal { border-bottom: 3px solid #ff0000; }
-    .use-type-internal { border-bottom: 3px solid #198754; }
+    /* Colores simplificados y claros */
+    .bg-pendiente { background-color: #fce4ec; color: #d81b60; } /* Rosado suave */
+    .bg-listo { background-color: #e8f5e9; color: #2e7d32; } /* Verde suave */
+    .bg-entregado { background-color: #e3f2fd; color: #1565c0; } /* Azul suave */
+    
+    .card-priority-HIGH { border-left: 8px solid #ff0000; }
+    .card-priority-NORMAL { border-left: 8px solid #007bff; }
     
     .op-card {
-        transition: transform 0.2s, box-shadow 0.2s;
-        border: 1px solid #e9ebec;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        border: 1px solid #eee;
     }
-    .op-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+    
+    /* Pestañas grandes */
+    .nav-pills .nav-link {
+        font-size: 1.1rem;
+        padding: 12px 25px;
+        font-weight: bold;
+        border: 2px solid transparent;
+        margin-right: 10px;
     }
-    .card-title-link {
-        color: #333;
-        font-weight: 700;
-        text-decoration: none;
+    .nav-pills .nav-link.active {
+        background-color: #3b71ca;
+        border-color: #3b71ca;
     }
-    .card-title-link:hover { color: #3b71ca; }
+    .nav-link-alta { color: #d32f2f; border-color: #d32f2f !important; }
+    .nav-link-alta.active { background-color: #d32f2f !important; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-            <h4 class="mb-sm-0">Bandeja Operativa</h4>
-            <div class="page-title-right">
-                <a href="{% url 'fotocopiadora:menu_fotocopiadora' %}" class="btn btn-sm btn-light shadow-sm">
-                    <i class="ri-dashboard-line align-bottom me-1"></i> Ir al Menú
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Filtros rápidos -->
 <div class="row mb-4">
     <div class="col-12">
-        <div class="btn-group shadow-sm" role="group">
-            <button type="button" class="btn btn-white active">Todas</button>
-            <button type="button" class="btn btn-white">Urgentes</button>
-            <button type="button" class="btn btn-white">Uso Personal</button>
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between bg-white p-3 rounded shadow-sm">
+            <h3 class="mb-sm-0 text-primary fw-bold">Bandeja de Tareas</h3>
+            <div class="text-muted fw-medium">
+                <i class="ri-calendar-line me-1"></i> {{ now|date:"d F Y" }}
+            </div>
         </div>
     </div>
 </div>
 
-<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
-    {% for req in requests %}
-    <div class="col">
-        <div class="card h-100 op-card {% if req.priority == 'URGENT' %}priority-urgent{% else %}priority-normal{% endif %}">
-            <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                        {% if req.use_type == 'PERSONAL' %}
-                            <span class="badge bg-danger-subtle text-danger mb-2">
-                                <i class="ri-user-heart-line me-1"></i> USO PERSONAL
-                            </span>
-                        {% else %}
-                            <span class="badge bg-success-subtle text-success mb-2">
-                                <i class="ri-community-line me-1"></i> INSTITUCIONAL
-                            </span>
-                        {% endif %}
-                        <h5 class="mb-1">
-                            <a href="{% url 'fotocopiadora:detalle_solicitud_impresion' req.pk %}" class="card-title-link">
-                                {{ req.numero }}
-                            </a>
-                        </h5>
-                    </div>
-                    <div class="text-end">
-                        <span class="status-badge 
-                            {% if req.status == 'APPROVED' %}bg-info-subtle text-info
-                            {% elif req.status == 'IN_PROGRESS' %}bg-warning-subtle text-warning
-                            {% elif req.status == 'READY_FOR_PICKUP' %}bg-primary-subtle text-primary
-                            {% elif req.status == 'DELIVERED' %}bg-success-subtle text-success
-                            {% endif %}">
-                            {{ req.get_status_display }}
-                        </span>
-                    </div>
-                </div>
+<!-- Pestañas de Prioridad -->
+<ul class="nav nav-pills mb-4" id="priorityTabs" role="tablist">
+    <li class="nav-item">
+        <button class="nav-link nav-link-alta active" id="high-tab" data-bs-toggle="pill" data-bs-target="#high-priority" type="button">
+            <i class="ri-error-warning-fill me-2"></i> PRIORIDAD ALTA
+        </button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link border-primary text-primary" id="normal-tab" data-bs-toggle="pill" data-bs-target="#normal-priority" type="button">
+            <i class="ri-time-line me-2"></i> PRIORIDAD NORMAL
+        </button>
+    </li>
+</ul>
 
-                <div class="mb-4">
-                    <div class="d-flex align-items-center text-muted small mb-1">
-                        <i class="ri-user-star-line me-2"></i> <strong>Solicitante:</strong>&nbsp;{{ req.requester.get_full_name|default:req.requester.username }}
-                    </div>
-                    {% if req.use_type == 'INTERNAL' %}
-                    <div class="d-flex align-items-center text-muted small mb-1">
-                        <i class="ri-building-line me-2"></i> <strong>Depto/Área:</strong>&nbsp;{{ req.departamento }} / {{ req.area }}
-                    </div>
-                    {% endif %}
-                    <div class="d-flex align-items-center text-muted small mb-1">
-                        <i class="ri-calendar-event-line me-2"></i> <strong>Requerido:</strong>&nbsp;{{ req.required_at|date:"d/m/Y H:i" }}
-                    </div>
-                </div>
-
-                <!-- Detalle de Ítems (Resumen) -->
-                <div class="bg-light rounded p-3 mb-4">
-                    <h6 class="small fw-bold text-uppercase mb-3"><i class="ri-file-list-3-line me-1"></i> Resumen de impresión</h6>
-                    {% for item in req.items.all %}
-                        <div class="d-flex justify-content-between small mb-1">
-                            <span class="text-truncate" title="{{ item.document_title }}">{{ item.document_title|truncatechars:25 }}</span>
-                            <span class="fw-bold">x{{ item.copy_count_approved|default:item.copy_count_requested }}</span>
-                        </div>
-                        <div class="small text-muted mb-2 border-bottom pb-1" style="font-size: 0.7rem;">
-                            {{ item.get_page_size_display }} | {{ item.get_print_side_display }} | {{ item.get_color_mode_display }}
-                            {% if item.stapled %}| <i class="ri-bookmark-fill" title="Corcheteado"></i>{% endif %}
-                            {% if item.collated %}| <i class="ri-stack-fill" title="Ordenado"></i>{% endif %}
-                            {% if item.ring_bound %}| <i class="ri-list-check" title="Anillado"></i>{% endif %}
-                        </div>
-                    {% endfor %}
-                </div>
-
-                {% if req.operator_comment %}
-                <div class="alert alert-secondary py-2 px-3 small border-0 mb-4">
-                    <i class="ri-chat-1-line me-1"></i> <strong>Obs:</strong> {{ req.operator_comment }}
-                </div>
+<div class="tab-content" id="priorityTabsContent">
+    <!-- PESTAÑA ALTA PRIORIDAD -->
+    <div class="tab-pane fade show active" id="high-priority" role="tabpanel">
+        <div class="row row-cols-1 row-cols-lg-2 g-4">
+            {% for req in requests %}
+                {% if req.priority == 'URGENT' or req.priority == 'HIGH' %}
+                    {% include 'fotocopiadora/requests/_operator_card.html' with req=req %}
                 {% endif %}
-            </div>
-
-            <div class="card-footer bg-transparent border-0 px-4 pb-4">
-                <div class="d-grid gap-2">
-                    {% if req.status == 'APPROVED' %}
-                        <form method="post" action="{% url 'fotocopiadora:transicion_solicitud' req.pk %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="action" value="START">
-                            <button type="submit" class="btn btn-primary w-100 shadow-sm">
-                                <i class="ri-play-circle-line me-1"></i> Iniciar Trabajo
-                            </button>
-                        </form>
-                    {% elif req.status == 'IN_PROGRESS' %}
-                        <button type="button" class="btn btn-warning w-100 shadow-sm" data-bs-toggle="modal" data-bs-target="#readyModal{{ req.pk }}">
-                            <i class="ri-check-double-line me-1"></i> Marcar como LISTO
-                        </button>
-                    {% elif req.status == 'READY_FOR_PICKUP' %}
-                        <button type="button" class="btn btn-success w-100 shadow-sm" data-bs-toggle="modal" data-bs-target="#deliverModal{{ req.pk }}">
-                            <i class="ri-hand-coin-line me-1"></i> Entregar (Firmar PIN)
-                        </button>
-                    {% elif req.status == 'DELIVERED' %}
-                        <div class="text-center text-success small py-2 fw-bold">
-                            <i class="ri-checkbox-circle-line"></i> Trabajo Entregado
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
+            {% empty %}
+                <div class="col-12 text-center p-5 text-muted">No hay trabajos de prioridad alta.</div>
+            {% endfor %}
         </div>
     </div>
 
-    <!-- Modal PARA MARCAR COMO LISTO -->
-    {% if req.status == 'IN_PROGRESS' %}
-    <div class="modal fade" id="readyModal{{ req.pk }}" tabindex="-1">
-        <div class="modal-dialog">
-            <form method="post" action="{% url 'fotocopiadora:transicion_solicitud' req.pk %}">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="READY">
-                <div class="modal-content">
-                    <div class="modal-header bg-warning-subtle">
-                        <h5 class="modal-title">Finalizar Proceso de Impresión</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>Al confirmar, se enviará una notificación al docente informando que sus copias están listas para retiro.</p>
-                        
-                        {% if req.use_type == 'PERSONAL' %}
-                        <div class="card bg-info-subtle border-0 mb-3">
-                            <div class="card-body">
-                                <h6 class="text-info-emphasis fw-bold"><i class="ri-coins-line me-1"></i> Cobro por Uso Personal</h6>
-                                <p class="small mb-2">Ingrese el monto total a cobrar al docente:</p>
-                                <div class="input-group">
-                                    <span class="input-group-text">$</span>
-                                    <input type="number" name="total_price" class="form-control" placeholder="0.00" step="0.01" required>
-                                </div>
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        <div class="mb-3">
-                            <label class="form-label">Comentario operativo (Opcional)</label>
-                            <textarea name="comment" class="form-control" rows="2" placeholder="Ej: Se usó papel reciclado..."></textarea>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-warning">Confirmar LISTO</button>
-                    </div>
-                </div>
-            </form>
+    <!-- PESTAÑA PRIORIDAD NORMAL -->
+    <div class="tab-pane fade" id="normal-priority" role="tabpanel">
+        <div class="row row-cols-1 row-cols-lg-2 g-4">
+            {% for req in requests %}
+                {% if req.priority == 'NORMAL' or req.priority == 'LOW' %}
+                    {% include 'fotocopiadora/requests/_operator_card.html' with req=req %}
+                {% endif %}
+            {% empty %}
+                <div class="col-12 text-center p-5 text-muted">No hay trabajos de prioridad normal.</div>
+            {% endfor %}
         </div>
     </div>
-    {% endif %}
-
-    <!-- Modal PARA ENTREGAR (CON PIN) -->
-    {% if req.status == 'READY_FOR_PICKUP' %}
-    <div class="modal fade" id="deliverModal{{ req.pk }}" tabindex="-1">
-        <div class="modal-dialog">
-            <form method="post" action="{% url 'fotocopiadora:transicion_solicitud' req.pk %}">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="DELIVER">
-                <div class="modal-content">
-                    <div class="modal-header bg-success text-white">
-                        <h5 class="modal-title font-white">Entrega de Pedido - PIN Docente</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="text-center mb-4">
-                            <i class="ri-user-received-2-line fs-1 text-success"></i>
-                            <h5 class="mt-2">{{ req.requester.get_full_name }}</h5>
-                            {% if req.use_type == 'PERSONAL' %}
-                                <div class="badge bg-danger-subtle text-danger px-3 py-2 fs-6 mt-2">
-                                    POR COBRAR: ${{ req.total_price }}
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <p class="small text-muted mb-4 text-center">
-                            El docente debe ingresar su **PIN de firma electrónica** para confirmar que recibió las fotocopias de forma conforme.
-                        </p>
-
-                        <div class="mb-4 text-center px-5">
-                            <label class="form-label fw-bold">INGRESE PIN DE 4 DÍGITOS</label>
-                            <input type="password" name="pin" class="form-control form-control-lg text-center" 
-                                   maxlength="4" placeholder="****" inputmode="numeric" required 
-                                   style="letter-spacing: 1em; font-size: 2rem;">
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Observaciones de entrega</label>
-                            <textarea name="comment" class="form-control" rows="2" placeholder="Ej: Se entrega carpeta completa..."></textarea>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-success">Confirmar Entrega</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-    {% endif %}
-
-    {% empty %}
-    <div class="col-12">
-        <div class="card shadow-sm border-0 bg-light p-5 text-center">
-            <i class="ri-inbox-line fs-1 text-muted mb-3"></i>
-            <h5>No hay solicitudes en la fila operativa</h5>
-            <p class="text-muted">Los trabajos aprobados aparecerán aquí automáticamente.</p>
-        </div>
-    </div>
-    {% endfor %}
 </div>
 
 {% endblock %}

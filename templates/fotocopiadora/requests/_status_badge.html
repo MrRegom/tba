@@ -1,21 +1,17 @@
 {% if status == 'DRAFT' %}
-<span class="badge bg-secondary">Borrador</span>
-{% elif status == 'PENDING_APPROVAL' %}
-<span class="badge bg-warning text-dark">Pendiente</span>
-{% elif status == 'APPROVED' %}
-<span class="badge bg-primary">Aprobada</span>
+<span class="badge bg-secondary p-2">BORRADOR</span>
+{% elif status == 'PENDING_APPROVAL' or status == 'APPROVED' or status == 'IN_PROGRESS' %}
+<span class="badge bg-warning text-dark p-2">PENDIENTE</span>
 {% elif status == 'REJECTED' %}
-<span class="badge bg-danger">Rechazada</span>
-{% elif status == 'IN_PROGRESS' %}
-<span class="badge bg-info text-dark">En preparación</span>
+<span class="badge bg-danger p-2">RECHAZADA</span>
 {% elif status == 'READY_FOR_PICKUP' %}
-<span class="badge bg-success-subtle text-success">Lista para retiro</span>
+<span class="badge bg-success p-2">¡LISTO PARA RETIRAR!</span>
 {% elif status == 'DELIVERED' %}
-<span class="badge bg-success">Entregada</span>
+<span class="badge bg-info p-2">ENTREGADO OK</span>
 {% elif status == 'CLOSED' %}
-<span class="badge bg-dark">Cerrada</span>
+<span class="badge bg-dark p-2">CERRADA</span>
 {% elif status == 'CANCELLED' %}
-<span class="badge bg-secondary-subtle text-secondary">Cancelada</span>
+<span class="badge bg-secondary-subtle text-secondary p-2">CANCELADA</span>
 {% else %}
-<span class="badge bg-light text-dark">{{ status }}</span>
+<span class="badge bg-light text-dark p-2">{{ status }}</span>
 {% endif %}
