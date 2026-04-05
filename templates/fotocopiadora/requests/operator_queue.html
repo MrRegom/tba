@@ -70,43 +70,61 @@
     </div>
 </div>
 
-<!-- Pestañas de Prioridad -->
-<ul class="nav nav-pills mb-4" id="priorityTabs" role="tablist">
+<!-- Pestañas de Estado -->
+<ul class="nav nav-pills mb-4" id="statusTabs" role="tablist">
     <li class="nav-item">
-        <button class="nav-link nav-link-alta active" id="high-tab" data-bs-toggle="pill" data-bs-target="#high-priority" type="button">
-            <i class="ri-error-warning-fill me-2"></i> PRIORIDAD ALTA
+        <button class="nav-link active" id="pending-tab" data-bs-toggle="pill" data-bs-target="#pending-status" type="button">
+            <i class="ri-time-line me-2"></i> PENDIENTES
         </button>
     </li>
     <li class="nav-item">
-        <button class="nav-link border-primary text-primary" id="normal-tab" data-bs-toggle="pill" data-bs-target="#normal-priority" type="button">
-            <i class="ri-time-line me-2"></i> PRIORIDAD NORMAL
+        <button class="nav-link border-warning text-warning" id="ready-tab" data-bs-toggle="pill" data-bs-target="#ready-status" type="button">
+            <i class="ri-checkbox-circle-line me-2"></i> LISTOS PARA RETIRAR
+        </button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link border-dark text-dark" id="history-tab" data-bs-toggle="pill" data-bs-target="#history-status" type="button">
+            <i class="ri-history-line me-2"></i> ENTREGADOS / HISTORIAL
         </button>
     </li>
 </ul>
 
-<div class="tab-content" id="priorityTabsContent">
-    <!-- PESTAÑA ALTA PRIORIDAD -->
-    <div class="tab-pane fade show active" id="high-priority" role="tabpanel">
-        <div class="row row-cols-1 row-cols-lg-2 g-4">
+<div class="tab-content" id="statusTabsContent">
+    <!-- PESTAÑA PENDIENTES -->
+    <div class="tab-pane fade show active" id="pending-status" role="tabpanel">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
             {% for req in requests %}
-                {% if req.priority == 'URGENT' or req.priority == 'HIGH' %}
+                {% if req.status == 'PENDING_APPROVAL' or req.status == 'APPROVED' or req.status == 'IN_PROGRESS' %}
                     {% include 'fotocopiadora/requests/_operator_card.html' with req=req %}
                 {% endif %}
             {% empty %}
-                <div class="col-12 text-center p-5 text-muted">No hay trabajos de prioridad alta.</div>
+                <div class="col-12 text-center p-5 text-muted">No hay trabajos pendientes de preparar.</div>
             {% endfor %}
         </div>
     </div>
 
-    <!-- PESTAÑA PRIORIDAD NORMAL -->
-    <div class="tab-pane fade" id="normal-priority" role="tabpanel">
-        <div class="row row-cols-1 row-cols-lg-2 g-4">
+    <!-- PESTAÑA LISTOS PARA RETIRAR -->
+    <div class="tab-pane fade" id="ready-status" role="tabpanel">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
             {% for req in requests %}
-                {% if req.priority == 'NORMAL' or req.priority == 'LOW' %}
+                {% if req.status == 'READY_FOR_PICKUP' %}
                     {% include 'fotocopiadora/requests/_operator_card.html' with req=req %}
                 {% endif %}
             {% empty %}
-                <div class="col-12 text-center p-5 text-muted">No hay trabajos de prioridad normal.</div>
+                <div class="col-12 text-center p-5 text-muted">No hay trabajos listos esperando retiro.</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- PESTAÑA HISTORIAL -->
+    <div class="tab-pane fade" id="history-status" role="tabpanel">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+            {% for req in requests %}
+                {% if req.status == 'DELIVERED' or req.status == 'CLOSED' or req.status == 'REJECTED' %}
+                    {% include 'fotocopiadora/requests/_operator_card.html' with req=req %}
+                {% endif %}
+            {% empty %}
+                <div class="col-12 text-center p-5 text-muted">No hay historial para hoy.</div>
             {% endfor %}
         </div>
     </div>
