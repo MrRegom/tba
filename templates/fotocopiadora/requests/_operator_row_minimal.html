@@ -1,0 +1,155 @@
+<div class="op-row p-3 mb-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#detailModal{{ req.pk }}">
+    <div class="row align-items-center">
+        <!-- FOLIO -->
+        <div class="col-2 col-md-1">
+            <span class="text-primary fw-bold text-uppercase" style="font-size: 0.8rem;">#{{ req.folio }}</span>
+        </div>
+        
+        <!-- PROFE -->
+        <div class="col-10 col-md-4">
+            <h3 class="mb-0 fw-bold text-dark text-uppercase truncate-1" style="font-size: 1.4rem;">{{ req.requester.get_full_name|default:req.requester.username }}</h3>
+            <span class="text-muted small">Entrega: <strong>{{ req.required_at|date:"d M, H:i" }}</strong></span>
+        </div>
+
+        <!-- TÍTULO / DESCRIPCION (DESKTOP ONLY) -->
+        <div class="col-md-3 d-none d-md-block">
+            <div class="fw-semibold text-muted text-truncate">{{ req.titulo|truncatechars:35 }}</div>
+        </div>
+
+        <!-- ESTADO -->
+        <div class="col-6 col-md-2 mt-2 mt-md-0">
+            <span class="status-badge 
+                {% if req.status == 'DELIVERED' %}bg-success-subtle text-success
+                {% elif req.status == 'READY_FOR_PICKUP' %}bg-warning text-dark
+                {% elif req.status == 'IN_PROGRESS' %}bg-primary text-white
+                {% else %}bg-secondary-subtle text-muted{% endif %}">
+                {{ req.get_status_display }}
+            </span>
+        </div>
+
+        <!-- ACCION -->
+        <div class="col-6 col-md-2 text-end mt-2 mt-md-0">
+            <button type="button" class="btn btn-outline-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#detailModal{{ req.pk }}">
+                VER TODO <i class="ri-eye-line ms-1"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DE DETALLE Y OPERACIÓN -->
+<div class="modal fade" id="detailModal{{ req.pk }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content modal-content-senior shadow-lg border-0">
+            <div class="modal-header border-0 pb-0 pt-4 px-4 bg-light">
+                <div class="text-center w-100 mb-3">
+                    <span class="badge bg-primary-subtle text-primary text-uppercase px-3 py-1">FOLIO #{{ req.numero }}</span>
+                    <h1 class="display-5 fw-bold text-dark mt-2 mb-0 text-uppercase">{{ req.requester.get_full_name|default:req.requester.username }}</h1>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <div class="modal-body p-4 bg-light">
+                <!-- CABECERA INFO -->
+                <div class="row g-3 mb-4 text-center">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-white rounded-3 shadow-sm">
+                            <div class="text-muted small text-uppercase fw-bold mb-1">Para cuando:</div>
+                            <h3 class="fw-bold text-danger mb-0 fs-3">{{ req.required_at|date:"d/m/Y H:i" }}</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-white rounded-3 shadow-sm">
+                            <div class="text-muted small text-uppercase fw-bold mb-1">Tipo de uso:</div>
+                            {% if req.use_type == 'PERSONAL' %}
+                                <h3 class="fw-bold text-danger mb-0 fs-4">💰 COBRAR (S/RECIBO)</h3>
+                            {% else %}
+                                <h3 class="fw-bold text-success mb-0 fs-4">🏢 INSTITUCIONAL</h3>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ITEMS DEL PEDIDO -->
+                <div class="mb-5">
+                    <h5 class="fw-bold text-dark mb-3"><i class="ri-article-line me-2"></i> DETALLES DE LAS COPIAS:</h5>
+                    {% for item in req.items.all %}
+                    <div class="item-box shadow-sm mb-3">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h2 class="fw-bold text-primary mb-2 display-6">{{ item.document_title }}</h2>
+                                <h4 class="text-muted mb-0">
+                                    {{ item.get_page_size_display }} | {{ item.get_print_side_display }} | {{ item.get_color_mode_display }}
+                                </h4>
+                            </div>
+                            <div class="col-md-4 text-center text-md-end">
+                                <div class="text-muted small text-uppercase">Copias:</div>
+                                <div class="display-item-count">x{{ item.copy_count_approved|default:item.copy_count_requested }}</div>
+                            </div>
+                        </div>
+                        
+                        {% if item.stapled or item.collated or item.ring_bound %}
+                        <div class="mt-4 p-3 bg-warning bg-opacity-25 border border-warning rounded-3 text-center fs-2 fw-bold text-dark">
+                            {% if item.stapled %}📌 LLEVA CORCHETE{% endif %}
+                            {% if item.collated %}🔢 ENTREGAR ORDENADO{% endif %}
+                            {% if item.ring_bound %}🌀 LLEVA ANILLADO{% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- PIE CON ACCIÓN PRINCIPAL (SOLO SI EL OPERADOR PUEDE) -->
+            <div class="modal-footer p-4 pt-0 border-0 bg-light">
+                <div class="d-grid w-100 shadow-lg rounded-3 overflow-hidden">
+                    {% if req.status == 'PENDING_APPROVAL' or req.status == 'APPROVED' %}
+                    <form method="post" action="{% url 'fotocopiadora:transicion_solicitud_impresion' req.pk %}" class="d-grid w-100">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="START">
+                        <button type="submit" class="btn btn-primary btn-lg p-4 fs-2 fw-bold text-uppercase">
+                            INICIAR TRABAJO <i class="ri-play-fill ms-2"></i>
+                        </button>
+                    </form>
+                    {% elif req.status == 'IN_PROGRESS' %}
+                    <div class="d-grid gap-3 w-100">
+                        <form method="post" action="{% url 'fotocopiadora:transicion_solicitud_impresion' req.pk %}" class="d-grid w-100">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="READY">
+                            <h4 class="fw-bold mb-2">💰 MONTO A COBRAR (Solo si es Personal):</h4>
+                            {% if req.use_type == 'PERSONAL' %}
+                            <input type="number" name="total_price" class="form-control form-control-lg mb-3 display-6 fw-bold text-center" placeholder="$ Pago..." step="1" required>
+                            {% endif %}
+                            <button type="submit" class="btn btn-warning btn-lg p-4 fs-2 fw-bold text-uppercase text-dark">
+                                TRABAJO LISTO ✅
+                            </button>
+                        </form>
+                    </div>
+                    {% elif req.status == 'READY_FOR_PICKUP' %}
+                    <form method="post" action="{% url 'fotocopiadora:transicion_solicitud_impresion' req.pk %}" class="d-grid w-100">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="DELIVER">
+                        {% if req.use_type == 'PERSONAL' %}
+                        <div class="alert alert-danger text-center p-3 mb-3">
+                            <h2 class="fw-bold mb-0">TOTAL A COBRAR: ${{ req.total_price }}</h2>
+                        </div>
+                        {% endif %}
+                        <h4 class="fw-bold mb-2">INGRESE PIN DEL PROFE:</h4>
+                        <input type="password" name="pin" class="form-control form-control-lg mb-3 display-4 text-center fw-bold" placeholder="****" maxlength="4" inputmode="numeric" required>
+                        <button type="submit" class="btn btn-success btn-lg p-4 fs-2 fw-bold text-uppercase">
+                            CONFIRMAR ENTREGA ✔️
+                        </button>
+                    </form>
+                    {% else %}
+                        <div class="alert alert-info w-100 text-center mb-0 p-4 fs-3 fw-bold">
+                            SOLICITUD FINALIZADA: {{ req.get_status_display|upper }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="text-center p-3">
+                <button type="button" class="btn btn-link text-muted" data-bs-dismiss="modal">Cerrar detalle</button>
+            </div>
+        </div>
+    </div>
+</div>
