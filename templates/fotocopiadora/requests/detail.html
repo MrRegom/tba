@@ -130,7 +130,7 @@
     </div>
     {% endif %}
 
-    {% if can_approve %}
+    {% if can_approve and not is_operator %}
     <div class="card">
       <div class="card-header"><h5 class="mb-0">Resolver aprobación</h5></div>
       <div class="card-body">

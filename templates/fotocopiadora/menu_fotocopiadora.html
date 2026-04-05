@@ -136,18 +136,24 @@
 <!-- HEADER & WELCOME -->
 <div class="row align-items-center mb-4">
   <div class="col-md-8">
-    <h1 class="title-welcome mb-1 text-center text-md-start">Fotocopiadora</h1>
-    <p class="text-muted welcome-subtitle text-center text-md-start">¡Hola, {{ user.get_full_name|default:user.username }}! Gestiona tus requerimientos.</p>
+    <h1 class="title-welcome mb-1 text-center text-md-start">
+      {% if is_operator %}Panel de Operación{% else %}Fotocopiadora{% endif %}
+    </h1>
+    <p class="text-muted welcome-subtitle text-center text-md-start">
+      {% if is_operator %}Gestión de cola de impresión y entregas.{% else %}¡Hola, {{ user.get_full_name|default:user.username }}! Gestiona tus requerimientos.{% endif %}
+    </p>
   </div>
   <div class="col-md-4 text-center text-md-end">
+    {% if not is_operator %}
     <a href="{% url 'fotocopiadora:crear_solicitud_impresion' %}" class="btn btn-new-request">
       <i class="bi bi-plus-lg me-2"></i>Nueva Solicitud
     </a>
+    {% endif %}
   </div>
 </div>
 
-<!-- ALERT: READY FOR PICKUP -->
-{% if stats.listas_retiro > 0 %}
+<!-- ALERT: READY FOR PICKUP (Solo para solicitantes) -->
+{% if not is_operator and stats.listas_retiro > 0 %}
 <div class="pickup-alert-card flex-column flex-md-row text-center text-md-start gap-3">
   <div class="d-flex align-items-center flex-column flex-md-row">
     <div class="flex-shrink-0">
@@ -162,11 +168,13 @@
 </div>
 {% endif %}
 
-<!-- MY REQUESTS LIST -->
+<!-- MY REQUESTS LIST / OPERATOR QUEUE -->
 <div class="card request-list-card">
   <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-    <h5 class="mb-0 fw-bold fs-6">Tus solicitudes</h5>
-    <a href="{% url 'fotocopiadora:mis_solicitudes_impresion' %}" class="btn btn-sm btn-link text-decoration-none small">Ver todo</a>
+    <h5 class="mb-0 fw-bold fs-6">
+      {% if is_operator %}<i class="bi bi-list-task me-2"></i>Cola de Trabajos para Procesar{% else %}Tus solicitudes{% endif %}
+    </h5>
+    <a href="{% if is_operator %}{% url 'fotocopiadora:bandeja_operativa_impresion' %}{% else %}{% url 'fotocopiadora:mis_solicitudes_impresion' %}{% endif %}" class="btn btn-sm btn-link text-decoration-none small">Ver todo</a>
   </div>
   
   <div class="card-body p-0">
@@ -175,7 +183,7 @@
       <table class="table table-hover align-middle mb-0">
         <thead class="bg-light bg-opacity-50">
           <tr class="small text-uppercase text-muted">
-            <th class="ps-4">Folio</th>
+            <th class="ps-4">{% if is_operator %}Solicitante / Prioridad{% else %}Folio{% endif %}</th>
             <th>Fecha</th>
             <th>Descripción</th>
             <th>Estado</th>
@@ -185,7 +193,14 @@
         <tbody>
           {% for req in my_latest_requests %}
           <tr>
-            <td class="ps-4 fw-bold text-primary">#{{ req.folio }}</td>
+            <td class="ps-4">
+              {% if is_operator %}
+                <div class="fw-bold truncate-1">{{ req.requester.get_full_name|default:req.requester.username }}</div>
+                <small class="{% if req.priority == 'HIGH' %}text-danger fw-bold{% else %}text-muted{% endif %}">{{ req.get_priority_display }}</small>
+              {% else %}
+                <span class="fw-bold text-primary">#{{ req.folio }}</span>
+              {% endif %}
+            </td>
             <td class="text-muted small">{{ req.fecha_creacion|date:"d M, H:i" }}</td>
             <td>
               <div class="fw-semibold text-dark small">{{ req.titulo|truncatechars:40 }}</div>
@@ -210,20 +225,33 @@
       {% for req in my_latest_requests %}
       <div class="mobile-request-item">
         <div class="d-flex justify-content-between align-items-center mb-2">
-          <span class="fw-bold text-primary">#{{ req.folio }}</span>
+          <span class="fw-bold {% if is_operator %}text-dark{% else %}text-primary{% endif %}">
+            {% if is_operator %}
+              {{ req.requester.get_full_name|default:req.requester.username }}
+            {% else %}
+              #{{ req.folio }}
+            {% endif %}
+          </span>
           <span class="status-badge 
             {% if req.status == 'DELIVERED' %}bg-success-subtle text-success{% elif req.status == 'READY_FOR_PICKUP' %}bg-warning text-dark{% elif req.status == 'REJECTED' %}bg-danger-subtle text-danger{% else %}bg-secondary-subtle text-muted{% endif %}">
               {{ req.get_status_display }}
           </span>
         </div>
-        <div class="fw-semibold mb-1 text-dark">{{ req.titulo|truncatechars:50 }}</div>
+        <div class="fw-semibold mb-1 text-dark small">{{ req.titulo|truncatechars:50 }}</div>
         <div class="d-flex justify-content-between align-items-end">
-          <small class="text-muted">{{ req.fecha_creacion|date:"d M, H:i" }}</small>
-          <a href="{% url 'fotocopiadora:detalle_solicitud_impresion' req.pk %}" class="btn btn-sm btn-primary rounded-pill px-3">Detalle</a>
+          <div class="d-flex flex-column">
+            <small class="text-muted">{{ req.fecha_creacion|date:"d M, H:i" }}</small>
+            {% if is_operator %}
+              <small class="{% if req.priority == 'HIGH' %}text-danger fw-bold{% else %}text-muted{% endif %}">{{ req.get_priority_display }}</small>
+            {% endif %}
+          </div>
+          <a href="{% url 'fotocopiadora:detalle_solicitud_impresion' req.pk %}" class="btn btn-sm {% if is_operator %}btn-primary{% else %}btn-outline-primary{% endif %} rounded-pill px-3">
+            {% if is_operator %}Atender{% else %}Ver{% endif %}
+          </a>
         </div>
       </div>
       {% empty %}
-      <div class="py-4 text-center text-muted">No hay solicitudes hoy.</div>
+      <div class="py-4 text-center text-muted">No hay trabajos pendientes hoy.</div>
       {% endfor %}
     </div>
   </div>

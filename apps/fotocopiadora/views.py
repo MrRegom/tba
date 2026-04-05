@@ -112,8 +112,20 @@ class MenuFotocopiadoraView(BaseAuditedViewMixin, TemplateView):
                 ],
             },
         }
+        profile = PrintRequestQueryService.module_profile(user)
+        context['module_profile'] = profile
+        context['is_operator'] = (profile == PrintMembershipRole.OPERATOR)
+        
         context['cards'] = [card_definitions[key] for key in PrintRequestQueryService.home_cards_for_user(user) if key in card_definitions]
-        context['my_latest_requests'] = workflow_qs.filter(requester=user).order_by('-fecha_creacion')[:10]
+        
+        if profile == PrintMembershipRole.OPERATOR:
+            # Para el operador, mostramos lo que tiene pendiente de trabajar
+            context['my_latest_requests'] = workflow_qs.filter(
+                status__in=[PrintRequestStatus.APPROVED, PrintRequestStatus.IN_PROGRESS]
+            ).order_by('-fecha_creacion')[:15]
+        else:
+            context['my_latest_requests'] = workflow_qs.filter(requester=user).order_by('-fecha_creacion')[:10]
+        
         return context
 
 
@@ -311,6 +323,7 @@ class PrintRequestDetailView(ScopedObjectPermissionMixin, BaseAuditedViewMixin, 
             PrintRequestStatus.READY_FOR_PICKUP,
             PrintRequestStatus.DELIVERED,
         } and PrintRequestQueryService.can_operate(user, obj)
+        context['is_operator'] = (PrintRequestQueryService.module_profile(user) == PrintMembershipRole.OPERATOR)
         context['approval_form'] = PrintRequestApprovalForm(request_obj=obj)
         context['transition_form'] = PrintRequestTransitionCommentForm()
         return context
