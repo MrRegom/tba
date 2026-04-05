@@ -16,7 +16,7 @@
                     </span>
                 </button>
 
-                <!-- LOGO EN HEADER (FORZADO PARA MOVILES) -->
+                <!-- LOGO EN HEADER (REPOSICIONADO PARA MOBILE) -->
                 <div class="navbar-brand-box topbar-logo-force"
                     style="display: flex !important; align-items: center; width: auto; padding-left: 0 !important;">
                     <a href="/" class="logo logo-light d-flex align-items-center text-decoration-none">
@@ -136,99 +136,3 @@
         </div>
     </div>
 </header>
-
-{% if request.user.is_authenticated %}
-<script>
-(function () {
-    const API_URL         = '{% url "notificaciones:api" %}';
-    const URL_LEER_TODAS  = '{% url "notificaciones:marcar_todas_leidas" %}';
-    const CSRF            = '{{ csrf_token }}';
-
-    const badge           = document.getElementById('notif-badge-wrapper');
-    const countEl         = document.getElementById('notif-count');
-    const countHeader     = document.getElementById('notif-count-header');
-    const listEl          = document.getElementById('notif-list');
-    const emptyEl         = document.getElementById('notif-empty');
-    const btnTodas        = document.getElementById('btn-marcar-todas');
-
-    function marcarLeida(id, url) {
-        fetch('/notificaciones/api/' + id + '/leer/', {
-            method: 'POST',
-            headers: { 'X-CSRFToken': CSRF },
-        }).then(() => cargar());
-        if (url) window.location.href = url;
-    }
-
-    function renderItem(n) {
-        const leida = n.leida ? '' : 'fw-semibold';
-        const bg    = n.leida ? '' : 'bg-light';
-        return `
-        <div class="d-flex gap-2 align-items-start py-2 border-bottom ${bg} px-1 rounded notif-item"
-             style="cursor:pointer" data-id="${n.id}" data-url="${n.url}">
-            <div class="flex-shrink-0 mt-1">
-                <i class="${n.icono} fs-xl"></i>
-            </div>
-            <div class="flex-grow-1 overflow-hidden">
-                <p class="mb-0 fs-sm ${leida} text-truncate">${n.titulo}</p>
-                <p class="mb-0 fs-xs text-muted text-truncate">${n.mensaje}</p>
-                <span class="fs-xs text-muted">${n.fecha}</span>
-            </div>
-        </div>`;
-    }
-
-    function cargar() {
-        fetch(API_URL)
-            .then(r => r.json())
-            .then(data => {
-                const total = data.no_leidas;
-
-                // badge
-                if (total > 0) {
-                    badge.classList.remove('d-none');
-                    countEl.textContent = total > 99 ? '99+' : total;
-                    countHeader.classList.remove('d-none');
-                    countHeader.textContent = total;
-                    btnTodas.classList.remove('d-none');
-                } else {
-                    badge.classList.add('d-none');
-                    countHeader.classList.add('d-none');
-                    btnTodas.classList.add('d-none');
-                }
-
-                // lista
-                if (data.notificaciones.length === 0) {
-                    listEl.innerHTML = '<p class="text-muted text-center py-3 mb-0">Sin notificaciones</p>';
-                    return;
-                }
-                listEl.innerHTML = data.notificaciones.map(renderItem).join('');
-
-                listEl.querySelectorAll('.notif-item').forEach(el => {
-                    el.addEventListener('click', () => {
-                        marcarLeida(el.dataset.id, el.dataset.url);
-                    });
-                });
-            })
-            .catch(() => {});
-    }
-
-    // Cargar al abrir el dropdown
-    document.getElementById('page-header-notifications-dropdown')
-        .addEventListener('click', cargar);
-
-    // Marcar todas
-    btnTodas.addEventListener('click', function (e) {
-        e.stopPropagation();
-        fetch(URL_LEER_TODAS, {
-            method: 'POST',
-            headers: { 'X-CSRFToken': CSRF },
-        }).then(() => cargar());
-    });
-
-    // Polling cada 60 segundos
-    cargar();
-    setInterval(cargar, 60000);
-})();
-</script>
-{% endif %}
-
-{% endblock topbar %}

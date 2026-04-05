@@ -113,7 +113,15 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 WSGI_APPLICATION = 'core.wsgi.application'
 
 # Database configuration logic - Multi-environment & Fallback
-DATABASES = {
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+else:
+    DATABASES = {
         'default': {
             'ENGINE': env('POSTGRES_ENGINE'),
             'NAME': env('POSTGRES_NAME'),
@@ -122,12 +130,8 @@ DATABASES = {
             'HOST': env('POSTGRES_HOST'),
             'PORT': env('POSTGRES_PORT'),
             'OPTIONS': {'client_encoding': 'UTF8'},
-        },
-        "sqlite": {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
         }
-}
+    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
