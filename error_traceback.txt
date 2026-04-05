@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "C:\proyectos\tba\tests\selenium\test_ui_solicitudes_detallado.py", line 87, in test_flujo_solicitante_y_aprobador
+    assert solicitud_db is not None, "La solicitud no se guardó en BD"
+AssertionError: La solicitud no se guardó en BD
+assert None is not None

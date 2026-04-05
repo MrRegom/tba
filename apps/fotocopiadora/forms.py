@@ -233,7 +233,6 @@ class PrintRequestItemForm(forms.ModelForm):
             "print_side",
             "color_mode",
             "copy_count_requested",
-            "original_page_count",
             "stapled",
             "collated",
             "ring_bound",
@@ -247,9 +246,6 @@ class PrintRequestItemForm(forms.ModelForm):
             "print_side": forms.Select(attrs={"class": "form-select"}),
             "color_mode": forms.Select(attrs={"class": "form-select"}),
             "copy_count_requested": forms.NumberInput(
-                attrs={"class": "form-control", "min": "1"}
-            ),
-            "original_page_count": forms.NumberInput(
                 attrs={"class": "form-control", "min": "1"}
             ),
             "stapled": forms.CheckboxInput(attrs={"class": "form-check-input"}),

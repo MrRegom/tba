@@ -4,6 +4,7 @@ from typing import Any
 
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied, ValidationError
+from django.db import transaction
 from django.db.models.query import QuerySet
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
@@ -349,32 +350,33 @@ class PrintRequestCreateView(ModuleProfileRequiredMixin, BaseAuditedViewMixin, C
         return self.render_to_response(self.get_context_data(form=form, formset=formset, attachment_form=attachment_form))
 
     def forms_valid(self, form, formset, attachment_form):
-        self.object = form.save(commit=False)
-        self.object.requester = self.request.user
-        self.object.source_mode = 'TEACHER_PORTAL'
-        self.object.save()
+        with transaction.atomic():
+            self.object = form.save(commit=False)
+            self.object.requester = self.request.user
+            self.object.source_mode = 'TEACHER_PORTAL'
+            self.object.save()
 
-        formset.instance = self.object
-        items = formset.save(commit=False)
-        line = 1
-        for item in items:
-            item.request = self.object
-            item.line_number = line
-            item.save()
-            line += 1
-        for deleted in formset.deleted_objects:
-            deleted.delete()
+            formset.instance = self.object
+            items = formset.save(commit=False)
+            line = 1
+            for item in items:
+                item.request = self.object
+                item.line_number = line
+                item.save()
+                line += 1
+            for deleted in formset.deleted_objects:
+                deleted.delete()
 
-        upload = attachment_form.cleaned_data.get('file')
-        if upload:
-            PrintRequestAttachment.objects.create(
-                request=self.object,
-                uploaded_by=self.request.user,
-                file=upload,
-                original_name=getattr(upload, 'name', 'archivo'),
-                mime_type=getattr(upload, 'content_type', ''),
-                size_bytes=getattr(upload, 'size', 0),
-            )
+            upload = attachment_form.cleaned_data.get('file')
+            if upload:
+                PrintRequestAttachment.objects.create(
+                    request=self.object,
+                    uploaded_by=self.request.user,
+                    file=upload,
+                    original_name=getattr(upload, 'name', 'archivo'),
+                    mime_type=getattr(upload, 'content_type', ''),
+                    size_bytes=getattr(upload, 'size', 0),
+                )
 
         self.log_action(self.object, self.request)
         messages.success(self.request, self.get_success_message(self.object))
@@ -422,27 +424,28 @@ class PrintRequestUpdateView(ModuleProfileRequiredMixin, ScopedObjectPermissionM
         return self.render_to_response(self.get_context_data(form=form, formset=formset, attachment_form=attachment_form))
 
     def forms_valid(self, form, formset, attachment_form):
-        self.object = form.save()
-        items = formset.save(commit=False)
-        line = 1
-        for item in items:
-            item.request = self.object
-            item.line_number = line
-            item.save()
-            line += 1
-        for deleted in formset.deleted_objects:
-            deleted.delete()
+        with transaction.atomic():
+            self.object = form.save()
+            items = formset.save(commit=False)
+            line = 1
+            for item in items:
+                item.request = self.object
+                item.line_number = line
+                item.save()
+                line += 1
+            for deleted in formset.deleted_objects:
+                deleted.delete()
 
-        upload = attachment_form.cleaned_data.get('file')
-        if upload:
-            PrintRequestAttachment.objects.create(
-                request=self.object,
-                uploaded_by=self.request.user,
-                file=upload,
-                original_name=getattr(upload, 'name', 'archivo'),
-                mime_type=getattr(upload, 'content_type', ''),
-                size_bytes=getattr(upload, 'size', 0),
-            )
+            upload = attachment_form.cleaned_data.get('file')
+            if upload:
+                PrintRequestAttachment.objects.create(
+                    request=self.object,
+                    uploaded_by=self.request.user,
+                    file=upload,
+                    original_name=getattr(upload, 'name', 'archivo'),
+                    mime_type=getattr(upload, 'content_type', ''),
+                    size_bytes=getattr(upload, 'size', 0),
+                )
 
         self.log_action(self.object, self.request)
         messages.success(self.request, self.get_success_message(self.object))

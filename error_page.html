@@ -1,0 +1,780 @@
+<html lang="es" data-layout="vertical" data-layout-width="fluid" data-sidebar="dark" data-topbar="brand" data-preloader="disable" data-card-layout="border" data-bs-theme="light" data-topbar-image="pattern-2" data-sidebar-size="lg" data-layout-position="fixed"><head>
+
+    <meta charset="utf-8">
+    <title>Crear Solicitud de Artículos | Sistema</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="Minimal Admin &amp; Dashboard Template" name="description">
+    <meta content="Themesbrand" name="author">
+
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="/static/images/imagenes_colegio/logoColegio.png">
+    <link rel="icon" href="/static/images/imagenes_colegio/logoColegio.png">
+
+    
+    
+    
+
+    <!-- Sidebar fix: forzar lg y bloquear restauración de sessionStorage -->
+    <script>
+      // Forzar sidebar-size=lg siempre (evita que sessionStorage restaure sm-hover)
+      sessionStorage.setItem('data-sidebar-size', 'lg');
+      sessionStorage.setItem('data-sidebar', 'dark');
+      // Bloquar defaultAttribute para que app.js no sobrescriba desde sessionStorage
+      // en la primera carga. Lo borramos para que lea desde los atributos HTML.
+      sessionStorage.removeItem('defaultAttribute');
+    </script>
+    <!-- Layout config Js -->
+    <script src="/static/js/layout.js"></script>
+
+    <!-- Bootstrap Css -->
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <!-- Icons Css -->
+    <link href="/static/css/icons.min.css" rel="stylesheet" type="text/css">
+    <!-- App Css-->
+    <link href="/static/css/app.min.css" rel="stylesheet" type="text/css">
+    <!-- custom Css-->
+    <link href="/static/css/custom.css" rel="stylesheet" type="text/css">
+    <!-- Cards de Módulos -->
+    <link href="/static/css/modulo-cards.css" rel="stylesheet" type="text/css">
+    <!-- Cards Institucionales -->
+    <link href="/static/css/cards-institucionales.css" rel="stylesheet" type="text/css">
+    <!-- SweetAlert2 (para alertas de timeout) -->
+    <link href="/static/libs/sweetalert2/sweetalert2.min.css" rel="stylesheet" type="text/css">
+
+
+    
+
+</head>
+
+
+
+<body class="" style="">
+    
+
+    <!-- Notificaciones del sistema (Fuente única de verdad para mensajes) -->
+    <div id="system-messages" style="display: none;">
+        
+    </div>
+
+    <!-- Begin page -->
+    <div id="layout-wrapper">
+
+        
+
+<!-- ========== App Menu ========== -->
+<div class="app-menu navbar-menu">
+    <div class="navbar-brand-box" style="display: none;"></div>
+
+    <div id="scrollbar" data-simplebar="init" class="h-100"><div class="simplebar-wrapper" style="margin: 0px;"><div class="simplebar-height-auto-observer-wrapper"><div class="simplebar-height-auto-observer"></div></div><div class="simplebar-mask"><div class="simplebar-offset" style="right: 0px; bottom: 0px;"><div class="simplebar-content-wrapper" tabindex="0" role="region" aria-label="scrollable content" style="height: 100%; overflow: hidden;"><div class="simplebar-content" style="padding: 0px;">
+        <div class="container-fluid">
+            <div id="two-column-menu"></div>
+            <ul class="navbar-nav" id="navbar-nav" data-simplebar="init"><div class="simplebar-wrapper" style="margin: 0px;"><div class="simplebar-height-auto-observer-wrapper"><div class="simplebar-height-auto-observer"></div></div><div class="simplebar-mask"><div class="simplebar-offset" style="right: 0px; bottom: 0px;"><div class="simplebar-content-wrapper" tabindex="0" role="region" aria-label="scrollable content" style="height: auto; overflow: hidden;"><div class="simplebar-content" style="padding: 0px;">
+                <li class="menu-title"><span>MENÚ</span></li>
+
+                
+                
+
+                <!-- Home: visible para todos los usuarios autenticados -->
+                <li class="nav-item">
+                    <a class="nav-link menu-link " href="/">
+                        <i class="ri-home-4-line"></i>
+                        <span>Home</span>
+                    </a>
+                </li>
+
+                <!-- Reportes -->
+                
+
+                <!-- ============================================================ -->
+                <!-- Bodega                                                        -->
+                <!-- Se expande solo en páginas de bodega que NO sean gestores    -->
+                <!-- ============================================================ -->
+                
+
+                <!-- ============================================================ -->
+                <!-- Compras                                                       -->
+                <!-- Se expande solo en páginas de compras que NO sean gestores   -->
+                <!-- ============================================================ -->
+                
+
+                <!-- ============================================================ -->
+                <!-- Solicitudes                                                   -->
+                <!-- Se expande solo en páginas de solicitudes que NO sean gestor -->
+                <!-- ============================================================ -->
+                
+                
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarSolicitudes" data-bs-toggle="collapse" role="button" aria-expanded="true" aria-controls="sidebarSolicitudes">
+                        <i class="ri-file-text-line"></i>
+                        <span>Solicitudes</span>
+                    </a>
+                    <div class="collapse menu-dropdown show" id="sidebarSolicitudes">
+                        <ul class="nav nav-sm flex-column">
+                            
+                            
+                            <li class="nav-item">
+                                <a href="/solicitudes/articulos/" class="nav-link active">
+                                    Solicitud de Artículos
+                                </a>
+                            </li>
+                            
+                            
+                            <li class="nav-item">
+                                <a href="/solicitudes/bienes/" class="nav-link ">
+                                    Solicitud de Bienes
+                                </a>
+                            </li>
+                            
+                            
+                            <li class="nav-item">
+                                <a href="/solicitudes/mis-solicitudes/" class="nav-link ">
+                                    Mis Solicitudes
+                                </a>
+                            </li>
+                            
+                        </ul>
+                    </div>
+                </li>
+                
+                
+
+                <!-- ============================================================ -->
+                <!-- Inventario                                                    -->
+                <!-- Se expande solo en páginas de activos que NO sean gestores   -->
+                <!-- ============================================================ -->
+                
+
+                <!-- ============================================================ -->
+                <!-- Bajas de Inventario                                          -->
+                <!-- ============================================================ -->
+                
+
+                <!-- ============================================================ -->
+                <!-- Fotocopiadora                                                -->
+                <!-- ============================================================ -->
+                
+
+                <!-- ============================================================ -->
+                <!-- Gestores: solo staff                                          -->
+                <!-- nav_en_gestores=True → expandido y cada item marcado activo  -->
+                <!-- ============================================================ -->
+                
+
+                <!-- Auditoría (solo administradores) -->
+                
+
+            </div></div></div></div><div class="simplebar-placeholder" style="width: 205px; height: 256px;"></div></div><div class="simplebar-track simplebar-horizontal" style="visibility: hidden;"><div class="simplebar-scrollbar" style="width: 0px; display: none;"></div></div><div class="simplebar-track simplebar-vertical" style="visibility: hidden;"><div class="simplebar-scrollbar" style="height: 0px; display: none;"></div></div></ul>
+        </div>
+    </div></div></div></div><div class="simplebar-placeholder" style="width: 248px; height: 256px;"></div></div><div class="simplebar-track simplebar-horizontal" style="visibility: hidden;"><div class="simplebar-scrollbar" style="width: 0px; display: none;"></div></div><div class="simplebar-track simplebar-vertical" style="visibility: hidden;"><div class="simplebar-scrollbar" style="height: 0px; display: none;"></div></div></div>
+
+    <div class="sidebar-background"></div>
+</div>
+<!-- Left Sidebar End -->
+<div class="vertical-overlay"></div>
+
+
+        
+        
+
+
+<header id="page-topbar" class="">
+    <div class="layout-width">
+        <div class="navbar-header">
+            <div class="d-flex align-items-center">
+                <!-- Botón de Hamburguesa (Vertical) - MOVIDO A LA IZQUIERDA -->
+                <button type="button" class="btn btn-sm px-3 fs-16 header-item vertical-menu-btn topnav-hamburger shadow-none" id="topnav-hamburger-icon">
+                    <span class="hamburger-icon">
+                        <span style="background-color: #FFA11B !important;"></span>
+                        <span style="background-color: #FFA11B !important;"></span>
+                        <span style="background-color: #FFA11B !important;"></span>
+                    </span>
+                </button>
+
+                <!-- LOGO EN HEADER (FORZADO) -->
+                <div class="navbar-brand-box topbar-logo-force" style="display: flex !important; align-items: center; width: auto; margin-right: 20px; padding-left: 10px !important;">
+                    <a href="/" class="logo logo-light" style="display: flex !important; align-items: center; text-decoration: none !important;">
+                        <span class="logo-lg" style="display: flex !important; align-items: center !important;">
+                            <img src="/static/images/imagenes_colegio/logoColegio.png" alt="Logo" height="45">
+                            <span class="fw-bold fs-3 text-white ms-2" style="font-family: 'Inter', sans-serif; display: inline-block !important; visibility: visible !important; opacity: 1 !important;">
+                                Colegio TBA
+                            </span>
+                        </span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center">
+
+                <div class="dropdown ms-1 topbar-head-dropdown header-item">
+                    <button type="button" class="btn btn-icon btn-topbar rounded-circle" id="page-header-search-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="bx bx-search align-middle fs-3xl"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0" aria-labelledby="page-header-search-dropdown">
+                        <form class="p-3">
+                            <div class="form-group m-0">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="Search ..." aria-label="Recipient's username">
+                                    <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i></button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="dropdown topbar-head-dropdown ms-1 header-item">
+                    <button type="button" class="btn btn-icon btn-topbar rounded-circle mode-layout" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="bi bi-sun align-middle fs-3xl"></i>
+                    </button>
+                    <div class="dropdown-menu p-2 dropdown-menu-end" id="light-dark-mode">
+                        <a href="#!" class="dropdown-item" data-mode="light"><i class="bi bi-sun align-middle me-2"></i>
+                            Default (light mode)</a>
+                        <a href="#!" class="dropdown-item" data-mode="dark"><i class="bi bi-moon align-middle me-2"></i>
+                            Dark</a>
+                        <a href="#!" class="dropdown-item" data-mode="brand"><i class="bi bi-award align-middle me-2"></i> Brand</a>
+                        <a href="#!" class="dropdown-item" data-mode="auto"><i class="bi bi-moon-stars align-middle me-2"></i> Auto (system default)</a>
+                    </div>
+                </div>
+
+                <div class="dropdown topbar-head-dropdown ms-1 header-item" id="notificationDropdown">
+                    <button type="button" class="btn btn-icon btn-topbar rounded-circle" id="page-header-notifications-dropdown" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-haspopup="true" aria-expanded="false">
+                        <i class="bi bi-bell fs-2xl"></i>
+                        <span id="notif-badge-wrapper" class="position-absolute topbar-badge p-0 d-flex align-items-center justify-content-center translate-middle badge rounded-pill bg-danger d-none">
+                            <span id="notif-count">0</span>
+                        </span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-xl dropdown-menu-end p-0" aria-labelledby="page-header-notifications-dropdown">
+                        <div class="dropdown-head rounded-top">
+                            <div class="p-3 pb-1">
+                                <div class="row align-items-center mb-2">
+                                    <div class="col">
+                                        <h6 class="mb-0 fs-lg fw-semibold">Notificaciones
+                                            <span id="notif-count-header" class="badge bg-danger-subtle text-danger fs-sm d-none">0</span>
+                                        </h6>
+                                    </div>
+                                    <div class="col-auto">
+                                        <button id="btn-marcar-todas" type="button" class="btn btn-sm btn-link text-muted p-0 d-none">
+                                            Marcar todas como leídas
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="notif-list-wrapper" data-simplebar="init" style="max-height: 320px;"><div class="simplebar-wrapper" style="margin: 0px;"><div class="simplebar-height-auto-observer-wrapper"><div class="simplebar-height-auto-observer"></div></div><div class="simplebar-mask"><div class="simplebar-offset" style="right: 0px; bottom: 0px;"><div class="simplebar-content-wrapper" tabindex="0" role="region" aria-label="scrollable content" style="height: auto; overflow: hidden;"><div class="simplebar-content" style="padding: 0px;">
+                            <div id="notif-list" class="py-2 px-3"><p class="text-muted text-center py-3 mb-0">Sin notificaciones</p></div>
+                        </div></div></div></div><div class="simplebar-placeholder" style="width: 0px; height: 0px;"></div></div><div class="simplebar-track simplebar-horizontal" style="visibility: hidden;"><div class="simplebar-scrollbar" style="width: 0px; display: none;"></div></div><div class="simplebar-track simplebar-vertical" style="visibility: hidden;"><div class="simplebar-scrollbar" style="height: 0px; display: none;"></div></div></div>
+                    </div>
+                </div>
+
+                <div class="dropdown topbar-head-dropdown ms-2 header-item text-end">
+                    <button type="button" class="btn btn-icon rounded-circle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <img class="rounded-circle img-fluid" src="/static/images/users/avatar-1.jpg" alt="Header Avatar">
+                    </button>
+                    <div class="dropdown-menu p-2 dropdown-menu-end">
+                        <div class="d-flex gap-2 mb-3 topbar-profile">
+                            <div class="position-relative">
+                                <img class="rounded-1" src="/static/images/users/avatar-1.jpg" alt="Header Avatar" width="32">
+                            </div>
+                            <div>
+                                <h6 class="mb-1 fs-sm user-name">solicitante</h6>
+                                <p class="mb-0 fw-medium fs-xs text-muted">sol@test.cl</p>
+                            </div>
+                        </div>
+                        <a href="/pages/profile" class="dropdown-item"><i class="bi bi-person align-middle me-2"></i> Perfil</a>
+                        <a href="/pages/manual" class="dropdown-item"><i class="bi bi-book align-middle me-2"></i> Manual</a>
+                        
+                        <a href="/account/logout/" class="dropdown-item"><i class="bi bi-box-arrow-right align-middle me-2"></i> Cerrar Sesión</a>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+<script>
+(function () {
+    const API_URL         = '/notificaciones/api/';
+    const URL_LEER_TODAS  = '/notificaciones/api/leer-todas/';
+    const CSRF            = 'oZQn2uthH85tBeG7qsSCeFCMtoTTpzkZsvk2moCMxU0dqU0oS0j3UsFF4bXRuS4R';
+
+    const badge           = document.getElementById('notif-badge-wrapper');
+    const countEl         = document.getElementById('notif-count');
+    const countHeader     = document.getElementById('notif-count-header');
+    const listEl          = document.getElementById('notif-list');
+    const emptyEl         = document.getElementById('notif-empty');
+    const btnTodas        = document.getElementById('btn-marcar-todas');
+
+    function marcarLeida(id, url) {
+        fetch('/notificaciones/api/' + id + '/leer/', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': CSRF },
+        }).then(() => cargar());
+        if (url) window.location.href = url;
+    }
+
+    function renderItem(n) {
+        const leida = n.leida ? '' : 'fw-semibold';
+        const bg    = n.leida ? '' : 'bg-light';
+        return `
+        <div class="d-flex gap-2 align-items-start py-2 border-bottom ${bg} px-1 rounded notif-item"
+             style="cursor:pointer" data-id="${n.id}" data-url="${n.url}">
+            <div class="flex-shrink-0 mt-1">
+                <i class="${n.icono} fs-xl"></i>
+            </div>
+            <div class="flex-grow-1 overflow-hidden">
+                <p class="mb-0 fs-sm ${leida} text-truncate">${n.titulo}</p>
+                <p class="mb-0 fs-xs text-muted text-truncate">${n.mensaje}</p>
+                <span class="fs-xs text-muted">${n.fecha}</span>
+            </div>
+        </div>`;
+    }
+
+    function cargar() {
+        fetch(API_URL)
+            .then(r => r.json())
+            .then(data => {
+                const total = data.no_leidas;
+
+                // badge
+                if (total > 0) {
+                    badge.classList.remove('d-none');
+                    countEl.textContent = total > 99 ? '99+' : total;
+                    countHeader.classList.remove('d-none');
+                    countHeader.textContent = total;
+                    btnTodas.classList.remove('d-none');
+                } else {
+                    badge.classList.add('d-none');
+                    countHeader.classList.add('d-none');
+                    btnTodas.classList.add('d-none');
+                }
+
+                // lista
+                if (data.notificaciones.length === 0) {
+                    listEl.innerHTML = '<p class="text-muted text-center py-3 mb-0">Sin notificaciones</p>';
+                    return;
+                }
+                listEl.innerHTML = data.notificaciones.map(renderItem).join('');
+
+                listEl.querySelectorAll('.notif-item').forEach(el => {
+                    el.addEventListener('click', () => {
+                        marcarLeida(el.dataset.id, el.dataset.url);
+                    });
+                });
+            })
+            .catch(() => {});
+    }
+
+    // Cargar al abrir el dropdown
+    document.getElementById('page-header-notifications-dropdown')
+        .addEventListener('click', cargar);
+
+    // Marcar todas
+    btnTodas.addEventListener('click', function (e) {
+        e.stopPropagation();
+        fetch(URL_LEER_TODAS, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': CSRF },
+        }).then(() => cargar());
+    });
+
+    // Polling cada 60 segundos
+    cargar();
+    setInterval(cargar, 60000);
+})();
+</script>
+
+
+
+
+        
+
+        <div class="main-content">
+
+            <div class="page-content">
+                <div class="container-fluid">
+
+                    
+
+                    
+
+
+                    
+        <!-- start page title -->
+        <div class="row">
+            <div class="col-12">
+                <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                    <h4 class="mb-sm-0">Crear Solicitud de Artículos</h4>
+                    <div class="page-title-right">
+                        <ol class="breadcrumb m-0">
+                            <li class="breadcrumb-item"><a href="/dashboard_analytics">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="/solicitudes/articulos/">Solicitudes de Artículos</a></li>
+                            <li class="breadcrumb-item active">Crear</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- end page title -->
+
+        <form method="post" id="formSolicitud">
+            <input type="hidden" name="csrfmiddlewaretoken" value="oZQn2uthH85tBeG7qsSCeFCMtoTTpzkZsvk2moCMxU0dqU0oS0j3UsFF4bXRuS4R">
+
+            <div class="row">
+                <div class="col-lg-6">
+                    
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="ri-file-list-3-line align-middle me-1"></i> Información General
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            
+
+<div class="col-md-12">
+    <label for="id_tipo_solicitud" class="form-label">
+        Tipo de Solicitud <span class="text-danger">*</span>
+    </label>
+    <select name="tipo_solicitud" class="form-select" required="" aria-describedby="id_tipo_solicitud_helptext" id="id_tipo_solicitud">
+  <option value="" selected="">---------</option>
+
+  <option value="32">ARTICULO - Solicitud de Artículos</option>
+
+</select>
+    
+    
+</div>
+
+            
+
+<div class="col-md-12">
+    <label for="id_fecha_requerida" class="form-label">
+        Fecha Requerida <span class="text-danger">*</span>
+    </label>
+    <input type="date" name="fecha_requerida" class="form-control" required="" aria-describedby="id_fecha_requerida_helptext" id="id_fecha_requerida">
+    
+    
+</div>
+
+            
+                
+
+<div class="col-md-12">
+    <label for="id_bodega_origen" class="form-label">
+        Bodega Origen <span class="text-danger">*</span>
+    </label>
+    <select name="bodega_origen" class="form-select" aria-describedby="id_bodega_origen_helptext" id="id_bodega_origen">
+  <option value="" selected="">---------</option>
+
+  <option value="28">BOD-TEST - Bodega Test</option>
+
+</select>
+    
+    
+</div>
+
+            
+        </div>
+    </div>
+</div>
+
+                </div>
+                <div class="col-lg-6">
+                    
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="ri-building-line align-middle me-1"></i> Estructura Organizacional
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            
+
+<div class="col-md-12">
+    <label for="id_departamento" class="form-label">
+        Departamento
+    </label>
+    <select name="departamento" class="form-select" aria-describedby="id_departamento_helptext" id="id_departamento">
+  <option value="" selected="">---------</option>
+
+  <option value="32">DEPTO-TEST - Depto de Test</option>
+
+</select>
+    
+    
+</div>
+
+            
+
+<div class="col-md-12">
+    <label for="id_area" class="form-label">
+        Área
+    </label>
+    <select name="area" class="form-select" aria-describedby="id_area_helptext" id="id_area">
+  <option value="" selected="">---------</option>
+
+  <option value="32">TEST - Área de Test</option>
+
+</select>
+    
+    
+</div>
+
+            
+
+<div class="col-md-12">
+    <label for="" class="form-label">
+        
+    </label>
+    
+    
+    
+</div>
+
+        </div>
+    </div>
+</div>
+
+                </div>
+            </div>
+
+            
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="ri-message-3-line align-middle me-1"></i> Motivo y Observaciones
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    
+
+<div class="col-md-12">
+    <label for="id_motivo" class="form-label">
+        Motivo de la Solicitud <span class="text-danger">*</span>
+    </label>
+    <textarea name="motivo" cols="40" rows="3" class="form-control" placeholder="Describa el motivo de la solicitud..." required="" aria-describedby="id_motivo_helptext" id="id_motivo"></textarea>
+    
+    
+</div>
+
+                    
+
+<div class="col-md-12">
+    <label for="id_observaciones" class="form-label">
+        Observaciones
+    </label>
+    <textarea name="observaciones" cols="40" rows="3" class="form-control" placeholder="Observaciones adicionales (opcional)..." aria-describedby="id_observaciones_helptext" id="id_observaciones"></textarea>
+    
+    
+</div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+            <!-- Detalles de Articulos -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">Artículos Solicitados</h5>
+                                <button type="button" class="btn btn-sm btn-primary" id="btn-agregar-articulo">
+                                    <i class="ri-add-line"></i> Agregar Artículo
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive" style="display: block !important;">
+                                <table class="table table-nowrap" id="tabla-articulos" style="display: table !important;">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 35%">Artículo <span class="text-danger">*</span></th>
+                                            <th style="width: 15%">Cantidad <span class="text-danger">*</span></th>
+                                            <th style="width: 40%">Observaciones</th>
+                                            <th style="width: 10%" class="text-center">Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody-articulos"><tr data-item-id="28" data-fila-id="0"><td><strong>Lápiz HB Test</strong><br><small class="text-muted">Código: ART-TEST-001</small><input type="hidden" name="detalles[0][articulo_id]" value="28"></td><td><input type="number" name="detalles[0][cantidad_solicitada]" class="form-control form-control-sm" min="0.01" step="0.01" required="" placeholder="0"><small class="text-muted">unidad</small></td><td><input type="text" name="detalles[0][observaciones]" class="form-control form-control-sm" placeholder="Opcional"></td><td class="text-center"><button type="button" class="btn btn-sm btn-danger btn-eliminar-fila" data-fila-id="0"><i class="ri-delete-bin-line"></i></button></td></tr></tbody>
+                                </table>
+                            </div>
+                            <div id="sin-articulos" class="text-center text-muted py-4 d-none" style="display: none !important;">
+                                <i class="ri-inbox-line" style="font-size: 3rem;"></i>
+                                <p class="mb-0">No hay artículos agregados. Haga clic en "Agregar Artículo" para comenzar.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="text-end">
+                        <a href="/solicitudes/articulos/" class="btn btn-light">
+                            <i class="ri-close-line"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="ri-save-line"></i> Crear Solicitud
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<!-- Modal para seleccionar articulo -->
+<div class="modal fade" id="modalSeleccionItem" tabindex="-1" aria-labelledby="modalSeleccionItemLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalSeleccionItemLabel">Seleccionar Artículo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Buscar Artículo</label>
+                    <input type="text" class="form-control" id="buscar-item" placeholder="Buscar por código o nombre...">
+                </div>
+                <div class="table-responsive" style="max-height: 400px;">
+                    <table class="table table-hover">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>Código</th>
+                                <th>Nombre</th>
+                                <th>Categoría</th>
+                                <th>Stock</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-lista-items">
+                            
+                            <tr data-item-id="28" data-item-codigo="ART-TEST-001" data-item-nombre="Lápiz HB Test" data-item-unidad="unidad">
+                                <td><code>ART-TEST-001</code></td>
+                                <td>Lápiz HB Test</td>
+                                <td>Materiales Test</td>
+                                <td>100 unidad</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-success btn-seleccionar-item">
+                                        <i class="ri-check-line"></i> Seleccionar
+                                    </button>
+                                </td>
+                            </tr>
+                            
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Config para JS unificado -->
+<div id="solicitud-crear-config" class="d-none" data-item-type="articulo" data-item-id-field="articulo_id" data-table-id="tabla-articulos" data-tbody-id="tbody-articulos" data-empty-state-id="sin-articulos" data-btn-agregar-id="btn-agregar-articulo" data-has-unidad="true" data-min-step="0.01" data-min-value="0.01" data-use-inline-selector="false" data-modal-selector-id="modalSeleccionItem" data-empty-message="No hay artículos agregados." data-duplicate-message="Este artículo ya ha sido agregado" data-validation-message="Debe agregar al menos un artículo a la solicitud" data-qty-validation-message="Todas las cantidades deben ser mayores a cero">
+</div>
+
+
+                </div>
+                <!-- container-fluid -->
+            </div>
+            <!-- End Page-content -->
+
+            
+            
+
+<footer class="footer">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-6 text-center text-sm-start">
+                <script>document.write(new Date().getFullYear())</script>2026 © Sistema Información Colegio Teresa Brown de Ariztia..
+            </div>
+            <div class="col-sm-6">
+                <div class="text-sm-end d-none d-sm-block">
+                    Creado con <i class="bi bi-heart-fill text-danger"></i> by <a href="#!" class="text-primary">Equipo Desarrollo</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+            
+
+        
+        <!-- end main content-->
+
+    
+    <!-- END layout-wrapper -->
+
+    <!-- Modal para Mensajes de Django (Se llena vía JS si es necesario) -->
+    <div class="modal fade" id="mensajesModal" tabindex="-1" aria-labelledby="mensajesModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div id="mensajesModalHeader" class="modal-header text-white">
+                    <h5 class="modal-title" id="mensajesModalLabel">
+                        <span id="mensajesModalIcon"></span>
+                        <span id="mensajesModalTitle">Mensaje</span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="mensajesModalBody">
+                    <!-- Se llena vía JS -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    
+
+    
+
+    <!-- JAVASCRIPT -->
+    <script src="/static/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/libs/simplebar/simplebar.min.js"></script>
+    <script src="/static/js/plugins.js"></script><script src="/static/js/toastify-js/src/toastify.js"></script>
+<script src="/static/libs/flatpickr/flatpickr.min.js"></script>
+<script src="/static/libs/choices.js/public/assets/scripts/choices.min.js"></script>
+
+
+    
+<script src="/static/js/solicitudes/crear-solicitud.js"></script>
+
+
+    <!-- Filtrado dinámico de modelos por marca -->
+    <script src="/static/js/filtrar-modelos.js"></script>
+
+    <!-- App js -->
+    <script src="/static/js/app.js"></script>
+    <!-- Sidebar active menu fix (overrides Velzon's static-file matching) -->
+    <script src="/static/js/sidebar-active.js"></script>
+    <!-- SweetAlert2 (para alertas de timeout) -->
+    <script src="/static/libs/sweetalert2/sweetalert2.min.js"></script>
+    <!-- Session Timeout js -->
+    <script src="/static/js/session-timeout.js"></script>
+
+    
+
+    <!-- Script de notificaciones externo -->
+    <script src="/static/js/notifications.js"></script>
+
+
+</body></html>

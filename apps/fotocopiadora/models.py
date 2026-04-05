@@ -719,7 +719,7 @@ class PrintRequestItem(BaseModel):
         verbose_name="Cantidad aprobada",
     )
     original_page_count = models.PositiveIntegerField(
-        validators=[MinValueValidator(1)], verbose_name="Cantidad de paginas originales"
+        null=True, blank=True, validators=[MinValueValidator(1)], verbose_name="Cantidad de paginas originales"
     )
     stapled = models.BooleanField(default=False, verbose_name="Corcheteado")
     collated = models.BooleanField(default=False, verbose_name="Ordenado")

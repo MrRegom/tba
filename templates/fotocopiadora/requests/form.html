@@ -34,6 +34,17 @@
         background-color: #e7f1ff;
         border-color: #3b71ca;
     }
+    .required-label::after {
+        content: " *";
+        color: #efae4e; /* Usando el color warning/danger de la paleta */
+        font-weight: bold;
+    }
+    /* Estilo específico solicitado: Asterisco Rojo */
+    .mandatory::after {
+        content: " *";
+        color: #ff0000;
+        font-weight: bold;
+    }
 </style>
 {% endblock %}
 
@@ -62,43 +73,43 @@
                     <h5 class="form-section-title"><i class="ri-information-line me-2"></i>Información General</h5>
                     <div class="row g-3">
                         <div class="col-md-9">
-                            <label class="form-label fw-bold small text-uppercase">{{ form.title.label }}</label>
+                            <label class="form-label fw-bold small text-uppercase {% if form.title.field.required %}mandatory{% endif %}">{{ form.title.label }}</label>
                             {{ form.title }}
                             {{ form.title.errors }}
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label fw-bold small text-uppercase">{{ form.priority.label }}</label>
+                            <label class="form-label fw-bold small text-uppercase {% if form.priority.field.required %}mandatory{% endif %}">{{ form.priority.label }}</label>
                             {{ form.priority }}
                         </div>
                         <div class="col-md-12">
-                            <label class="form-label fw-bold small text-uppercase">{{ form.description.label }}</label>
+                            <label class="form-label fw-bold small text-uppercase {% if form.description.field.required %}mandatory{% endif %}">{{ form.description.label }}</label>
                             {{ form.description }}
                         </div>
                         
                         <div class="col-md-6">
-                            <label class="form-label fw-bold small text-uppercase text-primary">{{ form.use_type.label }}</label>
+                            <label class="form-label fw-bold small text-uppercase text-primary {% if form.use_type.field.required %}mandatory{% endif %}">{{ form.use_type.label }}</label>
                             {{ form.use_type }}
                             <div class="form-text text-info d-none" id="personalUseAlert">
                                 <i class="ri-error-warning-line"></i> Nota: El uso personal tiene un costo asociado por copia.
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold small text-uppercase">{{ form.request_type.label }}</label>
+                            <label class="form-label fw-bold small text-uppercase {% if form.request_type.field.required %}mandatory{% endif %}">{{ form.request_type.label }}</label>
                             {{ form.request_type }}
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold small text-uppercase">{{ form.required_at.label }}</label>
+                            <label class="form-label fw-bold small text-uppercase {% if form.required_at.field.required %}mandatory{% endif %}">{{ form.required_at.label }}</label>
                             {{ form.required_at }}
                             {{ form.required_at.errors }}
                         </div>
 
                         <!-- Organizational Context - Conditionally Hidden if Personal -->
                         <div class="col-md-6" id="deptWrapper">
-                            <label class="form-label fw-bold small text-uppercase">{{ form.departamento.label }}</label>
+                            <label class="form-label fw-bold small text-uppercase {% if form.departamento.field.required %}mandatory{% endif %}">{{ form.departamento.label }}</label>
                             {{ form.departamento }}
                         </div>
                         <div class="col-md-12" id="areaWrapper">
-                            <label class="form-label fw-bold small text-uppercase">{{ form.area.label }}</label>
+                            <label class="form-label fw-bold small text-uppercase {% if form.area.field.required %}mandatory{% endif %}">{{ form.area.label }}</label>
                             {{ form.area }}
                             <div class="form-text text-muted small mt-1">
                                 <i class="ri-question-line"></i> Primero seleccione un departamento para ver sus áreas.
@@ -133,32 +144,27 @@
 
                             <div class="row g-3">
                                 <div class="col-md-12">
-                                    <label class="form-label fw-bold small">{{ item_form.document_title.label }}</label>
+                                    <label class="form-label fw-bold small {% if item_form.document_title.field.required %}mandatory{% endif %}">{{ item_form.document_title.label }}</label>
                                     {{ item_form.document_title }}
                                     {{ item_form.document_title.errors }}
                                 </div>
                                 
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <label class="form-label fw-bold small">Tamaño</label>
                                     {{ item_form.page_size }}
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <label class="form-label fw-bold small">Caras</label>
                                     {{ item_form.print_side }}
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <label class="form-label fw-bold small">Color</label>
                                     {{ item_form.color_mode }}
                                 </div>
-
-                                <div class="col-md-6">
-                                    <label class="form-label fw-bold small">{{ item_form.copy_count_requested.label }}</label>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold small {% if item_form.copy_count_requested.field.required %}mandatory{% endif %}">Cantidad</label>
                                     {{ item_form.copy_count_requested }}
                                     {{ item_form.copy_count_requested.errors }}
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-bold small">{{ item_form.original_page_count.label }}</label>
-                                    {{ item_form.original_page_count }}
                                 </div>
 
                                 <!-- Acabados Bonitos -->
