@@ -334,7 +334,7 @@ class PrintRequestTransitionService:
         elif action == 'READY':
             request_obj.ready_at = now
             request_obj.operator_comment = comment or request_obj.operator_comment
-            if request_obj.use_type == PrintRequest.TipoUso.PERSONAL and total_price is not None:
+            if request_obj.use_type == 'PERSONAL' and total_price is not None:
                 request_obj.total_price = total_price
         elif action == 'DELIVER':
             # Verificar PIN del solicitante si se requiere firma
