@@ -5,216 +5,250 @@
 
 {% block extra_css %}
 <style>
-  .copy-kpi-card,
-  .copy-module-card,
-  .copy-flow-card {
-    border: 1px solid #e6ebf1;
-    border-radius: 14px;
-    background: #fff;
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+  :root {
+    --primary-gradient: linear-gradient(135deg, #3b71ca 0%, #1a4da3 100%);
+    --pickup-gradient: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
+    --alert-bg: #fffbf0;
   }
 
-  .copy-kpi-label {
-    font-size: .85rem;
-    color: #6b7280;
-    margin-bottom: .35rem;
-  }
-
-  .copy-kpi-value {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #1f2937;
-    line-height: 1;
-  }
-
-  .copy-module-tag {
-    display: inline-flex;
+  .pickup-alert-card {
+    background: var(--pickup-gradient);
+    border: none;
+    border-radius: 16px;
+    padding: 1.5rem;
+    color: white;
+    box-shadow: 0 10px 25px rgba(34, 197, 94, 0.25);
+    margin-bottom: 2rem;
+    display: flex;
     align-items: center;
-    padding: .3rem .7rem;
-    border-radius: 999px;
-    background: #f3f4f6;
-    color: #475467;
-    font-size: .72rem;
+    justify-content: space-between;
+    animation: pulsepickup 2s infinite ease-in-out;
+  }
+
+  @keyframes pulsepickup {
+    0% { transform: scale(1); box-shadow: 0 10px 25px rgba(34, 197, 94, 0.25); }
+    50% { transform: scale(1.01); box-shadow: 0 15px 35px rgba(34, 197, 94, 0.4); }
+    100% { transform: scale(1); box-shadow: 0 10px 25px rgba(34, 197, 94, 0.25); }
+  }
+
+  .btn-new-request {
+    padding: 0.8rem 1.8rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 10px;
+    background: var(--primary-gradient);
+    border: none;
+    transition: all 0.2s;
+    color: white !important;
+  }
+
+  .btn-new-request:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(59, 113, 202, 0.4);
+  }
+
+  .request-list-card {
+    border: 0;
+    border-radius: 16px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+  }
+
+  .status-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: .04em;
+  }
+
+  /* Steps Redesign */
+  .official-flow-area {
+    background: #f8fafc;
+    padding: 2.5rem;
+    border-radius: 20px;
+    margin-top: 3rem;
+  }
+
+  .flow-step-modern {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 15px;
+    height: 100%;
+    border-bottom: 4px solid #e2e8f0;
+    transition: all 0.3s;
+  }
+
+  .flow-step-modern:hover {
+    border-bottom-color: #3b71ca;
+    transform: translateY(-5px);
+  }
+
+  .flow-number {
+    width: 40px;
+    height: 40px;
+    background: #eff6ff;
+    color: #3b71ca;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
     margin-bottom: 1rem;
   }
 
-  .copy-module-title {
-    font-size: 1.35rem;
-    font-weight: 700;
-    color: #101828;
-    margin-bottom: .75rem;
+  .title-welcome {
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
   }
 
-  .copy-module-text {
-    color: #475467;
-    min-height: 4.8rem;
-    margin-bottom: 1.25rem;
-    line-height: 1.65;
-  }
-
-  .copy-module-actions {
-    display: flex;
-    gap: .75rem;
-    flex-wrap: wrap;
-  }
-
-  .highlight-card {
-    background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
-    border: 2px solid #3b71ca !important;
-    transform: scale(1.02);
-    box-shadow: 0 15px 30px rgba(59, 113, 202, 0.1) !important;
-  }
-  
-  .highlight-card .copy-module-title {
-    color: #3b71ca;
-    font-size: 1.6rem;
-  }
-
-  .highlight-card .btn-primary {
-    padding: 1rem 2rem;
-    font-size: 1.2rem;
-    font-weight: bold;
-    text-transform: uppercase;
-    box-shadow: 0 4px 10px rgba(59, 113, 202, 0.3);
-  }
-
-  .copy-flow-step {
-    border: 1px solid #e8edf3;
-    border-radius: 12px;
-    background: #fcfcfd;
-    padding: 1rem;
-    height: 100%;
-  }
-
-  .copy-flow-step-number {
-    font-size: .75rem;
-    font-weight: 700;
-    color: #667085;
-    text-transform: uppercase;
-    letter-spacing: .04em;
-    margin-bottom: .4rem;
-  }
 </style>
 {% endblock extra_css %}
 
 {% block content %}
-<div class="row">
-  <div class="col-12">
-    <div class="page-title-box d-sm-flex align-items-center justify-content-between mb-3">
-      <div>
-        <h4 class="mb-sm-0">{{ titulo }}</h4>
-        <p class="text-muted mb-0">Workflow oficial único del módulo de fotocopiadora.</p>
-      </div>
-      <div class="page-title-right">
-        <ol class="breadcrumb m-0">
-          <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
-          <li class="breadcrumb-item active">Fotocopiadora</li>
-        </ol>
-      </div>
-    </div>
+
+<!-- HEADER & WELCOME -->
+<div class="row align-items-center mb-4">
+  <div class="col-md-8">
+    <h1 class="title-welcome mb-1">Módulo de Fotocopiadora</h1>
+    <p class="text-muted fs-5">¡Hola, {{ user.get_full_name|default:user.username }}! Gestiona tus requerimientos aquí.</p>
+  </div>
+  <div class="col-md-4 text-md-end">
+    <a href="{% url 'fotocopiadora:crear_solicitud_impresion' %}" class="btn btn-new-request">
+      <i class="bi bi-plus-lg me-2"></i>Nueva Solicitud
+    </a>
   </div>
 </div>
 
-<div class="row g-3 mb-4">
-  <div class="col-xl-3 col-md-6">
-    <div class="card copy-kpi-card h-100">
-      <div class="card-body">
-        <div class="copy-kpi-label">Mis solicitudes</div>
-        <div class="copy-kpi-value">{{ stats.mis_solicitudes }}</div>
-      </div>
+<!-- ALERT: READY FOR PICKUP -->
+{% if stats.listas_retiro > 0 %}
+<div class="pickup-alert-card">
+  <div class="d-flex align-items-center">
+    <div class="flex-shrink-0">
+      <i class="bi bi-bell-fill fs-1"></i>
+    </div>
+    <div class="ms-3">
+      <h4 class="mb-1 text-white fw-bold">¡Tienes trabajos listos para retiro!</h4>
+      <p class="mb-0 text-white-50">Cuentas con <strong>{{ stats.listas_retiro }}</strong> solicitud{{ stats.listas_retiro|pluralize }} esperándote en el sector de fotocopias.</p>
     </div>
   </div>
-  <div class="col-xl-3 col-md-6">
-    <div class="card copy-kpi-card h-100">
-      <div class="card-body">
-        <div class="copy-kpi-label">Pendientes de aprobación</div>
-        <div class="copy-kpi-value">{{ stats.pendientes_aprobacion }}</div>
-      </div>
-    </div>
-  </div>
-  <div class="col-xl-3 col-md-6">
-    <div class="card copy-kpi-card h-100">
-      <div class="card-body">
-        <div class="copy-kpi-label">Pendientes de operación</div>
-        <div class="copy-kpi-value">{{ stats.pendientes_operacion }}</div>
-      </div>
-    </div>
-  </div>
-  <div class="col-xl-3 col-md-6">
-    <div class="card copy-kpi-card h-100">
-      <div class="card-body">
-        <div class="copy-kpi-label">Listas para retiro</div>
-        <div class="copy-kpi-value">{{ stats.listas_retiro }}</div>
-      </div>
-    </div>
-  </div>
+  <a href="{% url 'fotocopiadora:mis_solicitudes_impresion' %}" class="btn btn-light rounded-pill px-4 fw-bold">Ver solicitudes</a>
 </div>
+{% endif %}
 
-<div class="row g-3">
-  {% for card in cards %}
-  <div class="col-lg-4">
-    <div class="card copy-module-card h-100 {% if card.title == 'Bandeja Operativa' %}highlight-card{% endif %}">
-      <div class="card-body d-flex flex-column">
-        <span class="copy-module-tag">{{ card.tag }}</span>
-        <div class="copy-module-title">{{ card.title }}</div>
-        <p class="copy-module-text flex-grow-1">{{ card.description }}</p>
-        <div class="copy-module-actions">
-          {% for action in card.actions %}
-            {% if action.style == 'primary' %}
-            <a href="{{ action.url }}" class="btn btn-primary">{{ action.label }}</a>
-            {% else %}
-            <a href="{{ action.url }}" class="btn btn-outline-secondary">{{ action.label }}</a>
-            {% endif %}
+<!-- MY REQUESTS LIST (SIMPLY) -->
+<div class="card request-list-card">
+  <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+    <h5 class="mb-0 fw-bold">Tus últimas solicitudes</h5>
+    <a href="{% url 'fotocopiadora:mis_solicitudes_impresion' %}" class="btn btn-sm btn-link text-decoration-none">Ver historial completo</a>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="bg-light bg-opacity-50">
+          <tr>
+            <th class="ps-4">Folio</th>
+            <th>Fecha</th>
+            <th>Descripción / Trabajo</th>
+            <th>Estado Actual</th>
+            <th class="text-end pe-4">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for req in my_latest_requests %}
+          <tr>
+            <td class="ps-4 fw-bold text-primary">#{{ req.folio }}</td>
+            <td class="text-muted">{{ req.fecha_creacion|date:"d M, H:i" }}</td>
+            <td>
+              <div class="fw-semibold text-dark">{{ req.titulo|truncatechars:40 }}</div>
+              <small class="text-muted">{{ req.get_type_display }}</small>
+            </td>
+            <td>
+              <span class="status-badge 
+              {% if req.status == 'DELIVERED' %}bg-success-subtle text-success{% elif req.status == 'READY_FOR_PICKUP' %}bg-warning text-dark{% elif req.status == 'REJECTED' %}bg-danger-subtle text-danger{% else %}bg-secondary-subtle text-muted{% endif %}">
+                {{ req.get_status_display }}
+              </span>
+            </td>
+            <td class="text-end pe-4">
+              <a href="{% url 'fotocopiadora:detalle_solicitud_impresion' req.pk %}" class="btn btn-sm btn-outline-primary px-3 rounded-pill">Detalle</a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="py-5 text-center text-muted">
+              <i class="bi bi-clipboard-x fs-1 opacity-25 d-block mb-3"></i>
+              No tienes solicitudes recientes. Haz clic en "Nueva Solicitud" para empezar.
+            </td>
+          </tr>
           {% endfor %}
-        </div>
-      </div>
+        </tbody>
+      </table>
     </div>
   </div>
-  {% empty %}
-  <div class="col-12">
-    <div class="alert alert-warning mb-0">
-      Su cuenta no tiene un perfil principal del módulo definido. Solicite revisión administrativa de memberships.
-    </div>
-  </div>
-  {% endfor %}
 </div>
 
-<div class="card copy-flow-card mt-4">
-  <div class="card-body">
-    <h5 class="mb-2">Flujo oficial</h5>
-    <div class="row g-3">
-      <div class="col-md-3">
-        <div class="copy-flow-step">
-          <div class="copy-flow-step-number">Paso 1</div>
-          <p class="fw-semibold mb-1">Solicitante</p>
-          <p class="text-muted mb-0">Crea borrador, adjunta archivos y envía la solicitud a aprobación.</p>
-        </div>
+<!-- OFFICIAL FLOW (REVISITED) -->
+<div class="official-flow-area">
+  <h3 class="mb-4 fw-bold">Flujo oficial del proceso</h3>
+  <div class="row g-4">
+    <div class="col-md-3">
+      <div class="flow-step-modern">
+        <div class="flow-number">1</div>
+        <h6 class="fw-bold">Haz tu pedido</h6>
+        <p class="text-muted mb-0 small">Como Funcionario, crea tu solicitud personal o interna adjuntando archivos.</p>
       </div>
-      <div class="col-md-3">
-        <div class="copy-flow-step">
-          <div class="copy-flow-step-number">Paso 2</div>
-          <p class="fw-semibold mb-1">Jefatura</p>
-          <p class="text-muted mb-0">Aprueba, rechaza o ajusta cantidades por item dentro de su ámbito.</p>
-        </div>
+    </div>
+    <div class="col-md-3">
+      <div class="flow-step-modern">
+        <div class="flow-number">2</div>
+        <h6 class="fw-bold">Preparamos tus copias</h6>
+        <p class="text-muted mb-0 small">El personal encargado te avisará automáticamente cuando tus copias estén listas.</p>
       </div>
-      <div class="col-md-3">
-        <div class="copy-flow-step">
-          <div class="copy-flow-step-number">Paso 3</div>
-          <p class="fw-semibold mb-1">Operadora</p>
-          <p class="text-muted mb-0">Inicia el trabajo, marca preparación, lista y entrega.</p>
-        </div>
+    </div>
+    <div class="col-md-3">
+      <div class="flow-step-modern">
+        <div class="flow-number">3</div>
+        <h6 class="fw-bold">Retira tu trabajo</h6>
+        <p class="text-muted mb-0 small">Acércate al sector de fotocopias para retirar tus documentos impresos.</p>
       </div>
-      <div class="col-md-3">
-        <div class="copy-flow-step">
-          <div class="copy-flow-step-number">Paso 4</div>
-          <p class="fw-semibold mb-1">Trazabilidad</p>
-          <p class="text-muted mb-0">Cada transición queda registrada con usuario, fecha y observaciones.</p>
-        </div>
+    </div>
+    <div class="col-md-3">
+      <div class="flow-step-modern">
+        <div class="flow-number">4</div>
+        <h6 class="fw-bold">Trazabilidad Total</h6>
+        <p class="text-muted mb-0 small">Todo el proceso queda registrado con firma digital para tu seguridad.</p>
       </div>
     </div>
   </div>
 </div>
+
+<!-- EXTRA BLOCKS FOR ADMIN/OPERATOR -->
+{% if cards|length > 1 or user.is_superuser %}
+<div class="mt-5 border-top pt-5">
+  <h4 class="mb-4 text-muted">Herramientas de Administración</h4>
+  <div class="row g-3">
+    {% for card in cards %}
+      {% if card.title != 'Mis Solicitudes' %}
+      <div class="col-md-4">
+        <div class="card request-list-card h-100 p-3">
+          <div class="card-body">
+             <span class="badge bg-light text-muted mb-2">{{ card.tag }}</span>
+             <h5 class="fw-bold">{{ card.title }}</h5>
+             <p class="text-muted small mb-3">{{ card.description }}</p>
+             <div class="d-flex gap-2">
+               {% for action in card.actions %}
+                <a href="{{ action.url }}" class="btn btn-sm px-3 {% if action.style == 'primary' %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+                  {{ action.label }}
+                </a>
+               {% endfor %}
+             </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
 {% endblock %}

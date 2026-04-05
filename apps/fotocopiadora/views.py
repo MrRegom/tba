@@ -113,6 +113,7 @@ class MenuFotocopiadoraView(BaseAuditedViewMixin, TemplateView):
             },
         }
         context['cards'] = [card_definitions[key] for key in PrintRequestQueryService.home_cards_for_user(user) if key in card_definitions]
+        context['my_latest_requests'] = workflow_qs.filter(requester=user).order_by('-fecha_creacion')[:10]
         return context
 
 
