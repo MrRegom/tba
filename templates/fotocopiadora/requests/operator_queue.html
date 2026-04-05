@@ -5,20 +5,27 @@
 
 {% block extra_css %}
 <style>
-    /* Estilos para Listado Ordenado Senior-Friendly */
     .op-row {
-        background: white; border: 1px solid #e2e8f0;
-        border-radius: 12px; margin-bottom: 12px; 
-        transition: all 0.2s; cursor: pointer;
+        background: #ffffff;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        margin-bottom: 12px;
+        padding: 20px !important;
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
-    .op-row:hover { background: #f8fafc; border-color: #3b82f6; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    
+    .op-row:hover {
+        border-color: #3b71ca !important;
+        box-shadow: 0 4px 12px rgba(59, 113, 202, 0.1);
+    }
     .status-badge { padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.8rem; }
     
     .nav-pills .nav-link {
-        font-size: 1rem !important; padding: 10px 20px !important;
+        font-size: 1rem !important; padding: 12px 24px !important;
         font-weight: 600 !important; border-radius: 8px !important;
-        margin-right: 8px; border: 1px solid #dee2e6; color: #6c757d; background: white;
+        margin-right: 10px; border: 1px solid #dee2e6; color: #6c757d; background: white;
     }
     .nav-pills .nav-link.active {
         background-color: #3b71ca !important; color: white !important;
@@ -37,6 +44,7 @@
 {% block content %}
 <div class="row mb-4 align-items-center mt-3">
     <div class="col-md-6">
+        <i class="bi bi-clipboard-check text-primary" style="font-size: 2.5rem;"></i>
         <h3 class="fw-bold text-dark mb-1">Bandeja de Tareas</h3>
         <p class="text-muted mb-0 small">Listado operativo de pedidos hoy.</p>
     </div>

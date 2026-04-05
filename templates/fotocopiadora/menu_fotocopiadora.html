@@ -77,16 +77,16 @@
     </div>
   </div>
 
-  <!-- CONTROL GLOBAL (PEDIDOS) -->
-  <div class="col-md-4">
-    <div class="card border-0 shadow-sm h-100 admin-tool-card text-center" style="border-radius: 20px;">
-      <div class="card-body p-4 d-flex flex-column align-items-center justify-content-center">
-        <div class="bg-primary bg-opacity-10 p-3 rounded-circle mb-3">
-          <i class="bi bi-clipboard-check text-primary" style="font-size: 3rem;"></i>
+  <div class="col-md-4 text-center">
+    <div class="card border-0 shadow-sm h-100 admin-tool-card" style="border-radius: 20px;">
+      <div class="card-body p-4">
+        <!-- ICONO REAL -->
+        <div class="bg-primary bg-opacity-10 p-3 rounded-circle mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+          <i class="bi bi-clipboard-check text-primary" style="font-size: 2.5rem;"></i>
         </div>
         <h2 class="fw-bold h3 mb-2">Pedidos</h2>
         <p class="text-muted small mb-4">Ver y procesar las solicitudes de hoy.</p>
-        <a href="{% url 'fotocopiadora:bandeja_operativa_impresion' %}" class="btn btn-primary rounded-pill w-100 py-3 fw-bold fs-5 shadow">
+        <a href="{% url 'fotocopiadora:bandeja_operativa_impresion' %}" class="btn btn-primary rounded-pill w-100 py-2 fw-bold shadow-sm">
           ABRIR LISTA
         </a>
       </div>

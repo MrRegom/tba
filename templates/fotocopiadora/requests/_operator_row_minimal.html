@@ -1,3 +1,10 @@
+<div class="op-row" data-bs-toggle="modal" data-bs-target="#detailModal{{ req.pk }}">
+    <div class="row align-items-center">
+        <!-- FOLIO -->
+        <div class="col-2 col-md-1">
+            <span class="text-primary fw-bold text-uppercase" style="font-size: 0.8rem;">#{{ req.folio }}</span>
+        </div>
+        
         <!-- PROFE -->
         <div class="col-10 col-md-4">
             <h5 class="mb-0 fw-bold text-dark text-uppercase truncate-1">{{ req.requester.get_full_name|default:req.requester.username }}</h5>
