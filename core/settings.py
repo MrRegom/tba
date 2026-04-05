@@ -113,23 +113,25 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 WSGI_APPLICATION = 'core.wsgi.application'
 
 # Database configuration logic - Multi-environment & Fallback
-if DEBUG:
+# Priorizamos PostgreSQL si las variables de entorno están presentes (Servidor)
+# Usamos SQLite solo si no hay configuración de DB o para desarrollo local rápido.
+if env('POSTGRES_ENGINE', default=None):
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'ENGINE': env('POSTGRES_ENGINE'),
+            'NAME': env('POSTGRES_NAME'),
+            'USER': env('POSTGRES_USER', default=''),
+            'PASSWORD': env('POSTGRES_PASSWORD', default=''),
+            'HOST': env('POSTGRES_HOST', default='localhost'),
+            'PORT': env('POSTGRES_PORT', default='5432'),
+            'OPTIONS': {'client_encoding': 'UTF8'},
         }
     }
 else:
     DATABASES = {
         'default': {
-            'ENGINE': env('POSTGRES_ENGINE'),
-            'NAME': env('POSTGRES_NAME'),
-            'USER': env('POSTGRES_USER'),
-            'PASSWORD': env('POSTGRES_PASSWORD'),
-            'HOST': env('POSTGRES_HOST'),
-            'PORT': env('POSTGRES_PORT'),
-            'OPTIONS': {'client_encoding': 'UTF8'},
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
 
