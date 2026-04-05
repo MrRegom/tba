@@ -22,6 +22,20 @@
             display: none !important;
         }
     }
+
+    @keyframes bell-shake {
+      0% { transform: rotate(0); }
+      15% { transform: rotate(15deg); }
+      30% { transform: rotate(-15deg); }
+      45% { transform: rotate(10deg); }
+      60% { transform: rotate(-10deg); }
+      75% { transform: rotate(5deg); }
+      100% { transform: rotate(0); }
+    }
+    .bell-animation {
+      animation: bell-shake 0.5s ease-in-out infinite;
+      display: inline-block;
+    }
 </style>
 
                 <!-- LOGO EN HEADER (FORZADO PARA MOVILES) -->
@@ -191,16 +205,19 @@
                 const total = data.no_leidas;
 
                 // badge
+                const bellIcon = document.querySelector('#page-header-notifications-dropdown i.bi-bell');
                 if (total > 0) {
                     badge.classList.remove('d-none');
                     countEl.textContent = total > 99 ? '99+' : total;
                     countHeader.classList.remove('d-none');
                     countHeader.textContent = total;
                     btnTodas.classList.remove('d-none');
+                    if (bellIcon) bellIcon.classList.add('bell-animation');
                 } else {
                     badge.classList.add('d-none');
                     countHeader.classList.add('d-none');
                     btnTodas.classList.add('d-none');
+                    if (bellIcon) bellIcon.classList.remove('bell-animation');
                 }
 
                 // lista

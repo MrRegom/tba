@@ -152,22 +152,6 @@
   </div>
 </div>
 
-<!-- ALERT: READY FOR PICKUP (Solo para solicitantes) -->
-{% if not is_operator and stats.listas_retiro > 0 %}
-<div class="pickup-alert-card flex-column flex-md-row text-center text-md-start gap-3">
-  <div class="d-flex align-items-center flex-column flex-md-row">
-    <div class="flex-shrink-0">
-      <i class="bi bi-bell-fill fs-1"></i>
-    </div>
-    <div class="ms-md-3 mt-2 mt-md-0">
-      <h4 class="mb-1 text-white fw-bold">¡Tienes trabajos listos!</h4>
-      <p class="mb-0 text-white-50 small">Cuentas con <strong>{{ stats.listas_retiro }}</strong> solicitud{{ stats.listas_retiro|pluralize }} esperándote.</p>
-    </div>
-  </div>
-  <a href="{% url 'fotocopiadora:mis_solicitudes_impresion' %}" class="btn btn-light rounded-pill px-4 fw-bold w-100 w-md-auto">Ver ahora</a>
-</div>
-{% endif %}
-
 <!-- MY REQUESTS LIST / OPERATOR QUEUE -->
 <div class="card request-list-card">
   <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
