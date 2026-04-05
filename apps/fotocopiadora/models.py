@@ -411,6 +411,19 @@ class PrintRequest(BaseModel):
     )
     title = models.CharField(max_length=180, verbose_name="Titulo")
     description = models.TextField(blank=True, verbose_name="Descripcion")
+    use_type = models.CharField(
+        max_length=20,
+        choices=TrabajoFotocopia.TipoUso.choices,
+        default=TrabajoFotocopia.TipoUso.INTERNO,
+        verbose_name="Tipo de uso",
+    )
+    total_price = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0"),
+        validators=[MinValueValidator(Decimal("0"))],
+        verbose_name="Monto Total",
+    )
     request_type = models.CharField(
         max_length=20,
         choices=PrintRequestType.choices,
@@ -710,6 +723,7 @@ class PrintRequestItem(BaseModel):
     )
     stapled = models.BooleanField(default=False, verbose_name="Corcheteado")
     collated = models.BooleanField(default=False, verbose_name="Ordenado")
+    ring_bound = models.BooleanField(default=False, verbose_name="Anillado")
     notes = models.TextField(blank=True, verbose_name="Notas")
 
     class Meta:

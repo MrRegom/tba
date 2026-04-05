@@ -1196,6 +1196,10 @@ class SolicitudArticuloCreateView(CrearSolicitudArticulosPermissionMixin, Solici
             form.add_error(None, f'Error al crear la solicitud: {str(e)}')
             return self.form_invalid(form)
 
+    def form_invalid(self, form):
+        print(f"================ FORM ERRORS ================\n{form.errors}\nNON_FIELD_ERRORS: {form.non_field_errors()}\n=============================================")
+        return super().form_invalid(form)
+
     def _render_modal_detalle(self):
         """Renderiza el detalle de la solicitud recién creada para mostrar en modal."""
         context = {

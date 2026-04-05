@@ -174,6 +174,7 @@ class PrintRequestForm(forms.ModelForm):
         fields = [
             "title",
             "description",
+            "use_type",
             "request_type",
             "priority",
             "required_at",
@@ -194,13 +195,14 @@ class PrintRequestForm(forms.ModelForm):
                     "placeholder": "Detalle breve del material a preparar",
                 }
             ),
+            "use_type": forms.Select(attrs={"class": "form-select"}),
             "request_type": forms.Select(attrs={"class": "form-select"}),
             "priority": forms.Select(attrs={"class": "form-select"}),
             "required_at": forms.DateTimeInput(
                 attrs={"class": "form-control", "type": "datetime-local"}
             ),
-            "departamento": forms.Select(attrs={"class": "form-select"}),
-            "area": forms.Select(attrs={"class": "form-select"}),
+            "departamento": forms.Select(attrs={"class": "form-select", "id": "id_departamento"}),
+            "area": forms.Select(attrs={"class": "form-select", "id": "id_area"}),
         }
 
     def __init__(self, *args, user=None, **kwargs):
@@ -212,6 +214,8 @@ class PrintRequestForm(forms.ModelForm):
         self.fields["area"].queryset = Area.objects.filter(
             activo=True, eliminado=False
         ).order_by("codigo")
+        self.fields["departamento"].required = False
+        self.fields["area"].required = False
 
     def clean_required_at(self):
         value = self.cleaned_data["required_at"]
@@ -232,6 +236,7 @@ class PrintRequestItemForm(forms.ModelForm):
             "original_page_count",
             "stapled",
             "collated",
+            "ring_bound",
             "notes",
         ]
         widgets = {
@@ -249,6 +254,7 @@ class PrintRequestItemForm(forms.ModelForm):
             ),
             "stapled": forms.CheckboxInput(attrs={"class": "form-check-input"}),
             "collated": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "ring_bound": forms.CheckboxInput(attrs={"class": "form-check-input"}),
             "notes": forms.Textarea(attrs={"class": "form-control", "rows": 2}),
         }
 

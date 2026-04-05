@@ -1,87 +1,316 @@
 {% extends 'partials/base.html' %}
+{% load static %}
 
 {% block title %}{{ titulo }}{% endblock %}
 
+{% block extra_css %}
+<style>
+    .form-section-title {
+        border-bottom: 2px solid #eff2f7;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        font-weight: 600;
+        color: #495057;
+    }
+    .item-form-card {
+        background-color: #f8f9fa;
+        transition: all 0.2s ease;
+    }
+    .item-form-card:hover { border-color: #3b71ca; }
+    .compact-checkbox {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 10px;
+        cursor: pointer;
+        height: 100%;
+    }
+    .compact-checkbox input { margin-bottom: 5px; margin-right: 0; }
+    .compact-checkbox:has(input:checked) {
+        background-color: #e7f1ff;
+        border-color: #3b71ca;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row">
-  <div class="col-12">
-    <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-      <h4 class="mb-sm-0">{{ titulo }}</h4>
-      <a href="{% url 'fotocopiadora:mis_solicitudes_impresion' %}" class="btn btn-light">Volver</a>
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0">{{ titulo }}</h4>
+            <div class="page-title-right">
+                <a href="{% url 'fotocopiadora:mis_solicitudes_impresion' %}" class="btn btn-sm btn-light shadow-sm">
+                    <i class="ri-arrow-left-line align-bottom me-1"></i> Volver a mis tareas
+                </a>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 
-<form method="post" enctype="multipart/form-data" novalidate>
-  {% csrf_token %}
-  <div class="row g-3">
-    <div class="col-lg-8">
-      <div class="card">
-        <div class="card-header"><h5 class="mb-0">Datos de la solicitud</h5></div>
-        <div class="card-body">
-          <div class="row g-3">
-            {% for field in form %}
-            <div class="col-md-{% if field.name == 'description' %}12{% else %}6{% endif %}">
-              <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-              {{ field }}
-              {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
-            </div>
-            {% endfor %}
-          </div>
-        </div>
-      </div>
+<form method="post" enctype="multipart/form-data" novalidate id="printRequestForm">
+    {% csrf_token %}
+    <div class="row g-4">
+        <!-- Main Form Column -->
+        <div class="col-lg-8">
+            <!-- Basic Data Card -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body">
+                    <h5 class="form-section-title"><i class="ri-information-line me-2"></i>Información General</h5>
+                    <div class="row g-3">
+                        <div class="col-md-9">
+                            <label class="form-label fw-bold small text-uppercase">{{ form.title.label }}</label>
+                            {{ form.title }}
+                            {{ form.title.errors }}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-uppercase">{{ form.priority.label }}</label>
+                            {{ form.priority }}
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold small text-uppercase">{{ form.description.label }}</label>
+                            {{ form.description }}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase text-primary">{{ form.use_type.label }}</label>
+                            {{ form.use_type }}
+                            <div class="form-text text-info d-none" id="personalUseAlert">
+                                <i class="ri-error-warning-line"></i> Nota: El uso personal tiene un costo asociado por copia.
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase">{{ form.request_type.label }}</label>
+                            {{ form.request_type }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase">{{ form.required_at.label }}</label>
+                            {{ form.required_at }}
+                            {{ form.required_at.errors }}
+                        </div>
 
-      <div class="card">
-        <div class="card-header"><h5 class="mb-0">Detalle de impresión</h5></div>
-        <div class="card-body">
-          {{ formset.management_form }}
-          <div class="row g-3">
-            {% for item_form in formset %}
-            <div class="col-12 border rounded p-3">
-              {% if item_form.non_field_errors %}
-              <div class="alert alert-danger py-2">{{ item_form.non_field_errors }}</div>
-              {% endif %}
-              {% if item_form.instance.pk %}{{ item_form.id }}{% endif %}
-              <div class="row g-3">
-                {% for field in item_form.visible_fields %}
-                <div class="col-md-{% if field.name == 'notes' %}12{% elif field.name == 'document_title' %}6{% else %}3{% endif %}">
-                  {% if field.name == 'DELETE' %}
-                  <div class="form-check pt-4">{{ field }} <label class="form-check-label" for="{{ field.id_for_label }}">Eliminar</label></div>
-                  {% else %}
-                  <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                  {{ field }}
-                  {% endif %}
-                  {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        <!-- Organizational Context - Conditionally Hidden if Personal -->
+                        <div class="col-md-6" id="deptWrapper">
+                            <label class="form-label fw-bold small text-uppercase">{{ form.departamento.label }}</label>
+                            {{ form.departamento }}
+                        </div>
+                        <div class="col-md-12" id="areaWrapper">
+                            <label class="form-label fw-bold small text-uppercase">{{ form.area.label }}</label>
+                            {{ form.area }}
+                            <div class="form-text text-muted small mt-1">
+                                <i class="ri-question-line"></i> Primero seleccione un departamento para ver sus áreas.
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                {% endfor %}
-              </div>
             </div>
-            {% endfor %}
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <div class="col-lg-4">
-      <div class="card">
-        <div class="card-header"><h5 class="mb-0">Adjunto opcional</h5></div>
-        <div class="card-body">
-          {% for field in attachment_form %}
-          <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-          {{ field }}
-          {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
-          {% endfor %}
-          <p class="text-muted small mb-0 mt-2">Formatos permitidos: PDF, Office e imágenes. Máximo 10 MB.</p>
-        </div>
-      </div>
+            <!-- Items Formset Card -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-transparent border-0 pt-4 px-4">
+                    <h5 class="form-section-title mb-0"><i class="ri-printer-line me-2"></i>Contenido y Especificaciones</h5>
+                </div>
+                <div class="card-body">
+                    {{ formset.management_form }}
+                    <div id="formset-container">
+                        {% for item_form in formset %}
+                        <div class="item-form-card border rounded p-4 mb-3 position-relative">
+                            {% if item_form.instance.pk %}{{ item_form.id }}{% endif %}
+                            
+                            {% if formset.can_delete %}
+                            <div class="position-absolute top-0 end-0 p-2">
+                                <div class="form-check form-check-danger mb-0">
+                                    {{ item_form.DELETE }}
+                                    <label class="form-check-label text-danger small" for="{{ item_form.DELETE.id_for_label }}">
+                                        <i class="ri-delete-bin-line"></i>
+                                    </label>
+                                </div>
+                            </div>
+                            {% endif %}
 
-      <div class="card">
-        <div class="card-body d-grid gap-2">
-          <button type="submit" class="btn btn-primary">{{ action }}</button>
-          <a href="{% url 'fotocopiadora:mis_solicitudes_impresion' %}" class="btn btn-light">Cancelar</a>
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label class="form-label fw-bold small">{{ item_form.document_title.label }}</label>
+                                    {{ item_form.document_title }}
+                                    {{ item_form.document_title.errors }}
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold small">Tamaño</label>
+                                    {{ item_form.page_size }}
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold small">Caras</label>
+                                    {{ item_form.print_side }}
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold small">Color</label>
+                                    {{ item_form.color_mode }}
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small">{{ item_form.copy_count_requested.label }}</label>
+                                    {{ item_form.copy_count_requested }}
+                                    {{ item_form.copy_count_requested.errors }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small">{{ item_form.original_page_count.label }}</label>
+                                    {{ item_form.original_page_count }}
+                                </div>
+
+                                <!-- Acabados Bonitos -->
+                                <div class="col-12 mt-4">
+                                    <div class="row g-2">
+                                        <div class="col-md-4">
+                                            <div class="compact-checkbox" onclick="this.querySelector('input').click()">
+                                                <i class="ri-bookmark-line fs-3 mb-1"></i>
+                                                {{ item_form.stapled }}
+                                                <span class="small fw-medium">Corcheteado</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="compact-checkbox" onclick="this.querySelector('input').click()">
+                                                <i class="ri-stack-line fs-3 mb-1"></i>
+                                                {{ item_form.collated }}
+                                                <span class="small fw-medium">Ordenado</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="compact-checkbox" onclick="this.querySelector('input').click()">
+                                                <i class="ri-list-check fs-3 mb-1"></i>
+                                                {{ item_form.ring_bound }}
+                                                <span class="small fw-medium">Anillado</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label fw-bold small">Notas / Instrucciones adicionales</label>
+                                    {{ item_form.notes }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
+
+        <!-- Sidebar Column -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 sticky-top" style="top: 20px;">
+                <div class="card-header bg-transparent"><h5 class="mb-0">Gestión de Archivos</h5></div>
+                <div class="card-body">
+                    <div class="mb-4 text-center p-3 border-dashed rounded bg-light">
+                        <i class="ri-upload-cloud-2-line display-4 text-primary mb-3 d-block"></i>
+                        {{ attachment_form.file }}
+                        <div class="mt-3 text-muted small">
+                            Formatos: PDF, Word, Excel, PPT, JPG, PNG.<br>MÁX: 10MB
+                        </div>
+                        {{ attachment_form.file.errors }}
+                    </div>
+
+                    <div class="d-grid gap-3 mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg shadow-sm">
+                            <i class="ri-save-line align-bottom me-1"></i> {{ action }} Solicitud
+                        </button>
+                        <a href="{% url 'fotocopiadora:mis_solicitudes_impresion' %}" class="btn btn-outline-light text-dark">
+                            Descartar cambios
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer bg-light-subtle border-0">
+                    <div class="alert alert-warning mb-0 p-2 small">
+                        <i class="ri-shield-user-line me-1"></i> Su solicitud será revisada por la jefatura del área seleccionada antes de ser procesada.
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 </form>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Logic for show/hide Dept/Area based on Use Type
+    const useTypeSelect = document.getElementById('id_use_type');
+    const deptWrapper = document.getElementById('deptWrapper');
+    const areaWrapper = document.getElementById('areaWrapper');
+    const personalAlert = document.getElementById('personalUseAlert');
+    
+    function updateUseTypeVisibility() {
+        if (useTypeSelect.value === 'PERSONAL') {
+            deptWrapper.classList.add('d-none');
+            areaWrapper.classList.add('d-none');
+            personalAlert.classList.remove('d-none');
+        } else {
+            deptWrapper.classList.remove('d-none');
+            areaWrapper.classList.remove('d-none');
+            personalAlert.classList.add('d-none');
+        }
+    }
+    
+    if (useTypeSelect) {
+        useTypeSelect.addEventListener('change', updateUseTypeVisibility);
+        updateUseTypeVisibility();
+    }
+
+    // 2. Logic for Chained Select: Dept -> Area
+    const deptSelect = document.getElementById('id_departamento');
+    const areaSelect = document.getElementById('id_area');
+    
+    // Injected Areas Data from View
+    const areas = [
+        {% for area in areas_all %}
+        {id: "{{ area.id }}", name: "{{ area.nombre }}", code: "{{ area.codigo }}", deptId: "{{ area.departamento_id }}"},
+        {% endfor %}
+    ];
+
+    function filterAreas() {
+        const selectedDeptId = deptSelect.value;
+        const currentAreaId = areaSelect.value;
+        
+        // Clear current options except the placeholder
+        areaSelect.innerHTML = '<option value="">---------</option>';
+        
+        if (!selectedDeptId) {
+            // If no dept selected, show all areas (or stay empty? standard institutional rule is to filter)
+            // Let's show all but marked as deactivated or just keep empty to force discipline
+            return;
+        }
+
+        const filtered = areas.filter(a => a.deptId.toString() === selectedDeptId.toString());
+        
+        filtered.forEach(area => {
+            const opt = document.createElement('option');
+            opt.value = area.id;
+            opt.textContent = `${area.code} - ${area.name}`;
+            if (area.id.toString() === currentAreaId.toString()) {
+                opt.selected = true;
+            }
+            areaSelect.appendChild(opt);
+        });
+    }
+
+    if (deptSelect && areaSelect) {
+        deptSelect.addEventListener('change', filterAreas);
+        // Initial filter on load (for edit views)
+        if (deptSelect.value) filterAreas();
+    }
+
+    // 3. Compact checkbox interaction (prevent double click toggle)
+    const checkboxes = document.querySelectorAll('.compact-checkbox input');
+    checkboxes.forEach(chk => {
+        chk.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    });
+});
+</script>
 {% endblock %}

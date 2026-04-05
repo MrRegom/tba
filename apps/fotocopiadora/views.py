@@ -335,6 +335,7 @@ class PrintRequestCreateView(ModuleProfileRequiredMixin, BaseAuditedViewMixin, C
         context['action'] = 'Crear'
         context['formset'] = kwargs.get('formset') or PrintRequestItemFormSet()
         context['attachment_form'] = kwargs.get('attachment_form') or PrintRequestAttachmentForm()
+        context['areas_all'] = Area.objects.filter(activo=True, eliminado=False).values('id', 'nombre', 'codigo', 'departamento_id')
         return context
 
     def post(self, request, *args, **kwargs):
@@ -407,6 +408,7 @@ class PrintRequestUpdateView(ModuleProfileRequiredMixin, ScopedObjectPermissionM
         context['action'] = 'Editar'
         context['formset'] = kwargs.get('formset') or PrintRequestItemFormSet(instance=self.object)
         context['attachment_form'] = kwargs.get('attachment_form') or PrintRequestAttachmentForm()
+        context['areas_all'] = Area.objects.filter(activo=True, eliminado=False).values('id', 'nombre', 'codigo', 'departamento_id')
         return context
 
     def post(self, request, *args, **kwargs):
