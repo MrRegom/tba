@@ -11,6 +11,33 @@
     --alert-bg: #fffbf0;
   }
 
+  /* Responsive Typography */
+  .title-welcome {
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    font-size: 2.2rem;
+  }
+
+  @media (max-width: 767.98px) {
+    .title-welcome {
+      font-size: 1.5rem;
+    }
+    .welcome-subtitle {
+      font-size: 0.95rem !important;
+    }
+    .btn-new-request {
+      width: 100%;
+      margin-top: 1rem;
+    }
+    .pickup-alert-card {
+        padding: 1rem;
+    }
+    .pickup-alert-card h4 {
+        font-size: 1.1rem;
+    }
+  }
+
   .pickup-alert-card {
     background: var(--pickup-gradient);
     border: none;
@@ -54,54 +81,53 @@
   }
 
   .status-badge {
-    padding: 0.4rem 0.8rem;
-    border-radius: 8px;
-    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
     font-weight: 700;
     text-transform: uppercase;
+  }
+
+  /* Mobile Item Styles */
+  .mobile-request-item {
+    padding: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .mobile-request-item:last-child {
+    border-bottom: none;
   }
 
   /* Steps Redesign */
   .official-flow-area {
     background: #f8fafc;
-    padding: 2.5rem;
+    padding: 1.5rem;
     border-radius: 20px;
-    margin-top: 3rem;
+    margin-top: 2rem;
   }
 
   .flow-step-modern {
     background: white;
-    padding: 1.5rem;
+    padding: 1.2rem;
     border-radius: 15px;
     height: 100%;
     border-bottom: 4px solid #e2e8f0;
     transition: all 0.3s;
   }
 
-  .flow-step-modern:hover {
-    border-bottom-color: #3b71ca;
-    transform: translateY(-5px);
-  }
-
   .flow-number {
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     background: #eff6ff;
     color: #3b71ca;
-    border-radius: 10px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 800;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.85rem;
   }
-
-  .title-welcome {
-    font-weight: 800;
-    color: #0f172a;
-    letter-spacing: -0.02em;
-  }
-
 </style>
 {% endblock extra_css %}
 
@@ -110,10 +136,10 @@
 <!-- HEADER & WELCOME -->
 <div class="row align-items-center mb-4">
   <div class="col-md-8">
-    <h1 class="title-welcome mb-1">Módulo de Fotocopiadora</h1>
-    <p class="text-muted fs-5">¡Hola, {{ user.get_full_name|default:user.username }}! Gestiona tus requerimientos aquí.</p>
+    <h1 class="title-welcome mb-1 text-center text-md-start">Fotocopiadora</h1>
+    <p class="text-muted welcome-subtitle text-center text-md-start">¡Hola, {{ user.get_full_name|default:user.username }}! Gestiona tus requerimientos.</p>
   </div>
-  <div class="col-md-4 text-md-end">
+  <div class="col-md-4 text-center text-md-end">
     <a href="{% url 'fotocopiadora:crear_solicitud_impresion' %}" class="btn btn-new-request">
       <i class="bi bi-plus-lg me-2"></i>Nueva Solicitud
     </a>
@@ -122,35 +148,37 @@
 
 <!-- ALERT: READY FOR PICKUP -->
 {% if stats.listas_retiro > 0 %}
-<div class="pickup-alert-card">
-  <div class="d-flex align-items-center">
+<div class="pickup-alert-card flex-column flex-md-row text-center text-md-start gap-3">
+  <div class="d-flex align-items-center flex-column flex-md-row">
     <div class="flex-shrink-0">
       <i class="bi bi-bell-fill fs-1"></i>
     </div>
-    <div class="ms-3">
-      <h4 class="mb-1 text-white fw-bold">¡Tienes trabajos listos para retiro!</h4>
-      <p class="mb-0 text-white-50">Cuentas con <strong>{{ stats.listas_retiro }}</strong> solicitud{{ stats.listas_retiro|pluralize }} esperándote en el sector de fotocopias.</p>
+    <div class="ms-md-3 mt-2 mt-md-0">
+      <h4 class="mb-1 text-white fw-bold">¡Tienes trabajos listos!</h4>
+      <p class="mb-0 text-white-50 small">Cuentas con <strong>{{ stats.listas_retiro }}</strong> solicitud{{ stats.listas_retiro|pluralize }} esperándote.</p>
     </div>
   </div>
-  <a href="{% url 'fotocopiadora:mis_solicitudes_impresion' %}" class="btn btn-light rounded-pill px-4 fw-bold">Ver solicitudes</a>
+  <a href="{% url 'fotocopiadora:mis_solicitudes_impresion' %}" class="btn btn-light rounded-pill px-4 fw-bold w-100 w-md-auto">Ver ahora</a>
 </div>
 {% endif %}
 
-<!-- MY REQUESTS LIST (SIMPLY) -->
+<!-- MY REQUESTS LIST -->
 <div class="card request-list-card">
   <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-    <h5 class="mb-0 fw-bold">Tus últimas solicitudes</h5>
-    <a href="{% url 'fotocopiadora:mis_solicitudes_impresion' %}" class="btn btn-sm btn-link text-decoration-none">Ver historial completo</a>
+    <h5 class="mb-0 fw-bold fs-6">Tus solicitudes</h5>
+    <a href="{% url 'fotocopiadora:mis_solicitudes_impresion' %}" class="btn btn-sm btn-link text-decoration-none small">Ver todo</a>
   </div>
+  
   <div class="card-body p-0">
-    <div class="table-responsive">
+    <!-- Desktop Table (Visible on MD and up) -->
+    <div class="table-responsive d-none d-md-block">
       <table class="table table-hover align-middle mb-0">
         <thead class="bg-light bg-opacity-50">
-          <tr>
+          <tr class="small text-uppercase text-muted">
             <th class="ps-4">Folio</th>
             <th>Fecha</th>
-            <th>Descripción / Trabajo</th>
-            <th>Estado Actual</th>
+            <th>Descripción</th>
+            <th>Estado</th>
             <th class="text-end pe-4">Acción</th>
           </tr>
         </thead>
@@ -158,10 +186,9 @@
           {% for req in my_latest_requests %}
           <tr>
             <td class="ps-4 fw-bold text-primary">#{{ req.folio }}</td>
-            <td class="text-muted">{{ req.fecha_creacion|date:"d M, H:i" }}</td>
+            <td class="text-muted small">{{ req.fecha_creacion|date:"d M, H:i" }}</td>
             <td>
-              <div class="fw-semibold text-dark">{{ req.titulo|truncatechars:40 }}</div>
-              <small class="text-muted">{{ req.get_type_display }}</small>
+              <div class="fw-semibold text-dark small">{{ req.titulo|truncatechars:40 }}</div>
             </td>
             <td>
               <span class="status-badge 
@@ -170,53 +197,68 @@
               </span>
             </td>
             <td class="text-end pe-4">
-              <a href="{% url 'fotocopiadora:detalle_solicitud_impresion' req.pk %}" class="btn btn-sm btn-outline-primary px-3 rounded-pill">Detalle</a>
-            </td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="5" class="py-5 text-center text-muted">
-              <i class="bi bi-clipboard-x fs-1 opacity-25 d-block mb-3"></i>
-              No tienes solicitudes recientes. Haz clic en "Nueva Solicitud" para empezar.
+              <a href="{% url 'fotocopiadora:detalle_solicitud_impresion' req.pk %}" class="btn btn-sm btn-outline-primary px-3 rounded-pill btn-sm">Ver</a>
             </td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
+
+    <!-- Mobile List (Visible on SM only) -->
+    <div class="d-md-none">
+      {% for req in my_latest_requests %}
+      <div class="mobile-request-item">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="fw-bold text-primary">#{{ req.folio }}</span>
+          <span class="status-badge 
+            {% if req.status == 'DELIVERED' %}bg-success-subtle text-success{% elif req.status == 'READY_FOR_PICKUP' %}bg-warning text-dark{% elif req.status == 'REJECTED' %}bg-danger-subtle text-danger{% else %}bg-secondary-subtle text-muted{% endif %}">
+              {{ req.get_status_display }}
+          </span>
+        </div>
+        <div class="fw-semibold mb-1 text-dark">{{ req.titulo|truncatechars:50 }}</div>
+        <div class="d-flex justify-content-between align-items-end">
+          <small class="text-muted">{{ req.fecha_creacion|date:"d M, H:i" }}</small>
+          <a href="{% url 'fotocopiadora:detalle_solicitud_impresion' req.pk %}" class="btn btn-sm btn-primary rounded-pill px-3">Detalle</a>
+        </div>
+      </div>
+      {% empty %}
+      <div class="py-4 text-center text-muted">No hay solicitudes hoy.</div>
+      {% endfor %}
+    </div>
   </div>
 </div>
 
-<!-- OFFICIAL FLOW (REVISITED) -->
+<!-- OFFICIAL FLOW -->
 <div class="official-flow-area">
-  <h3 class="mb-4 fw-bold">Flujo oficial del proceso</h3>
-  <div class="row g-4">
-    <div class="col-md-3">
+  <h5 class="mb-3 fw-bold text-center text-md-start small">Proceso de Fotocopiado</h5>
+  <div class="row g-3">
+    <div class="col-6 col-md-3">
       <div class="flow-step-modern">
         <div class="flow-number">1</div>
-        <h6 class="fw-bold">Haz tu pedido</h6>
-        <p class="text-muted mb-0 small">Como Funcionario, crea tu solicitud personal o interna adjuntando archivos.</p>
+        <h6 class="fw-bold small mb-1">Haz tu pedido</h6>
+        <p class="text-muted mb-0" style="font-size: 0.75rem;">Solicitud personal o interna.</p>
       </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-6 col-md-3">
       <div class="flow-step-modern">
         <div class="flow-number">2</div>
-        <h6 class="fw-bold">Preparamos tus copias</h6>
-        <p class="text-muted mb-0 small">El personal encargado te avisará automáticamente cuando tus copias estén listas.</p>
+        <h6 class="fw-bold small mb-1">Preparamos</h6>
+        <p class="text-muted mb-0" style="font-size: 0.75rem;">Aviso automático de listo.</p>
       </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-6 col-md-3">
       <div class="flow-step-modern">
         <div class="flow-number">3</div>
-        <h6 class="fw-bold">Retira tu trabajo</h6>
-        <p class="text-muted mb-0 small">Acércate al sector de fotocopias para retirar tus documentos impresos.</p>
+        <h6 class="fw-bold small mb-1">Retira</h6>
+        <p class="text-muted mb-0" style="font-size: 0.75rem;">Usa el sector de fotocopias.</p>
       </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-6 col-md-3">
       <div class="flow-step-modern">
         <div class="flow-number">4</div>
-        <h6 class="fw-bold">Trazabilidad Total</h6>
-        <p class="text-muted mb-0 small">Todo el proceso queda registrado con firma digital para tu seguridad.</p>
+        <h6 class="fw-bold small mb-1">Registro</h6>
+        <p class="text-muted mb-0" style="font-size: 0.75rem;">Trazabilidad Total.</p>
       </div>
     </div>
   </div>
