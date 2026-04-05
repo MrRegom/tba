@@ -55,6 +55,21 @@
     </div>
 </div>
 
+<!-- Barra de Búsqueda Grande e Intuitiva -->
+<div class="row mb-4">
+    <div class="col-md-8 mx-auto">
+        <div class="input-group input-group-lg shadow-sm">
+            <span class="input-group-text bg-white border-end-0 py-3">
+                <i class="ri-search-2-line fs-3 text-primary"></i>
+            </span>
+            <input type="text" id="mainSearchInput" class="form-control border-start-0 py-3 fs-4" 
+                   placeholder="BUSCAR POR NOMBRE DEL PROFE O NÚMERO..." 
+                   style="border-radius: 0 15px 15px 0;">
+        </div>
+        <p class="text-muted mt-2 text-center small">Escriba aquí para encontrar rápidamente un trabajo específico.</p>
+    </div>
+</div>
+
 <!-- Pestañas de Prioridad -->
 <ul class="nav nav-pills mb-4" id="priorityTabs" role="tablist">
     <li class="nav-item">
@@ -97,4 +112,26 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const searchInput = document.getElementById('mainSearchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            const cards = document.querySelectorAll('.op-card');
+            
+            cards.forEach(card => {
+                const text = card.innerText.toLowerCase();
+                const container = card.closest('.col');
+                if (text.includes(query)) {
+                    container.style.display = '';
+                } else {
+                    container.style.display = 'none';
+                }
+            });
+        });
+    }
+</script>
 {% endblock %}

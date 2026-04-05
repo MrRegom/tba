@@ -1,41 +1,91 @@
 {% load static %}
+
+<!-- Buscador rápido para la tabla -->
+<div class="row mb-3 mt-2">
+    <div class="col-md-4 ms-auto">
+        <div class="input-group shadow-sm">
+            <span class="input-group-text bg-white"><i class="ri-search-line"></i></span>
+            <input type="text" id="tableSearchInput" class="form-control" placeholder="Buscar en esta tabla...">
+        </div>
+    </div>
+</div>
+
 <div class="table-responsive">
-  <table class="table table-striped align-middle">
-    <thead>
+  <table class="table table-hover align-middle table-nowrap border-top mb-0" id="mainDataTable">
+    <thead class="bg-light">
       <tr>
-        <th>Número</th>
-        <th>Título</th>
+        <th class="ps-4">Número</th>
+        <th>Detalle / Título</th>
         <th>Solicitante</th>
         <th>Fecha requerida</th>
         <th>Prioridad</th>
         <th>Estado</th>
-        <th class="text-end">Acciones</th>
+        <th class="text-end pe-4">Acciones</th>
       </tr>
     </thead>
     <tbody>
       {% for request_obj in requests %}
-      <tr>
-        <td>{{ request_obj.numero }}</td>
-        <td>
-          <div class="fw-semibold">{{ request_obj.title }}</div>
-          <small class="text-muted">{{ request_obj.get_request_type_display }}</small>
+      <tr class="table-row-item">
+        <td class="ps-4">
+            <span class="fw-bold text-primary">{{ request_obj.numero }}</span>
         </td>
-        <td>{{ request_obj.requester.get_full_name|default:request_obj.requester.username }}</td>
-        <td>{{ request_obj.required_at|date:'d/m/Y H:i' }}</td>
-        <td>{{ request_obj.get_priority_display }}</td>
+        <td>
+          <div class="d-flex align-items-center">
+            <div class="flex-grow-1">
+                <h6 class="mb-0 fs-14 fw-semibold">{{ request_obj.title }}</h6>
+                <small class="text-muted">{{ request_obj.get_request_type_display }}</small>
+            </div>
+          </div>
+        </td>
+        <td>
+            <div class="d-flex align-items-center">
+                <i class="ri-user-follow-line me-2 text-muted fs-18"></i>
+                {{ request_obj.requester.get_full_name|default:request_obj.requester.username }}
+            </div>
+        </td>
+        <td>
+            <span class="badge bg-light text-dark shadow-none border">
+                <i class="ri-calendar-event-line me-1"></i> {{ request_obj.required_at|date:'d/m/Y H:i' }}
+            </span>
+        </td>
+        <td>
+               {% if request_obj.priority == 'HIGH' or request_obj.priority == 'URGENT' %}
+                    <span class="text-danger fw-bold"><i class="ri-error-warning-line me-1"></i> {{ request_obj.get_priority_display|upper }}</span>
+               {% else %}
+                    <span class="text-muted">{{ request_obj.get_priority_display }}</span>
+               {% endif %}
+        </td>
         <td>{% include 'fotocopiadora/requests/_status_badge.html' with status=request_obj.status %}</td>
-        <td class="text-end">
-          <a href="{% url 'fotocopiadora:detalle_solicitud_impresion' request_obj.pk %}" class="btn btn-sm btn-light">Ver</a>
-          {% if request_obj.requester_id == request.user.id and request_obj.status == 'DRAFT' %}
-          <a href="{% url 'fotocopiadora:editar_solicitud_impresion' request_obj.pk %}" class="btn btn-sm btn-soft-secondary">Editar</a>
-          {% endif %}
+        <td class="text-end pe-4">
+          <div class="btn-group shadow-sm">
+            <a href="{% url 'fotocopiadora:detalle_solicitud_impresion' request_obj.pk %}" class="btn btn-sm btn-outline-primary px-3">Ver Detalle</a>
+            {% if request_obj.requester_id == request.user.id and request_obj.status == 'DRAFT' %}
+            <a href="{% url 'fotocopiadora:editar_solicitud_impresion' request_obj.pk %}" class="btn btn-sm btn-soft-secondary"><i class="ri-edit-line"></i></a>
+            {% endif %}
+          </div>
         </td>
       </tr>
       {% empty %}
       <tr>
-        <td colspan="7" class="text-center text-muted py-4">No hay solicitudes para mostrar.</td>
+        <td colspan="7" class="text-center text-muted py-5 mt-4">
+            <i class="ri-inbox-line display-4 d-block mb-3 text-light"></i>
+            Aún no hay solicitudes registradas en esta bandeja.
+        </td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
+
+<script>
+    // Buscador instantáneo para listados tipo tabla
+    document.getElementById('tableSearchInput')?.addEventListener('input', function() {
+        const query = this.value.toLowerCase().trim();
+        const rows = document.querySelectorAll('.table-row-item');
+        
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(query) ? '' : 'none';
+        });
+    });
+</script>
