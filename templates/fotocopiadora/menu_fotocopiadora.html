@@ -133,24 +133,79 @@
 
 {% block content %}
 
+{% if is_operator %}
+<!-- OPERATOR DASHBOARD (CLEAN & GIANT) -->
+<div class="row g-4 mb-5">
+  <div class="col-12">
+    <div class="alert alert-info border-0 shadow-sm p-4 text-center">
+      <h2 class="fw-bold text-primary mb-0">¡Hola! Seleccioná una opción para trabajar:</h2>
+    </div>
+  </div>
+
+  <!-- CONTROL GLOBAL (EL MÁS IMPORTANTE) -->
+  <div class="col-md-12">
+    <div class="card border-0 shadow-lg h-100 overflow-hidden" style="border-radius: 20px;">
+      <div class="card-body p-5">
+        <div class="row align-items-center">
+          <div class="col-md-3 text-center mb-3 mb-md-0">
+            <div class="bg-primary bg-opacity-10 p-4 rounded-circle d-inline-block">
+              <i class="bi bi-clipboard-data text-primary" style="font-size: 5rem;"></i>
+            </div>
+          </div>
+          <div class="col-md-6 text-center text-md-start">
+            <h1 class="display-4 fw-bold text-dark mb-2">Pedidos Pendientes</h1>
+            <p class="fs-4 text-muted">Apretá acá para ver qué fotocopias tenés que hacer hoy.</p>
+          </div>
+          <div class="col-md-3 text-center">
+            <a href="{% url 'fotocopiadora:bandeja_operativa_impresion' %}" class="btn btn-primary btn-lg rounded-pill px-5 py-3 fs-3 fw-bold shadow">
+              ABRIR LISTADO
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MEMBERSHIPS -->
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm h-100" style="border-radius: 15px; background-color: #f8f9fa;">
+      <div class="card-body p-4 text-center">
+        <i class="bi bi-people text-success mb-3 d-block" style="font-size: 3rem;"></i>
+        <h3 class="fw-bold mb-3">Usuarios</h3>
+        <p class="text-muted mb-4">Administrar quiénes pueden pedir fotocopias.</p>
+        <a href="{% url 'fotocopiadora:gestion_perfiles' %}" class="btn btn-outline-success btn-lg rounded-pill w-100 fw-bold">GESTIONAR</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- EQUIPOS -->
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm h-100" style="border-radius: 15px; background-color: #f8f9fa;">
+      <div class="card-body p-4 text-center">
+        <i class="bi bi-printer text-warning mb-3 d-block" style="font-size: 3rem;"></i>
+        <h3 class="fw-bold mb-3">Máquinas</h3>
+        <p class="text-muted mb-4">Configurar las fotocopiadoras del colegio.</p>
+        <a href="{% url 'fotocopiadora:lista_equipos' %}" class="btn btn-outline-warning btn-lg rounded-pill w-100 fw-bold">GESTIONAR</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% else %}
+<!-- ORIGINAL REQUESTER DASHBOARD -->
 <!-- HEADER & WELCOME -->
 <div class="row align-items-center mb-4">
   <div class="col-md-8">
-    <h1 class="title-welcome mb-1 text-center text-md-start">
-      {% if is_operator %}Panel de Operación{% else %}Fotocopiadora{% endif %}
-    </h1>
-    <p class="text-muted welcome-subtitle text-center text-md-start">
-      {% if is_operator %}Gestión de cola de impresión y entregas.{% else %}¡Hola, {{ user.get_full_name|default:user.username }}! Gestiona tus requerimientos.{% endif %}
-    </p>
+    <h1 class="title-welcome mb-1 text-center text-md-start">Fotocopiadora</h1>
+    <p class="text-muted welcome-subtitle text-center text-md-start">¡Hola, {{ user.get_full_name|default:user.username }}! Gestiona tus requerimientos.</p>
   </div>
   <div class="col-md-4 text-center text-md-end">
-    {% if not is_operator %}
     <a href="{% url 'fotocopiadora:crear_solicitud_impresion' %}" class="btn btn-new-request">
       <i class="bi bi-plus-lg me-2"></i>Nueva Solicitud
     </a>
-    {% endif %}
   </div>
 </div>
+{% endif %}
 
 <!-- MY REQUESTS LIST / OPERATOR QUEUE -->
 <div class="card request-list-card">
@@ -275,29 +330,6 @@
     </div>
   </div>
 </div>
-
-<!-- EXTRA BLOCKS FOR ADMIN/OPERATOR -->
-{% if cards|length > 1 or user.is_superuser %}
-<div class="mt-5 border-top pt-5">
-  <h4 class="mb-4 text-muted">Herramientas de Administración</h4>
-  <div class="row g-3">
-    {% for card in cards %}
-      {% if card.title != 'Mis Solicitudes' %}
-      <div class="col-md-4">
-        <div class="card request-list-card h-100 p-3">
-          <div class="card-body">
-             <span class="badge bg-light text-muted mb-2">{{ card.tag }}</span>
-             <h5 class="fw-bold">{{ card.title }}</h5>
-             <p class="text-muted small mb-3">{{ card.description }}</p>
-             <div class="d-flex gap-2">
-               {% for action in card.actions %}
-                <a href="{{ action.url }}" class="btn btn-sm px-3 {% if action.style == 'primary' %}btn-primary{% else %}btn-outline-secondary{% endif %}">
-                  {{ action.label }}
-                </a>
-               {% endfor %}
-             </div>
-          </div>
-        </div>
       </div>
       {% endif %}
     {% endfor %}

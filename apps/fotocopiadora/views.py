@@ -193,6 +193,7 @@ class OperatorQueueListView(ModuleProfileRequiredMixin, BaseAuditedViewMixin, Pr
     def get_queryset(self):
         return super().get_queryset().filter(
             status__in=[
+                PrintRequestStatus.PENDING_APPROVAL,
                 PrintRequestStatus.APPROVED,
                 PrintRequestStatus.IN_PROGRESS,
                 PrintRequestStatus.READY_FOR_PICKUP,
@@ -318,6 +319,7 @@ class PrintRequestDetailView(ScopedObjectPermissionMixin, BaseAuditedViewMixin, 
         )
         context['can_approve'] = obj.status == PrintRequestStatus.PENDING_APPROVAL and PrintRequestQueryService.can_approve(user, obj)
         context['can_operate'] = obj.status in {
+            PrintRequestStatus.PENDING_APPROVAL,
             PrintRequestStatus.APPROVED,
             PrintRequestStatus.IN_PROGRESS,
             PrintRequestStatus.READY_FOR_PICKUP,

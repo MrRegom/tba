@@ -177,7 +177,7 @@
           </div>
 
           <div class="d-grid gap-2">
-            {% if print_request.status == 'APPROVED' %}
+            {% if print_request.status == 'PENDING_APPROVAL' or print_request.status == 'APPROVED' %}
             <button type="submit" name="action" value="START" class="btn btn-primary btn-lg fw-bold">EMPEZAR PREPARACIÓN</button>
             {% elif print_request.status == 'IN_PROGRESS' %}
             <button type="submit" name="action" value="READY" class="btn btn-warning btn-lg fw-bold">MARCAR TRABAJO LISTO</button>

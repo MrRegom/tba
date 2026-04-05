@@ -16,12 +16,14 @@
                 </div>
                 <div class="text-end">
                     <span class="status-badge 
-                        {% if req.status == 'APPROVED' %}bg-pendiente
+                        {% if req.status == 'PENDING_APPROVAL' %}bg-pendiente
+                        {% elif req.status == 'APPROVED' %}bg-pendiente
                         {% elif req.status == 'IN_PROGRESS' %}bg-primary text-white
                         {% elif req.status == 'READY_FOR_PICKUP' %}bg-listo
                         {% elif req.status == 'DELIVERED' %}bg-entregado
-                        {% endif %}">
-                        {% if req.status == 'APPROVED' %}PENDIENTE
+                        {% endif %}" style="padding: 10px 20px; font-size: 1.1rem;">
+                        {% if req.status == 'PENDING_APPROVAL' %}PEDIDO NUEVO
+                        {% elif req.status == 'APPROVED' %}APROBADO
                         {% elif req.status == 'IN_PROGRESS' %}EN PREPARACIÓN...
                         {% elif req.status == 'READY_FOR_PICKUP' %}LISTO PARA RETIRAR
                         {% elif req.status == 'DELIVERED' %}ENTREGADO
@@ -58,7 +60,7 @@
 
         <div class="card-footer bg-white border-top-0 px-4 pb-4">
             <div class="d-grid gap-3">
-                {% if req.status == 'APPROVED' %}
+                {% if req.status == 'PENDING_APPROVAL' or req.status == 'APPROVED' %}
                     <form method="post" action="{% url 'fotocopiadora:transicion_solicitud_impresion' req.pk %}" class="d-grid">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="START">
