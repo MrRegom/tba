@@ -5,26 +5,33 @@
 
 {% block extra_css %}
 <style>
-    .status-badge {
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 700;
-        text-transform: uppercase;
-    }
-    /* Colores simplificados y claros */
-    .bg-pendiente { background-color: #fce4ec; color: #d81b60; } /* Rosado suave */
-    .bg-listo { background-color: #e8f5e9; color: #2e7d32; } /* Verde suave */
-    .bg-entregado { background-color: #e3f2fd; color: #1565c0; } /* Azul suave */
-    
-    .card-priority-HIGH { border-left: 8px solid #ff0000; }
-    .card-priority-NORMAL { border-left: 8px solid #007bff; }
-    
     .op-card {
-        border-radius: 15px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        border: 1px solid #eee;
+        border-radius: 20px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        border: 2px solid #edf2f7;
+        transition: transform 0.2s;
     }
+    .op-card:hover { transform: scale(1.01); }
+    
+    /* Pestañas Gigantes y Claras */
+    .nav-pills .nav-link {
+        font-size: 1.5rem !important;
+        padding: 20px 40px !important;
+        font-weight: 800 !important;
+        border-radius: 15px !important;
+        margin-right: 15px;
+        border: 3px solid #dee2e6;
+        color: #6c757d;
+        background: white;
+    }
+    .nav-pills .nav-link.active {
+        background-color: #0d6efd !important;
+        color: white !important;
+        border-color: #0d6efd !important;
+        box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+    }
+    #ready-tab.nav-link.active { background-color: #ffc107 !important; border-color: #ffc107 !important; color: #000 !important; }
+    #history-tab.nav-link.active { background-color: #198754 !important; border-color: #198754 !important; }
     
     /* Pestañas grandes */
     .nav-pills .nav-link {
@@ -92,39 +99,45 @@
 <div class="tab-content" id="statusTabsContent">
     <!-- PESTAÑA PENDIENTES -->
     <div class="tab-pane fade show active" id="pending-status" role="tabpanel">
-        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+        <div class="row g-4">
             {% for req in requests %}
                 {% if req.status == 'PENDING_APPROVAL' or req.status == 'APPROVED' or req.status == 'IN_PROGRESS' %}
-                    {% include 'fotocopiadora/requests/_operator_card.html' with req=req %}
+                    <div class="col-md-6 col-xxl-6">
+                        {% include 'fotocopiadora/requests/_operator_card.html' with req=req %}
+                    </div>
                 {% endif %}
             {% empty %}
-                <div class="col-12 text-center p-5 text-muted">No hay trabajos pendientes de preparar.</div>
+                <div class="col-12 text-center p-5 text-muted"><h1>No hay trabajos pendientes.</h1></div>
             {% endfor %}
         </div>
     </div>
 
     <!-- PESTAÑA LISTOS PARA RETIRAR -->
     <div class="tab-pane fade" id="ready-status" role="tabpanel">
-        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+        <div class="row g-4">
             {% for req in requests %}
                 {% if req.status == 'READY_FOR_PICKUP' %}
-                    {% include 'fotocopiadora/requests/_operator_card.html' with req=req %}
+                    <div class="col-md-6 col-xxl-6">
+                        {% include 'fotocopiadora/requests/_operator_card.html' with req=req %}
+                    </div>
                 {% endif %}
             {% empty %}
-                <div class="col-12 text-center p-5 text-muted">No hay trabajos listos esperando retiro.</div>
+                <div class="col-12 text-center p-5 text-muted"><h1>Nadie ha venido a retirar todavía.</h1></div>
             {% endfor %}
         </div>
     </div>
 
     <!-- PESTAÑA HISTORIAL -->
     <div class="tab-pane fade" id="history-status" role="tabpanel">
-        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+        <div class="row g-4">
             {% for req in requests %}
                 {% if req.status == 'DELIVERED' or req.status == 'CLOSED' or req.status == 'REJECTED' %}
-                    {% include 'fotocopiadora/requests/_operator_card.html' with req=req %}
+                    <div class="col-md-6 col-xxl-6">
+                        {% include 'fotocopiadora/requests/_operator_card.html' with req=req %}
+                    </div>
                 {% endif %}
             {% empty %}
-                <div class="col-12 text-center p-5 text-muted">No hay historial para hoy.</div>
+                <div class="col-12 text-center p-5 text-muted"><h1>No se ha entregado nada hoy.</h1></div>
             {% endfor %}
         </div>
     </div>
