@@ -484,12 +484,17 @@ class PrintRequestTransitionView(ScopedObjectPermissionMixin, BaseAuditedViewMix
             comment = form.cleaned_data.get('comment', '')
 
         try:
+            total_price = request.POST.get('total_price')
+            pin_to_verify = request.POST.get('pin')
+            
             PrintRequestTransitionService.transition(
                 request_obj=self.object,
                 action=action,
                 actor=request.user,
                 request=request,
                 comment=comment,
+                total_price=total_price,
+                pin_to_verify=pin_to_verify,
             )
         except (PermissionDenied, ValidationError) as exc:
             messages.error(request, str(exc))

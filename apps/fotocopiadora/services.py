@@ -281,7 +281,7 @@ class PrintRequestTransitionService:
 
     @classmethod
     @transaction.atomic
-    def transition(cls, *, request_obj: PrintRequest, action: str, actor, request, comment: str = '') -> PrintRequest:
+    def transition(cls, *, request_obj: PrintRequest, action: str, actor, request, comment: str = '', total_price: Decimal = None, pin_to_verify: str = None) -> PrintRequest:
         action = action.upper()
         request_obj = PrintRequest.objects.select_for_update().prefetch_related('items').get(
             pk=request_obj.pk,
@@ -292,7 +292,7 @@ class PrintRequestTransitionService:
 
         rule = cls.RULES[action]
         if request_obj.status not in rule.from_statuses:
-            raise ValidationError('La transicion solicitada no es valida para el estado actual.')
+            raise ValidationError(f'La transicion {action} no es valida para el estado {request_obj.status}.')
 
         if not actor.has_perm(rule.permission) and not actor.is_superuser:
             raise PermissionDenied('No tiene permisos para ejecutar esta accion.')
@@ -330,7 +330,21 @@ class PrintRequestTransitionService:
         elif action == 'READY':
             request_obj.ready_at = now
             request_obj.operator_comment = comment or request_obj.operator_comment
+            if request_obj.use_type == PrintRequest.TipoUso.PERSONAL and total_price is not None:
+                request_obj.total_price = total_price
         elif action == 'DELIVER':
+            # Verificar PIN del solicitante si se requiere firma
+            if not pin_to_verify:
+                raise ValidationError('El PIN del solicitante es obligatorio para confirmar la entrega.')
+            
+            from apps.accounts.models import UserSecure
+            try:
+                security = request_obj.requester.seguridad
+                if not security.verificar_pin(pin_to_verify):
+                    raise ValidationError('El PIN ingresado no es correcto.')
+            except AttributeError:
+                raise ValidationError('El solicitante no tiene un perfil de seguridad (PIN) configurado.')
+
             request_obj.delivered_at = now
             request_obj.delivery_comment = comment
         elif action == 'CLOSE':

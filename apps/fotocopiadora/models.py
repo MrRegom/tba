@@ -34,9 +34,8 @@ class FotocopiadoraEquipo(AutoCodeMixin, BaseModel):
 
 class TrabajoFotocopia(BaseModel):
     class TipoUso(models.TextChoices):
-        INTERNO = "INTERNO", "Uso Interno"
-        PERSONAL = "PERSONAL", "Uso Personal"
-        EXTERNO = "EXTERNO", "Uso Externo"
+        INTERNO = "INTERNO", "Uso Institucional (Colegio)"
+        PERSONAL = "PERSONAL", "Uso Personal (Docente)"
 
     numero = models.CharField(max_length=20, unique=True, verbose_name="Numero")
     fecha_hora = models.DateTimeField(
