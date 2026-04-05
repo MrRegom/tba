@@ -16,14 +16,22 @@
                     </span>
                 </button>
 
+<style>
+    @media (max-width: 767.98px) {
+        .topbar-title-responsive {
+            display: none !important;
+        }
+    }
+</style>
+
                 <!-- LOGO EN HEADER (FORZADO PARA MOVILES) -->
                 <div class="navbar-brand-box topbar-logo-force"
                     style="display: flex !important; align-items: center; width: auto; padding-left: 0 !important;">
                     <a href="/" class="logo logo-light d-flex align-items-center text-decoration-none">
                         <span class="logo-lg d-flex align-items-center">
                             <img src="{% static 'images/imagenes_colegio/logoColegio.png' %}" alt="Logo" height="35" class="ms-1 ms-md-2">
-                            <!-- Ocultar texto en mobile (d-none) y mostrar en tablet/desktop (d-md-inline-block) -->
-                            <span class="fw-bold fs-4 text-white d-none d-md-inline-block ms-2"
+                            <!-- Ocultar texto en mobile via CSS y Bootstrap -->
+                            <span class="fw-bold fs-4 text-white d-none d-md-inline-block ms-2 topbar-title-responsive"
                                 style="font-family: 'Inter', sans-serif;">
                                 Colegio TBA
                             </span>
