@@ -484,7 +484,9 @@ class PrintRequestTransitionView(ScopedObjectPermissionMixin, BaseAuditedViewMix
             comment = form.cleaned_data.get('comment', '')
 
         try:
-            total_price = request.POST.get('total_price')
+            from decimal import Decimal
+            price_str = request.POST.get('total_price')
+            total_price = Decimal(price_str) if price_str else None
             pin_to_verify = request.POST.get('pin')
             
             PrintRequestTransitionService.transition(
