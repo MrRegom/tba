@@ -1,163 +1,98 @@
 {% extends 'partials/base.html' %}
 {% load static %}
 
-{% block title %}{{ titulo }}{% endblock %}
+{% block title %}Fotocopiadora{% endblock %}
 
 {% block extra_css %}
 <style>
-  :root {
-    --primary-gradient: linear-gradient(135deg, #3b71ca 0%, #1a4da3 100%);
-    --pickup-gradient: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
-    --alert-bg: #fffbf0;
-  }
-
-  /* Responsive Typography */
-  .title-welcome {
-    font-weight: 800;
-    color: #0f172a;
-    letter-spacing: -0.02em;
-    font-size: 2.2rem;
-  }
-
-  @media (max-width: 767.98px) {
-    .title-welcome {
-      font-size: 1.5rem;
-    }
-    .welcome-subtitle {
-      font-size: 0.95rem !important;
-    }
+    /* Estilos Modernos y Amigables */
+    .title-welcome { font-size: 2.2rem; font-weight: 800; color: #1a202c; }
+    .welcome-subtitle { font-size: 1.1rem; color: #718096; }
+    
     .btn-new-request {
-      width: 100%;
-      margin-top: 1rem;
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white; border: none; padding: 12px 24px; border-radius: 12px;
+        font-weight: 700; transition: all 0.3s; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
     }
-    .pickup-alert-card {
-        padding: 1rem;
+    .btn-new-request:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(37, 99, 235, 0.3); color: white; }
+
+    .request-list-card { border: none; border-radius: 16px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); overflow: hidden; background: white; }
+    .status-badge { padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .mobile-request-item { padding: 20px; border-bottom: 1px solid #f1f5f9; }
+    .mobile-request-item:last-child { border-bottom: none; }
+    
+    .process-step-card { background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; transition: all 0.3s; }
+    .step-number { width: 32px; height: 32px; background: #3b82f6; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; }
+    
+    .admin-tool-card { border: 1px solid #e2e8f0; border-radius: 16px; transition: all 0.3s; background: white; padding: 10px; }
+    .admin-tool-card:hover { transform: scale(1.02); box-shadow: 0 10px 15px rgba(0,0,0,0.05); }
+
+    .truncate-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+    .smaller { font-size: 0.85rem; }
+
+    /* Estilos para el flujo moderno */
+    .official-flow-area {
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: inset 0 0 15px rgba(0,0,0,0.02);
+        border: 1px solid #edf2f7;
     }
-    .pickup-alert-card h4 {
-        font-size: 1.1rem;
+    .flow-step-modern {
+        background: #fdfdfd;
+        border: 1px solid #f0f4f8;
+        border-radius: 15px;
+        padding: 15px;
+        height: 100%;
+        transition: all 0.3s ease;
     }
-  }
-
-  .pickup-alert-card {
-    background: var(--pickup-gradient);
-    border: none;
-    border-radius: 16px;
-    padding: 1.5rem;
-    color: white;
-    box-shadow: 0 10px 25px rgba(34, 197, 94, 0.25);
-    margin-bottom: 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    animation: pulsepickup 2s infinite ease-in-out;
-  }
-
-  @keyframes pulsepickup {
-    0% { transform: scale(1); box-shadow: 0 10px 25px rgba(34, 197, 94, 0.25); }
-    50% { transform: scale(1.01); box-shadow: 0 15px 35px rgba(34, 197, 94, 0.4); }
-    100% { transform: scale(1); box-shadow: 0 10px 25px rgba(34, 197, 94, 0.25); }
-  }
-
-  .btn-new-request {
-    padding: 0.8rem 1.8rem;
-    font-size: 1.1rem;
-    font-weight: 700;
-    border-radius: 10px;
-    background: var(--primary-gradient);
-    border: none;
-    transition: all 0.2s;
-    color: white !important;
-  }
-
-  .btn-new-request:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(59, 113, 202, 0.4);
-  }
-
-  .request-list-card {
-    border: 0;
-    border-radius: 16px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-  }
-
-  .status-badge {
-    padding: 0.3rem 0.6rem;
-    border-radius: 6px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-  }
-
-  /* Mobile Item Styles */
-  .mobile-request-item {
-    padding: 1rem;
-    border-bottom: 1px solid #f1f5f9;
-  }
-
-  .mobile-request-item:last-child {
-    border-bottom: none;
-  }
-
-  /* Steps Redesign */
-  .official-flow-area {
-    background: #f8fafc;
-    padding: 1.5rem;
-    border-radius: 20px;
-    margin-top: 2rem;
-  }
-
-  .flow-step-modern {
-    background: white;
-    padding: 1.2rem;
-    border-radius: 15px;
-    height: 100%;
-    border-bottom: 4px solid #e2e8f0;
-    transition: all 0.3s;
-  }
-
-  .flow-number {
-    width: 32px;
-    height: 32px;
-    background: #eff6ff;
-    color: #3b71ca;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    margin-bottom: 0.75rem;
-    font-size: 0.85rem;
-  }
+    .flow-step-modern:hover {
+        background: #ffffff;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+    .flow-number {
+        width: 30px;
+        height: 30px;
+        background: #3b82f6;
+        color: white;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
 </style>
-{% endblock extra_css %}
+{% endblock %}
 
 {% block content %}
 
 {% if is_operator %}
-<!-- OPERATOR DASHBOARD (CLEAN & GIANT) -->
+<!-- PROFIL OPERADOR (SOLO HERRAMIENTAS GIGANTES) -->
 <div class="row g-4 mb-5">
   <div class="col-12">
-    <div class="alert alert-info border-0 shadow-sm p-4 text-center">
+    <div class="alert alert-info border-0 shadow-sm p-4 text-center" style="border-radius: 15px;">
       <h2 class="fw-bold text-primary mb-0">¡Hola! Seleccioná una opción para trabajar:</h2>
     </div>
   </div>
 
   <!-- CONTROL GLOBAL (EL MÁS IMPORTANTE) -->
   <div class="col-md-12">
-    <div class="card border-0 shadow-lg h-100 overflow-hidden" style="border-radius: 20px;">
+    <div class="card border-0 shadow-lg h-100 overflow-hidden" style="border-radius: 24px;">
       <div class="card-body p-5">
         <div class="row align-items-center">
           <div class="col-md-3 text-center mb-3 mb-md-0">
             <div class="bg-primary bg-opacity-10 p-4 rounded-circle d-inline-block">
-              <i class="bi bi-clipboard-data text-primary" style="font-size: 5rem;"></i>
+              <i class="bi bi-clipboard-data text-primary" style="font-size: 5.5rem;"></i>
             </div>
           </div>
           <div class="col-md-6 text-center text-md-start">
-            <h1 class="display-4 fw-bold text-dark mb-2">Pedidos Pendientes</h1>
+            <h1 class="display-3 fw-bold text-dark mb-2">Pedidos Pendientes</h1>
             <p class="fs-4 text-muted">Apretá acá para ver qué fotocopias tenés que hacer hoy.</p>
           </div>
           <div class="col-md-3 text-center">
-            <a href="{% url 'fotocopiadora:bandeja_operativa_impresion' %}" class="btn btn-primary btn-lg rounded-pill px-5 py-3 fs-3 fw-bold shadow">
+            <a href="{% url 'fotocopiadora:bandeja_operativa_impresion' %}" class="btn btn-primary btn-lg rounded-pill px-5 py-4 fs-3 fw-bold shadow-lg">
               ABRIR LISTADO
             </a>
           </div>
@@ -168,32 +103,31 @@
 
   <!-- MEMBERSHIPS -->
   <div class="col-md-6">
-    <div class="card border-0 shadow-sm h-100" style="border-radius: 15px; background-color: #f8f9fa;">
-      <div class="card-body p-4 text-center">
-        <i class="bi bi-people text-success mb-3 d-block" style="font-size: 3rem;"></i>
-        <h3 class="fw-bold mb-3">Usuarios</h3>
-        <p class="text-muted mb-4">Administrar quiénes pueden pedir fotocopias.</p>
-        <a href="{% url 'fotocopiadora:gestion_perfiles' %}" class="btn btn-outline-success btn-lg rounded-pill w-100 fw-bold">GESTIONAR</a>
+    <div class="card border-0 shadow h-100" style="border-radius: 20px; background-color: #f8f9fa;">
+      <div class="card-body p-5 text-center">
+        <i class="bi bi-people text-success mb-3 d-block" style="font-size: 4rem;"></i>
+        <h2 class="fw-bold mb-3">Usuarios</h2>
+        <p class="text-muted fs-5 mb-4">Administrar quiénes pueden pedir fotocopias.</p>
+        <a href="{% url 'fotocopiadora:lista_memberships' %}" class="btn btn-outline-success btn-lg rounded-pill w-100 py-3 fw-bold fs-4">GESTIONAR</a>
       </div>
     </div>
   </div>
 
   <!-- EQUIPOS -->
   <div class="col-md-6">
-    <div class="card border-0 shadow-sm h-100" style="border-radius: 15px; background-color: #f8f9fa;">
-      <div class="card-body p-4 text-center">
-        <i class="bi bi-printer text-warning mb-3 d-block" style="font-size: 3rem;"></i>
-        <h3 class="fw-bold mb-3">Máquinas</h3>
-        <p class="text-muted mb-4">Configurar las fotocopiadoras del colegio.</p>
-        <a href="{% url 'fotocopiadora:lista_equipos' %}" class="btn btn-outline-warning btn-lg rounded-pill w-100 fw-bold">GESTIONAR</a>
+    <div class="card border-0 shadow h-100" style="border-radius: 20px; background-color: #f8f9fa;">
+      <div class="card-body p-5 text-center">
+        <i class="bi bi-printer text-warning mb-3 d-block" style="font-size: 4rem;"></i>
+        <h2 class="fw-bold mb-3">Máquinas</h2>
+        <p class="text-muted fs-5 mb-4">Configurar las fotocopiadoras del colegio.</p>
+        <a href="{% url 'fotocopiadora:lista_equipos' %}" class="btn btn-outline-warning btn-lg rounded-pill w-100 py-3 fw-bold fs-4">GESTIONAR</a>
       </div>
     </div>
   </div>
 </div>
 
 {% else %}
-<!-- ORIGINAL REQUESTER DASHBOARD -->
-<!-- HEADER & WELCOME -->
+<!-- PROFIL SOLICITANTE / PROFESOR -->
 <div class="row align-items-center mb-4">
   <div class="col-md-8">
     <h1 class="title-welcome mb-1 text-center text-md-start">Fotocopiadora</h1>
@@ -205,134 +139,105 @@
     </a>
   </div>
 </div>
-{% endif %}
 
-<!-- MY REQUESTS LIST / OPERATOR QUEUE -->
 <div class="card request-list-card">
   <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-    <h5 class="mb-0 fw-bold fs-6">
-      {% if is_operator %}<i class="bi bi-list-task me-2"></i>Cola de Trabajos para Procesar{% else %}Tus solicitudes{% endif %}
-    </h5>
-    <a href="{% if is_operator %}{% url 'fotocopiadora:bandeja_operativa_impresion' %}{% else %}{% url 'fotocopiadora:mis_solicitudes_impresion' %}{% endif %}" class="btn btn-sm btn-link text-decoration-none small">Ver todo</a>
+    <h5 class="mb-0 fw-bold fs-6">Tus solicitudes recientes</h5>
+    <a href="{% url 'fotocopiadora:mis_solicitudes_impresion' %}" class="btn btn-sm btn-link text-decoration-none small">Ver todo</a>
   </div>
-  
   <div class="card-body p-0">
-    <!-- Desktop Table (Visible on MD and up) -->
+    <!-- Desktop Table -->
     <div class="table-responsive d-none d-md-block">
       <table class="table table-hover align-middle mb-0">
-        <thead class="bg-light bg-opacity-50">
-          <tr class="small text-uppercase text-muted">
-            <th class="ps-4">{% if is_operator %}Solicitante / Prioridad{% else %}Folio{% endif %}</th>
+        <thead class="bg-light bg-opacity-50 text-uppercase small text-muted">
+          <tr>
+            <th class="ps-4">Folio</th>
             <th>Fecha</th>
             <th>Descripción</th>
             <th>Estado</th>
-            <th class="text-end pe-4">Acción</th>
+            <th class="text-center">Acción</th>
           </tr>
         </thead>
         <tbody>
           {% for req in my_latest_requests %}
           <tr>
-            <td class="ps-4">
-              {% if is_operator %}
-                <div class="fw-bold truncate-1">{{ req.requester.get_full_name|default:req.requester.username }}</div>
-                <small class="{% if req.priority == 'HIGH' %}text-danger fw-bold{% else %}text-muted{% endif %}">{{ req.get_priority_display }}</small>
-              {% else %}
-                <span class="fw-bold text-primary">#{{ req.folio }}</span>
-              {% endif %}
-            </td>
+            <td class="ps-4 fw-bold">#{{ req.folio }}</td>
             <td class="text-muted small">{{ req.fecha_creacion|date:"d M, H:i" }}</td>
             <td>
-              <div class="fw-semibold text-dark small">{{ req.titulo|truncatechars:40 }}</div>
+                <div class="fw-semibold text-dark small">{{ req.titulo|truncatechars:35 }}</div>
+                <div class="text-muted truncate-1 smaller">{{ req.description|default:"Sin descripción" }}</div>
             </td>
             <td>
               <span class="status-badge 
-              {% if req.status == 'DELIVERED' %}bg-success-subtle text-success{% elif req.status == 'READY_FOR_PICKUP' %}bg-warning text-dark{% elif req.status == 'REJECTED' %}bg-danger-subtle text-danger{% else %}bg-secondary-subtle text-muted{% endif %}">
-                {{ req.get_status_display }}
+                {% if req.status == 'DELIVERED' %}bg-success-subtle text-success{% elif req.status == 'READY_FOR_PICKUP' %}bg-warning text-dark{% elif req.status == 'REJECTED' %}bg-danger-subtle text-danger{% else %}bg-secondary-subtle text-muted{% endif %}">
+                  {{ req.get_status_display }}
               </span>
             </td>
-            <td class="text-end pe-4">
-              <a href="{% url 'fotocopiadora:detalle_solicitud_impresion' req.pk %}" class="btn btn-sm btn-outline-primary px-3 rounded-pill btn-sm">Ver</a>
+            <td class="text-center">
+                <a href="{% url 'fotocopiadora:detalle_solicitud_impresion' req.pk %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Ver</a>
             </td>
           </tr>
+          {% empty %}
+          <tr><td colspan="5" class="py-5 text-center text-muted">No tienes pedidos recientes.</td></tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
-
-    <!-- Mobile List (Visible on SM only) -->
+    <!-- Mobile List -->
     <div class="d-md-none">
-      {% for req in my_latest_requests %}
-      <div class="mobile-request-item">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <span class="fw-bold {% if is_operator %}text-dark{% else %}text-primary{% endif %}">
-            {% if is_operator %}
-              {{ req.requester.get_full_name|default:req.requester.username }}
-            {% else %}
-              #{{ req.folio }}
-            {% endif %}
-          </span>
-          <span class="status-badge 
-            {% if req.status == 'DELIVERED' %}bg-success-subtle text-success{% elif req.status == 'READY_FOR_PICKUP' %}bg-warning text-dark{% elif req.status == 'REJECTED' %}bg-danger-subtle text-danger{% else %}bg-secondary-subtle text-muted{% endif %}">
-              {{ req.get_status_display }}
-          </span>
+        {% for req in my_latest_requests %}
+        <div class="mobile-request-item">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-bold text-primary">#{{ req.folio }}</span>
+                <span class="status-badge 
+                  {% if req.status == 'DELIVERED' %}bg-success-subtle text-success{% elif req.status == 'READY_FOR_PICKUP' %}bg-warning text-dark{% elif req.status == 'REJECTED' %}bg-danger-subtle text-danger{% else %}bg-secondary-subtle text-muted{% endif %}">
+                    {{ req.get_status_display }}
+                </span>
+            </div>
+            <div class="fw-semibold mb-1 text-dark small">{{ req.titulo|truncatechars:50 }}</div>
+            <div class="d-flex justify-content-between align-items-end">
+                <small class="text-muted">{{ req.fecha_creacion|date:"d M, H:i" }}</small>
+                <a href="{% url 'fotocopiadora:detalle_solicitud_impresion' req.pk %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Ver</a>
+            </div>
         </div>
-        <div class="fw-semibold mb-1 text-dark small">{{ req.titulo|truncatechars:50 }}</div>
-        <div class="d-flex justify-content-between align-items-end">
-          <div class="d-flex flex-column">
-            <small class="text-muted">{{ req.fecha_creacion|date:"d M, H:i" }}</small>
-            {% if is_operator %}
-              <small class="{% if req.priority == 'HIGH' %}text-danger fw-bold{% else %}text-muted{% endif %}">{{ req.get_priority_display }}</small>
-            {% endif %}
-          </div>
-          <a href="{% url 'fotocopiadora:detalle_solicitud_impresion' req.pk %}" class="btn btn-sm {% if is_operator %}btn-primary{% else %}btn-outline-primary{% endif %} rounded-pill px-3">
-            {% if is_operator %}Atender{% else %}Ver{% endif %}
-          </a>
-        </div>
-      </div>
-      {% empty %}
-      <div class="py-4 text-center text-muted">No hay trabajos pendientes hoy.</div>
-      {% endfor %}
+        {% empty %}
+        <div class="py-5 text-center text-muted">No tienes pedidos recientes.</div>
+        {% endfor %}
     </div>
   </div>
 </div>
 
-<!-- OFFICIAL FLOW -->
-<div class="official-flow-area">
-  <h5 class="mb-3 fw-bold text-center text-md-start small">Proceso de Fotocopiado</h5>
+<div class="mt-5 official-flow-area">
+  <h5 class="mb-3 fw-bold text-center text-md-start small text-uppercase" style="letter-spacing: 1px;">Proceso de Solicitud</h5>
   <div class="row g-3">
     <div class="col-6 col-md-3">
       <div class="flow-step-modern">
         <div class="flow-number">1</div>
-        <h6 class="fw-bold small mb-1">Haz tu pedido</h6>
-        <p class="text-muted mb-0" style="font-size: 0.75rem;">Solicitud personal o interna.</p>
+        <h6 class="fw-bold smaller mb-1">Pedís</h6>
+        <p class="text-muted mb-0 smaller">Cargás los archivos y detalles.</p>
       </div>
     </div>
     <div class="col-6 col-md-3">
       <div class="flow-step-modern">
         <div class="flow-number">2</div>
-        <h6 class="fw-bold small mb-1">Preparamos</h6>
-        <p class="text-muted mb-0" style="font-size: 0.75rem;">Aviso automático de listo.</p>
+        <h6 class="fw-bold smaller mb-1">Hacen</h6>
+        <p class="text-muted mb-0 smaller">Se preparan las fotocopias.</p>
       </div>
     </div>
     <div class="col-6 col-md-3">
       <div class="flow-step-modern">
         <div class="flow-number">3</div>
-        <h6 class="fw-bold small mb-1">Retira</h6>
-        <p class="text-muted mb-0" style="font-size: 0.75rem;">Usa el sector de fotocopias.</p>
+        <h6 class="fw-bold smaller mb-1">Retirás</h6>
+        <p class="text-muted mb-0 smaller">Te avisamos cuando esté listo.</p>
       </div>
     </div>
     <div class="col-6 col-md-3">
       <div class="flow-step-modern">
         <div class="flow-number">4</div>
-        <h6 class="fw-bold small mb-1">Registro</h6>
-        <p class="text-muted mb-0" style="font-size: 0.75rem;">Trazabilidad Total.</p>
+        <h6 class="fw-bold smaller mb-1">Registrado</h6>
+        <p class="text-muted mb-0 smaller">Trazabilidad completa.</p>
       </div>
     </div>
-  </div>
-</div>
-      </div>
-      {% endif %}
-    {% endfor %}
   </div>
 </div>
 {% endif %}

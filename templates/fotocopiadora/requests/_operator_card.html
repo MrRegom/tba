@@ -4,13 +4,13 @@
             <div class="d-flex justify-content-between mb-3">
                 <div>
                     {% if req.use_type == 'PERSONAL' %}
-                        <span class="badge bg-danger mb-2 p-2 fs-6">
-                             USO PERSONAL (EL PROFE PAGA)
-                        </span>
+                        <div class="alert alert-danger border-0 p-3 mb-3 text-center shadow-lg" style="border-radius: 12px; background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);">
+                             <h4 class="fw-extrabold text-white mb-0" style="letter-spacing: 1px;">💰 ¡COBRAR ESTO! (USO PERSONAL)</h4>
+                        </div>
                     {% else %}
-                        <span class="badge bg-success mb-2 p-2 fs-6">
-                             USO INSTITUCIONAL
-                        </span>
+                        <div class="alert alert-success border-0 p-2 mb-3 text-center" style="border-radius: 12px; background: #dcfce7;">
+                             <h5 class="fw-bold text-success mb-0">🏢 USO INSTITUCIONAL</h5>
+                        </div>
                     {% endif %}
                     <h2 class="h4 mb-1 fw-bold text-dark">{{ req.numero }}</h2>
                 </div>
