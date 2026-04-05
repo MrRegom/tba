@@ -114,7 +114,13 @@ class MenuFotocopiadoraView(BaseAuditedViewMixin, TemplateView):
         }
         profile = PrintRequestQueryService.module_profile(user)
         context['module_profile'] = profile
-        context['is_operator'] = (profile == PrintMembershipRole.OPERATOR)
+        # Un ADMIN o SUPERADMIN también debe ver el dashboard de operación por defecto
+        # si no es meramente un solicitante. 
+        context['is_operator'] = profile in [
+            PrintMembershipRole.OPERATOR, 
+            PrintMembershipRole.ADMIN, 
+            PrintMembershipRole.SUPERADMIN
+        ]
         
         context['cards'] = [card_definitions[key] for key in PrintRequestQueryService.home_cards_for_user(user) if key in card_definitions]
         
