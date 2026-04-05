@@ -153,22 +153,38 @@
     {% endif %}
 
     {% if can_operate %}
-    <div class="card">
-      <div class="card-header"><h5 class="mb-0">Operación</h5></div>
+    <div class="card border-primary shadow-sm">
+      <div class="card-header bg-primary text-white"><h5 class="mb-0 fs-5"><i class="ri-settings-3-line me-1"></i> Operación</h5></div>
       <div class="card-body">
         <form method="post" action="{% url 'fotocopiadora:transicion_solicitud_impresion' print_request.pk %}">
           {% csrf_token %}
-          {{ transition_form.comment.label_tag }}
-          {{ transition_form.comment }}
-          <div class="d-grid gap-2 mt-3">
+          
+          {% if print_request.status == 'READY_FOR_PICKUP' %}
+            <div class="alert alert-info py-2 small mb-3 text-center">
+                Pídale al profesor su PIN de 4 números para confirmar la entrega.
+            </div>
+            <div class="mb-3 text-center">
+                <label class="form-label fw-bold">PIN DE FIRMA:</label>
+                <input type="password" name="pin" class="form-control form-control-lg text-center fw-bold shadow-sm" 
+                       maxlength="4" placeholder="****" inputmode="numeric" required 
+                       style="letter-spacing: 0.5em; font-size: 1.5rem; background-color: #fff9c4;">
+            </div>
+          {% endif %}
+
+          <div class="mb-3">
+              <label class="form-label fw-bold">Comentario (Opcional):</label>
+              {{ transition_form.comment }}
+          </div>
+
+          <div class="d-grid gap-2">
             {% if print_request.status == 'APPROVED' %}
-            <button type="submit" name="action" value="START" class="btn btn-primary">Marcar en preparación</button>
+            <button type="submit" name="action" value="START" class="btn btn-primary btn-lg fw-bold">EMPEZAR PREPARACIÓN</button>
             {% elif print_request.status == 'IN_PROGRESS' %}
-            <button type="submit" name="action" value="READY" class="btn btn-info">Marcar lista para retiro</button>
+            <button type="submit" name="action" value="READY" class="btn btn-warning btn-lg fw-bold">MARCAR TRABAJO LISTO</button>
             {% elif print_request.status == 'READY_FOR_PICKUP' %}
-            <button type="submit" name="action" value="DELIVER" class="btn btn-success">Marcar entregada</button>
+            <button type="submit" name="action" value="DELIVER" class="btn btn-success btn-lg fw-bold">CONFIRMAR ENTREGA OK</button>
             {% elif print_request.status == 'DELIVERED' %}
-            <button type="submit" name="action" value="CLOSE" class="btn btn-dark">Cerrar solicitud</button>
+            <div class="text-center text-success fw-bold p-2"><i class="ri-checkbox-circle-fill"></i> YA ENTREGADO</div>
             {% endif %}
           </div>
         </form>
