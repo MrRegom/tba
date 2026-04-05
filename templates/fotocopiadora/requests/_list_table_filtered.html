@@ -1,0 +1,67 @@
+{% load static %}
+
+<!-- Buscador rápido para esta pestaña -->
+<div class="row mb-3 mt-3 px-4 pt-2">
+    <div class="col-md-5 ms-auto">
+        <div class="input-group shadow-sm">
+            <span class="input-group-text bg-white border-end-0 py-2">
+                <i class="ri-search-2-line text-primary"></i>
+            </span>
+            <input type="text" class="form-control tableSearchInput border-start-0 py-2 fs-5" placeholder="BUSCAR EN ESTA PESTAÑA...">
+        </div>
+    </div>
+</div>
+
+<div class="table-responsive">
+  <table class="table table-hover align-middle table-nowrap border-top mb-0 mainDataTable">
+    <thead class="bg-light-subtle">
+      <tr class="fs-13 text-muted text-uppercase fw-bold">
+        <th class="ps-4">Número</th>
+        <th>Profe / Título</th>
+        <th>Fecha Requerida</th>
+        <th>Prioridad</th>
+        <th>Estado Actual</th>
+        <th class="text-end pe-4">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for request_obj in requests %}
+        {% with s=request_obj.status %}
+        {% if status_group == 'PENDIENTES' and s == 'PENDING_APPROVAL' or s == 'APPROVED' or s == 'IN_PROGRESS' or s == 'READY_FOR_PICKUP' %}
+            {% include 'fotocopiadora/requests/_list_row.html' with obj=request_obj %}
+        {% elif status_group == 'TERMINADOS' and s == 'DELIVERED' or s == 'CLOSED' %}
+            {% include 'fotocopiadora/requests/_list_row.html' with obj=request_obj %}
+        {% elif status_group == 'OTROS' and s == 'REJECTED' or s == 'CANCELLED' or s == 'DRAFT' %}
+            {% include 'fotocopiadora/requests/_list_row.html' with obj=request_obj %}
+        {% endif %}
+        {% endwith %}
+      {% empty %}
+      <tr class="no-results">
+        <td colspan="6" class="text-center text-muted py-5 mt-4">
+            <i class="ri-inbox-line display-4 d-block mb-3 text-light"></i>
+            No hay solicitudes en esta categoría.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+    // Filtro instantáneo
+    (function() {
+        const inputs = document.querySelectorAll('.tableSearchInput');
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                const table = this.closest('.tab-pane').querySelector('.mainDataTable');
+                const rows = table.querySelectorAll('.table-row-item');
+                
+                rows.forEach(row => {
+                    const text = row.innerText.toLowerCase();
+                    row.style.display = text.includes(query) ? '' : 'none';
+                });
+            });
+        });
+    })();
+</script>

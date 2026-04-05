@@ -1,0 +1,40 @@
+<tr class="table-row-item">
+    <td class="ps-4">
+        <span class="fw-bold text-primary fs-5">{{ request_obj.numero }}</span>
+    </td>
+    <td>
+      <div class="d-flex align-items-center">
+        <div class="flex-grow-1">
+            <h6 class="mb-0 fs-16 fw-semibold">{{ request_obj.title }}</h6>
+            <small class="text-muted"><i class="ri-user-star-line me-1"></i> {{ request_obj.requester.get_full_name|default:request_obj.requester.username }}</small>
+        </div>
+      </div>
+    </td>
+    <td>
+        {% if request_obj.required_at < now %}
+            <span class="badge bg-danger-subtle text-danger shadow-none border border-danger-subtle p-2 fs-13">
+                <i class="ri-calendar-event-line me-1"></i> ATRASADO: {{ request_obj.required_at|date:'d/m/Y H:i' }}
+            </span>
+        {% else %}
+            <span class="badge bg-light text-dark shadow-none border p-2 fs-13">
+                <i class="ri-calendar-event-line me-1"></i> {{ request_obj.required_at|date:'d/m/Y H:i' }}
+            </span>
+        {% endif %}
+    </td>
+    <td>
+           {% if request_obj.priority == 'HIGH' or request_obj.priority == 'URGENT' %}
+                <span class="text-danger fw-bold fs-14"><i class="ri-error-warning-line me-1"></i> {{ request_obj.get_priority_display|upper }}</span>
+           {% else %}
+                <span class="text-muted fs-14">{{ request_obj.get_priority_display }}</span>
+           {% endif %}
+    </td>
+    <td class="fs-14">{% include 'fotocopiadora/requests/_status_badge.html' with status=request_obj.status %}</td>
+    <td class="text-end pe-4">
+      <div class="btn-group shadow-sm">
+        <a href="{% url 'fotocopiadora:detalle_solicitud_impresion' request_obj.pk %}" class="btn btn-primary btn-sm px-3 fw-bold">OPERAR / VER</a>
+        {% if request_obj.requester_id == request.user.id and request_obj.status == 'DRAFT' %}
+        <a href="{% url 'fotocopiadora:editar_solicitud_impresion' request_obj.pk %}" class="btn btn-sm btn-soft-secondary"><i class="ri-edit-line"></i></a>
+        {% endif %}
+      </div>
+    </td>
+</tr>

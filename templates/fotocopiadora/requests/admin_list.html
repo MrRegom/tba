@@ -1,23 +1,141 @@
 {% extends 'partials/base.html' %}
+{% load static %}
 
-{% block title %}{{ titulo }}{% endblock %}
+{% block title %}Control Global de Fotocopiadora{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Estilos para el Control Global */
+    .stat-card {
+        border: none;
+        border-radius: 12px;
+        transition: transform 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-5px); }
+    
+    .nav-tabs-custom .nav-link {
+        font-weight: 600;
+        padding: 1rem 1.5rem;
+        font-size: 1.1rem;
+        border: none;
+        border-bottom: 3px solid transparent;
+        color: #475467;
+    }
+    .nav-tabs-custom .nav-link.active {
+        color: #3b71ca;
+        border-bottom-color: #3b71ca;
+        background: transparent;
+    }
+    .count-badge {
+        font-size: 0.8rem;
+        background: #f3f4f6;
+        color: #475467;
+        padding: 2px 8px;
+        border-radius: 10px;
+        margin-left: 5px;
+    }
+    .nav-link.active .count-badge {
+        background: #3b71ca;
+        color: white;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="row">
-  <div class="col-12">
-    <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-      <h4 class="mb-sm-0">{{ titulo }}</h4>
-      <a href="{% url 'fotocopiadora:menu_fotocopiadora' %}" class="btn btn-light">Volver</a>
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <div>
+                <h4 class="mb-sm-0 text-primary fw-bold fs-3">Control Global de Solicitudes</h4>
+                <p class="text-muted mb-0">Vista unificada para la gestión administrativa del módulo.</p>
+            </div>
+            <a href="{% url 'fotocopiadora:menu_fotocopiadora' %}" class="btn btn-outline-secondary btn-lg px-4 fs-5">
+                <i class="ri-arrow-left-line me-1"></i> Volver al Menú
+            </a>
+        </div>
     </div>
-  </div>
 </div>
 
-<div class="card">
-  <div class="card-header">
-    <h5 class="mb-0">Vista global del workflow</h5>
-  </div>
-  <div class="card-body">
-    {% include 'fotocopiadora/requests/_list_table.html' %}
-  </div>
+<!-- Resumen Elegante (Cards) -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card stat-card shadow-sm border-start border-4 border-warning">
+            <div class="card-body p-4 text-center">
+                <div class="display-6 fw-bold text-warning mb-1" id="count-pendientes">0</div>
+                <div class="text-muted fw-bold text-uppercase">Pendientes</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card shadow-sm border-start border-4 border-success">
+            <div class="card-body p-4 text-center">
+                <div class="display-6 fw-bold text-success mb-1" id="count-cerrados">0</div>
+                <div class="text-muted fw-bold text-uppercase">Entregados / Listos</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card shadow-sm border-start border-4 border-danger">
+            <div class="card-body p-4 text-center">
+                <div class="display-6 fw-bold text-danger mb-1" id="count-otros">0</div>
+                <div class="text-muted fw-bold text-uppercase">Otros / Cancelados</div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+    <div class="card-header bg-white border-bottom-0 pt-3 px-0">
+        <!-- Pestañas de Estado -->
+        <ul class="nav nav-tabs nav-tabs-custom px-4" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" data-bs-toggle="tab" href="#tab-pendientes" role="tab">
+                    <i class="ri-time-line me-1"></i> PENDIENTES
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#tab-entregados" role="tab">
+                    <i class="ri-checkbox-circle-line me-1"></i> ENTREGADOS / CERRADOS
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#tab-otros" role="tab">
+                    <i class="ri-close-circle-line me-1"></i> OTROS / CANCELADOS
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body p-0">
+        <div class="tab-content">
+            <!-- TAB PENDIENTES -->
+            <div class="tab-pane active" id="tab-pendientes" role="tabpanel">
+                {% include 'fotocopiadora/requests/_list_table_filtered.html' with status_group='PENDIENTES' %}
+            </div>
+            
+            <!-- TAB ENTREGADOS -->
+            <div class="tab-pane" id="tab-entregados" role="tabpanel">
+                {% include 'fotocopiadora/requests/_list_table_filtered.html' with status_group='TERMINADOS' %}
+            </div>
+
+            <!-- TAB OTROS -->
+            <div class="tab-pane" id="tab-otros" role="tabpanel">
+                {% include 'fotocopiadora/requests/_list_table_filtered.html' with status_group='OTROS' %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Pequeño script para mover las filas a sus respectivos tabs y contar dinámicamente
+    document.addEventListener('DOMContentLoaded', function() {
+        const pCount = document.querySelectorAll('#tab-pendientes .table-row-item').length;
+        const eCount = document.querySelectorAll('#tab-entregados .table-row-item').length;
+        const oCount = document.querySelectorAll('#tab-otros .table-row-item').length;
+        
+        document.getElementById('count-pendientes').innerText = pCount;
+        document.getElementById('count-cerrados').innerText = eCount;
+        document.getElementById('count-otros').innerText = oCount;
+    });
+</script>
+
 {% endblock %}
