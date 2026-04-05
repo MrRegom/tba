@@ -113,15 +113,18 @@
 
   <div class="col-lg-4">
     {% if can_submit %}
-    <div class="card">
-      <div class="card-header"><h5 class="mb-0">Enviar a aprobación</h5></div>
-      <div class="card-body">
+    <div class="card border-warning shadow-sm">
+      <div class="card-header bg-warning-subtle text-warning-emphasis fw-bold">
+        <i class="ri-send-plane-fill me-1"></i> SOLICITUD EN BORRADOR
+      </div>
+      <div class="card-body text-center">
+        <p class="mb-3">Su solicitud aún no ha sido enviada para revisión.</p>
         <form method="post" action="{% url 'fotocopiadora:transicion_solicitud_impresion' print_request.pk %}">
           {% csrf_token %}
-          {{ transition_form.comment.label_tag }}
-          {{ transition_form.comment }}
           <input type="hidden" name="action" value="SUBMIT">
-          <button type="submit" class="btn btn-primary mt-3 w-100">Enviar</button>
+          <button type="submit" class="btn btn-warning btn-lg w-100 fw-bold">
+            <i class="ri-check-line me-1"></i> ENVIAR SOLICITUD AHORA
+          </button>
         </form>
       </div>
     </div>

@@ -1,7 +1,9 @@
 {% if status == 'DRAFT' %}
 <span class="badge bg-secondary p-2">BORRADOR</span>
-{% elif status == 'PENDING_APPROVAL' or status == 'APPROVED' or status == 'IN_PROGRESS' %}
+{% elif status == 'PENDING_APPROVAL' or status == 'APPROVED' %}
 <span class="badge bg-warning text-dark p-2">PENDIENTE</span>
+{% elif status == 'IN_PROGRESS' %}
+<span class="badge bg-primary text-white p-2">EN PREPARACIÓN</span>
 {% elif status == 'REJECTED' %}
 <span class="badge bg-danger p-2">RECHAZADA</span>
 {% elif status == 'READY_FOR_PICKUP' %}

@@ -350,6 +350,7 @@ class PrintRequestCreateView(ModuleProfileRequiredMixin, BaseAuditedViewMixin, C
         return self.render_to_response(self.get_context_data(form=form, formset=formset, attachment_form=attachment_form))
 
     def forms_valid(self, form, formset, attachment_form):
+        from .services import PrintRequestTransitionService
         with transaction.atomic():
             self.object = form.save(commit=False)
             self.object.requester = self.request.user
@@ -369,6 +370,7 @@ class PrintRequestCreateView(ModuleProfileRequiredMixin, BaseAuditedViewMixin, C
 
             upload = attachment_form.cleaned_data.get('file')
             if upload:
+                from .models import PrintRequestAttachment
                 PrintRequestAttachment.objects.create(
                     request=self.object,
                     uploaded_by=self.request.user,
@@ -377,6 +379,18 @@ class PrintRequestCreateView(ModuleProfileRequiredMixin, BaseAuditedViewMixin, C
                     mime_type=getattr(upload, 'content_type', ''),
                     size_bytes=getattr(upload, 'size', 0),
                 )
+
+        # Tratar de enviar a aprobacion automaticamente
+        try:
+            PrintRequestTransitionService.transition(
+                request_obj=self.object,
+                action='SUBMIT',
+                actor=self.request.user,
+                request=self.request,
+                comment='Envio automatico al crear solicitud.'
+            )
+        except Exception:
+            pass
 
         self.log_action(self.object, self.request)
         messages.success(self.request, self.get_success_message(self.object))

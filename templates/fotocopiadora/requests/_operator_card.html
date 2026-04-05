@@ -16,11 +16,13 @@
                 </div>
                 <div class="text-end">
                     <span class="status-badge 
-                        {% if req.status == 'APPROVED' or req.status == 'IN_PROGRESS' %}bg-pendiente
+                        {% if req.status == 'APPROVED' %}bg-pendiente
+                        {% elif req.status == 'IN_PROGRESS' %}bg-primary text-white
                         {% elif req.status == 'READY_FOR_PICKUP' %}bg-listo
                         {% elif req.status == 'DELIVERED' %}bg-entregado
                         {% endif %}">
-                        {% if req.status == 'APPROVED' or req.status == 'IN_PROGRESS' %}PENDIENTE
+                        {% if req.status == 'APPROVED' %}PENDIENTE
+                        {% elif req.status == 'IN_PROGRESS' %}EN PREPARACIÓN...
                         {% elif req.status == 'READY_FOR_PICKUP' %}LISTO PARA RETIRAR
                         {% elif req.status == 'DELIVERED' %}ENTREGADO
                         {% else %}{{ req.get_status_display|upper }}{% endif %}
@@ -57,7 +59,7 @@
         <div class="card-footer bg-white border-top-0 px-4 pb-4">
             <div class="d-grid gap-3">
                 {% if req.status == 'APPROVED' %}
-                    <form method="post" action="{% url 'fotocopiadora:transicion_solicitud' req.pk %}" class="d-grid">
+                    <form method="post" action="{% url 'fotocopiadora:transicion_solicitud_impresion' req.pk %}" class="d-grid">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="START">
                         <button type="submit" class="btn btn-primary btn-lg p-4 fs-3 fw-bold shadow-sm">
@@ -85,7 +87,7 @@
     {% if req.status == 'IN_PROGRESS' %}
     <div class="modal fade" id="readyModal{{ req.pk }}" tabindex="-1">
         <div class="modal-dialog">
-            <form method="post" action="{% url 'fotocopiadora:transicion_solicitud' req.pk %}">
+            <form method="post" action="{% url 'fotocopiadora:transicion_solicitud_impresion' req.pk %}">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="READY">
                 <div class="modal-content">
@@ -126,7 +128,7 @@
     {% if req.status == 'READY_FOR_PICKUP' %}
     <div class="modal fade" id="deliverModal{{ req.pk }}" tabindex="-1">
         <div class="modal-dialog">
-            <form method="post" action="{% url 'fotocopiadora:transicion_solicitud' req.pk %}">
+            <form method="post" action="{% url 'fotocopiadora:transicion_solicitud_impresion' req.pk %}">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="DELIVER">
                 <div class="modal-content">
