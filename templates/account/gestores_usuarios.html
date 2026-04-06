@@ -3,6 +3,22 @@
 
 {% block title %}Gestores - Usuarios{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Corrección para que el menú de acciones no se corte en tablas responsivas */
+    .table-responsive {
+        overflow: visible !important;
+    }
+    
+    @media (max-width: 991.98px) {
+        .table-responsive {
+            overflow-x: auto !important;
+            padding-bottom: 80px; /* Espacio extra para el dropdown en móviles */
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- Page Title -->
 <div class="row">
