@@ -137,20 +137,32 @@ class PrintRequestQueryService:
 
     @classmethod
     def home_cards_for_user(cls, user):
-        profile = cls.module_profile(user)
-        if profile == PrintMembershipRole.REQUESTER:
-            return ['my_requests']
-        if profile == PrintMembershipRole.APPROVER:
-            return ['approval_queue']
-        if profile == PrintMembershipRole.OPERATOR:
-            return ['operator_queue']
-        if profile == PrintMembershipRole.ADMIN:
-            return ['admin_overview', 'memberships_admin', 'equipment_admin']
-        if profile == PrintMembershipRole.AUDITOR:
-            return ['audit_overview']
-        if profile == PrintMembershipRole.SUPERADMIN:
+        if user.is_superuser:
             return ['my_requests', 'approval_queue', 'operator_queue', 'admin_overview', 'memberships_admin', 'equipment_admin']
-        return []
+            
+        active_roles = set(cls.active_memberships(user).values_list('role', flat=True))
+        
+        # Si no tiene memberships pero tiene permisos específicos via Django Auth
+        if not active_roles:
+            profile = cls.module_profile(user)
+            if profile:
+                active_roles.add(profile)
+
+        cards = []
+        if PrintMembershipRole.REQUESTER in active_roles:
+            cards.append('my_requests')
+        if PrintMembershipRole.APPROVER in active_roles:
+            cards.append('approval_queue')
+        if PrintMembershipRole.OPERATOR in active_roles:
+            cards.append('operator_queue')
+        if PrintMembershipRole.ADMIN in active_roles or user.has_perm('fotocopiadora.manage_print_memberships'):
+            cards.extend(['admin_overview', 'memberships_admin', 'equipment_admin'])
+        if PrintMembershipRole.AUDITOR in active_roles:
+            cards.append('audit_overview')
+            
+        # Limpiar duplicados manteniendo el orden
+        seen = set()
+        return [x for x in cards if not (x in seen or seen.add(x))]
 
     @staticmethod
     def can_view(user, request_obj: PrintRequest) -> bool:
