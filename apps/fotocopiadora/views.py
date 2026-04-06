@@ -127,7 +127,7 @@ class MenuFotocopiadoraView(BaseAuditedViewMixin, TemplateView):
         if profile == PrintMembershipRole.OPERATOR:
             # Para el operador, mostramos lo que tiene pendiente de trabajar
             context['my_latest_requests'] = workflow_qs.filter(
-                status__in=[PrintRequestStatus.APPROVED, PrintRequestStatus.IN_PROGRESS]
+                status__in=[PrintRequestStatus.PENDING_APPROVAL, PrintRequestStatus.APPROVED, PrintRequestStatus.IN_PROGRESS]
             ).order_by('-fecha_creacion')[:15]
         else:
             context['my_latest_requests'] = workflow_qs.filter(requester=user).order_by('-fecha_creacion')[:10]

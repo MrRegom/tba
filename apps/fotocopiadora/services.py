@@ -122,6 +122,7 @@ class PrintRequestQueryService:
             equipment_ids = list(memberships.exclude(equipo=None).values_list('equipo_id', flat=True))
             base = queryset.filter(
                 status__in=[
+                    PrintRequestStatus.PENDING_APPROVAL,
                     PrintRequestStatus.APPROVED,
                     PrintRequestStatus.IN_PROGRESS,
                     PrintRequestStatus.READY_FOR_PICKUP,
@@ -272,7 +273,7 @@ class PrintRequestTransitionService:
         'SUBMIT': TransitionRule((PrintRequestStatus.DRAFT,), PrintRequestStatus.PENDING_APPROVAL, 'fotocopiadora.submit_printrequest'),
         'APPROVE': TransitionRule((PrintRequestStatus.PENDING_APPROVAL,), PrintRequestStatus.APPROVED, 'fotocopiadora.approve_printrequest'),
         'REJECT': TransitionRule((PrintRequestStatus.PENDING_APPROVAL,), PrintRequestStatus.REJECTED, 'fotocopiadora.reject_printrequest'),
-        'START': TransitionRule((PrintRequestStatus.PENDING_APPROVAL, PrintRequestStatus.APPROVED), PrintRequestStatus.IN_PROGRESS, 'fotocopiadora.operate_printrequest'),
+        'START': TransitionRule((PrintRequestStatus.APPROVED,), PrintRequestStatus.IN_PROGRESS, 'fotocopiadora.operate_printrequest'),
         'READY': TransitionRule((PrintRequestStatus.IN_PROGRESS,), PrintRequestStatus.READY_FOR_PICKUP, 'fotocopiadora.mark_ready_printrequest'),
         'DELIVER': TransitionRule((PrintRequestStatus.READY_FOR_PICKUP,), PrintRequestStatus.DELIVERED, 'fotocopiadora.deliver_printrequest'),
         'CLOSE': TransitionRule((PrintRequestStatus.DELIVERED,), PrintRequestStatus.CLOSED, 'fotocopiadora.close_printrequest'),
