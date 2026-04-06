@@ -177,6 +177,11 @@ class PrintRequestQueryService:
     def can_approve(user, request_obj: PrintRequest) -> bool:
         if not user.is_authenticated or not user.has_perm('fotocopiadora.approve_printrequest'):
             return False
+        
+        # Un usuario nunca debe aprobar su propia solicitud por seguridad auditiva
+        if request_obj.requester_id == user.id and not user.is_superuser:
+            return False
+
         if user.is_superuser or user.has_perm('fotocopiadora.view_all_printrequest'):
             return True
 
@@ -191,12 +196,19 @@ class PrintRequestQueryService:
     def can_operate(user, request_obj: PrintRequest) -> bool:
         if not user.is_authenticated or not user.has_perm('fotocopiadora.operate_printrequest'):
             return False
+
+        # Por segregación de funciones, el solicitante no debería operar su propio pedido
+        if request_obj.requester_id == user.id and not user.is_superuser:
+            return False
+
         if user.is_superuser or user.has_perm('fotocopiadora.view_all_printrequest'):
             return True
 
         memberships = PrintRequestQueryService.role_memberships(user, PrintMembershipRole.OPERATOR)
         if not memberships.exists():
             return False
+        if request_obj.equipo_id and memberships.filter(area_id=request_obj.area_id).exists(): # Corregido para usar area_id si equipo_id falla
+            return True
         if request_obj.equipo_id and memberships.filter(equipo_id=request_obj.equipo_id).exists():
             return True
         return memberships.filter(equipo=None).exists()
