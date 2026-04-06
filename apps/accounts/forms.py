@@ -835,9 +835,10 @@ class TallerForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["responsable"].queryset = User.objects.filter(
+        self.fields["responsable"].queryset = User.objects.select_related('persona').filter(
             is_active=True
         ).order_by("username")
+        self.fields["responsable"].label_from_instance = lambda obj: f"{obj.username} - {obj.get_full_name() or obj.email}"
         self.fields["responsable"].required = False
 
 
@@ -876,9 +877,10 @@ class AreaForm(forms.ModelForm):
         self.fields["departamento"].queryset = Departamento.objects.filter(
             eliminado=False
         ).order_by("codigo")
-        self.fields["responsable"].queryset = User.objects.filter(
+        self.fields["responsable"].queryset = User.objects.select_related('persona').filter(
             is_active=True
         ).order_by("username")
+        self.fields["responsable"].label_from_instance = lambda obj: f"{obj.username} - {obj.get_full_name() or obj.email}"
         self.fields["responsable"].required = False
 
 
@@ -908,9 +910,10 @@ class DepartamentoForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["responsable"].queryset = User.objects.filter(
+        self.fields["responsable"].queryset = User.objects.select_related('persona').filter(
             is_active=True
         ).order_by("username")
+        self.fields["responsable"].label_from_instance = lambda obj: f"{obj.username} - {obj.get_full_name() or obj.email}"
         self.fields["responsable"].required = False
 
 
@@ -944,9 +947,11 @@ class BodegaForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["responsable"].queryset = User.objects.filter(
+        self.fields["responsable"].queryset = User.objects.select_related('persona').filter(
             is_active=True
         ).order_by("username")
+        self.fields["responsable"].label_from_instance = lambda obj: f"{obj.username} - {obj.get_full_name() or obj.email}"
+        self.fields["responsable"].required = False
         self.fields["descripcion"].required = False
 
 
