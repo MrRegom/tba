@@ -57,6 +57,8 @@ class MenuFotocopiadoraView(BaseAuditedViewMixin, TemplateView):
             'my_requests': {
                 'tag': 'Solicitud docente',
                 'title': 'Mis Solicitudes',
+                'color': 'primary',
+                'icon': 'bi bi-file-earmark-text',
                 'description': 'Consulte el estado, historial y observaciones de sus requerimientos.',
                 'actions': [
                     {'label': 'Ver bandeja', 'url': reverse('fotocopiadora:mis_solicitudes_impresion'), 'style': 'primary'},
@@ -66,14 +68,18 @@ class MenuFotocopiadoraView(BaseAuditedViewMixin, TemplateView):
             'approval_queue': {
                 'tag': 'Aprobación',
                 'title': 'Bandeja de Aprobación',
+                'color': 'danger',
+                'icon': 'bi bi-check2-square',
                 'description': 'Revise las solicitudes del área, apruebe, rechace o ajuste cantidades.',
                 'actions': [
-                    {'label': 'Gestionar', 'url': reverse('fotocopiadora:bandeja_aprobacion_impresion'), 'style': 'primary'},
+                    {'label': 'Gestionar', 'url': reverse('fotocopiadora:bandeja_aprobacion_impresion'), 'style': 'danger'},
                 ],
             },
             'operator_queue': {
                 'tag': 'Operación',
                 'title': 'Bandeja Operativa',
+                'color': 'primary',
+                'icon': 'bi bi-clipboard-check',
                 'description': 'Tome trabajos aprobados, marque preparación, retiro y entrega.',
                 'actions': [
                     {'label': 'Abrir bandeja', 'url': reverse('fotocopiadora:bandeja_operativa_impresion'), 'style': 'primary'},
@@ -82,33 +88,41 @@ class MenuFotocopiadoraView(BaseAuditedViewMixin, TemplateView):
             'admin_overview': {
                 'tag': 'Supervisión',
                 'title': 'Control Global',
+                'color': 'info',
+                'icon': 'bi bi-command',
                 'description': 'Supervise todas las solicitudes del módulo con trazabilidad completa.',
                 'actions': [
-                    {'label': 'Ver todas', 'url': reverse('fotocopiadora:lista_solicitudes_impresion'), 'style': 'primary'},
+                    {'label': 'Ver todas', 'url': reverse('fotocopiadora:lista_solicitudes_impresion'), 'style': 'info'},
                 ],
             },
             'memberships_admin': {
                 'tag': 'Administración',
-                'title': 'Memberships',
+                'title': 'Usuarios',
+                'color': 'success',
+                'icon': 'bi bi-people',
                 'description': 'Administre perfiles principales, ámbitos y vigencias del módulo.',
                 'actions': [
-                    {'label': 'Gestionar', 'url': reverse('fotocopiadora:lista_memberships'), 'style': 'primary'},
+                    {'label': 'Gestionar', 'url': reverse('fotocopiadora:lista_memberships'), 'style': 'success'},
                 ],
             },
             'equipment_admin': {
                 'tag': 'Parámetros',
-                'title': 'Equipos',
+                'title': 'Máquinas',
+                'color': 'warning',
+                'icon': 'bi bi-printer',
                 'description': 'Administre equipos, ubicaciones y capacidad operativa del módulo.',
                 'actions': [
-                    {'label': 'Gestionar equipos', 'url': reverse('fotocopiadora:lista_equipos'), 'style': 'primary'},
+                    {'label': 'Gestionar máquinas', 'url': reverse('fotocopiadora:lista_equipos'), 'style': 'warning'},
                 ],
             },
             'audit_overview': {
                 'tag': 'Consulta',
                 'title': 'Consulta Global',
+                'color': 'dark',
+                'icon': 'bi bi-search',
                 'description': 'Revise solicitudes, historial y trazabilidad sin acciones operativas.',
                 'actions': [
-                    {'label': 'Ver solicitudes', 'url': reverse('fotocopiadora:lista_solicitudes_impresion'), 'style': 'primary'},
+                    {'label': 'Ver solicitudes', 'url': reverse('fotocopiadora:lista_solicitudes_impresion'), 'style': 'dark'},
                 ],
             },
         }
