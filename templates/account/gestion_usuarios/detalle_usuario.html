@@ -1,4 +1,4 @@
-﻿{% extends 'partials/base.html' %}
+{% extends 'partials/base.html' %}
 {% load static %}
 
 {% block title %}{{ titulo }}{% endblock %}
@@ -138,6 +138,16 @@
                                         <tr>
                                             <th class="ps-0" scope="row">Nombre Completo:</th>
                                             <td class="text-muted"><strong>{{ persona.get_nombre_completo }}</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <th class="ps-0" scope="row">Departamento:</th>
+                                            <td class="text-muted">
+                                                {% if persona.departamento %}
+                                                    <span class="badge bg-info-subtle text-info">{{ persona.departamento.codigo }} - {{ persona.departamento.nombre }}</span>
+                                                {% else %}
+                                                    <span class="text-muted">—</span>
+                                                {% endif %}
+                                            </td>
                                         </tr>
                                     </tbody>
                                 </table>

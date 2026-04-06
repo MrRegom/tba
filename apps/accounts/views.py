@@ -1802,7 +1802,7 @@ class GestoresUsuariosView(BaseAuditedViewMixin, TemplateView):
 
         # Búsqueda + paginación de usuarios (15 por página)
         buscar = self.request.GET.get('q_usuarios', '').strip()
-        usuarios_qs = User.objects.prefetch_related('groups').all().order_by('username')
+        usuarios_qs = User.objects.select_related('persona__departamento').prefetch_related('groups').all().order_by('username')
         if buscar:
             usuarios_qs = usuarios_qs.filter(
                 Q(username__icontains=buscar) |

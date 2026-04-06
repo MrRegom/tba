@@ -132,6 +132,7 @@
                                         <th>Usuario</th>
                                         <th>Nombre</th>
                                         <th>Email</th>
+                                        <th>Departamento</th>
                                         <th>Roles</th>
                                         <th>Estado</th>
                                         <th>Acciones</th>
@@ -139,10 +140,17 @@
                                 </thead>
                                 <tbody>
                                     {% for usuario in usuarios %}
-                                    <tr data-fila="{{ usuario.username|lower }} {{ usuario.get_full_name|lower }} {{ usuario.email|lower }}">
+                                    <tr data-fila="{{ usuario.username|lower }} {{ usuario.get_full_name|lower }} {{ usuario.email|lower }} {{ usuario.persona.departamento.nombre|lower|default:'' }}">
                                         <td><code>{{ usuario.username }}</code></td>
                                         <td>{{ usuario.get_full_name|default:"-" }}</td>
                                         <td>{{ usuario.email|default:"-" }}</td>
+                                        <td>
+                                            {% if usuario.persona.departamento %}
+                                                {{ usuario.persona.departamento.nombre }}
+                                            {% else %}
+                                                <span class="text-muted">—</span>
+                                            {% endif %}
+                                        </td>
                                         <td>
                                             {% for grupo in usuario.groups.all %}
                                             <span class="badge bg-info">{{ grupo.name }}</span>
