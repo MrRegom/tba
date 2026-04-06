@@ -149,8 +149,10 @@ class PrintRequestQueryService:
                 active_roles.add(profile)
 
         cards = []
-        if PrintMembershipRole.REQUESTER in active_roles:
+        if active_roles:
+            # Todos los usuarios del módulo pueden ver sus propias solicitudes
             cards.append('my_requests')
+
         if PrintMembershipRole.APPROVER in active_roles:
             cards.append('approval_queue')
         if PrintMembershipRole.OPERATOR in active_roles:
@@ -230,7 +232,7 @@ class PrintRequestNotificationService:
     @classmethod
     def handle_transition(cls, request_obj: PrintRequest, action: str) -> None:
         detail_url = reverse('fotocopiadora:detalle_solicitud_impresion', args=[request_obj.pk])
-        if action == 'SUBMIT':
+        if action == 'SUBMIT' and request_obj.status == 'PENDING_APPROVAL':
             cls._notify_users(
                 PrintRequestQueryService.approvers_for_request(request_obj),
                 'Fotocopiadora',
@@ -322,6 +324,16 @@ class PrintRequestTransitionService:
 
         if action == 'SUBMIT':
             request_obj.submitted_at = now
+            # RECO: Las solicitudes de USO PERSONAL no requieren aprobación de jefatura
+            if request_obj.use_type == 'PERSONAL':
+                request_obj.status = PrintRequestStatus.APPROVED
+                request_obj.approved_at = now
+                request_obj.approver = actor
+                request_obj.approval_comment = "Aprobación automática por Uso Personal."
+                # Inicializar cantidades aprobadas
+                for item in request_obj.items.all():
+                    item.copy_count_approved = item.copy_count_requested
+                    item.save(update_fields=['copy_count_approved', 'fecha_actualizacion'])
         elif action == 'APPROVE':
             request_obj.approver = actor
             request_obj.approved_at = now
