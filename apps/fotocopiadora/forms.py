@@ -217,6 +217,12 @@ class PrintRequestForm(forms.ModelForm):
         self.fields["departamento"].required = False
         self.fields["area"].required = False
 
+        # Auto-asignar departamento desde el perfil del usuario (Persona)
+        if self.user and hasattr(self.user, "persona") and self.user.persona.departamento:
+            self.fields["departamento"].initial = self.user.persona.departamento
+            # Opcional: Bloquear el campo si queremos que sea estricto
+            # self.fields["departamento"].widget.attrs['disabled'] = True
+
     def clean_required_at(self):
         value = self.cleaned_data["required_at"]
         if value <= timezone.now():

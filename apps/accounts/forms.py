@@ -12,6 +12,7 @@ from django import forms
 from django.contrib.auth.models import User, Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from .models import AuthEstado
+from apps.solicitudes.models import Departamento
 
 
 class UserLoginForm(LoginForm):
@@ -296,6 +297,13 @@ class UserCreateForm(forms.ModelForm):
         widget=forms.FileInput(attrs={"class": "form-control", "accept": "image/*"}),
         help_text="Foto de perfil del usuario (opcional)",
     )
+    departamento = forms.ModelChoiceField(
+        label="Departamento",
+        queryset=Departamento.objects.filter(activo=True, eliminado=False),
+        required=False,
+        widget=forms.Select(attrs={"class": "form-select"}),
+        help_text="Departamento institucional del funcionario",
+    )
     activo_persona = forms.BooleanField(
         label="Activo",
         required=False,
@@ -430,6 +438,13 @@ class UserUpdateForm(forms.ModelForm):
         label="Foto de Perfil",
         required=False,
         widget=forms.FileInput(attrs={"class": "form-control", "accept": "image/*"}),
+    )
+    departamento = forms.ModelChoiceField(
+        label="Departamento",
+        queryset=Departamento.objects.filter(activo=True, eliminado=False),
+        required=False,
+        widget=forms.Select(attrs={"class": "form-select"}),
+        help_text="Departamento institucional del funcionario",
     )
 
     # ── PIN (opcional) ─────────────────────────────────────────────────────────

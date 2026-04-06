@@ -269,6 +269,7 @@ def crear_usuario(request):
                         talla=form.cleaned_data.get('talla', ''),
                         numero_zapato=form.cleaned_data.get('numero_zapato', ''),
                         foto_perfil=form.cleaned_data.get('foto_perfil'),
+                        departamento=form.cleaned_data.get('departamento'),
                         activo=form.cleaned_data.get('activo_persona', True),
                         eliminado=False,
                     )
@@ -359,6 +360,7 @@ def editar_usuario(request, pk):
             'fecha_nacimiento': persona.fecha_nacimiento,
             'talla': persona.talla or '',
             'numero_zapato': persona.numero_zapato or '',
+            'departamento': persona.departamento_id,
         }
 
     if request.method == 'POST':
@@ -380,6 +382,7 @@ def editar_usuario(request, pk):
                     'fecha_nacimiento': form.cleaned_data.get('fecha_nacimiento'),
                     'talla': form.cleaned_data.get('talla', '') or '',
                     'numero_zapato': form.cleaned_data.get('numero_zapato', '') or '',
+                    'departamento': form.cleaned_data.get('departamento'),
                     'eliminado': False,
                 }
                 doc = form.cleaned_data.get('documento_identidad', '').strip() or f'TEMP-{usuario.username}'

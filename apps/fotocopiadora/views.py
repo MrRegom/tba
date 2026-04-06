@@ -199,7 +199,6 @@ class OperatorQueueListView(ModuleProfileRequiredMixin, BaseAuditedViewMixin, Pr
     def get_queryset(self):
         return super().get_queryset().filter(
             status__in=[
-                PrintRequestStatus.PENDING_APPROVAL,
                 PrintRequestStatus.APPROVED,
                 PrintRequestStatus.IN_PROGRESS,
                 PrintRequestStatus.READY_FOR_PICKUP,

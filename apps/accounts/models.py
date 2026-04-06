@@ -236,6 +236,15 @@ class Persona(BaseModel):
         verbose_name="Foto de Perfil",
         help_text="Foto de perfil del usuario",
     )
+    departamento = models.ForeignKey(
+        "solicitudes.Departamento",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="personas",
+        verbose_name="Departamento",
+        help_text="Departamento principal al que pertenece el funcionario",
+    )
 
     class Meta:
         db_table = "tba_persona"
