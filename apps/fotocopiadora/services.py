@@ -178,14 +178,20 @@ class PrintRequestQueryService:
         if not user.is_authenticated or not user.has_perm('fotocopiadora.approve_printrequest'):
             return False
         
-        # Un usuario nunca debe aprobar su propia solicitud por seguridad auditiva
+        # Segregación: Creador no aprueba
         if request_obj.requester_id == user.id and not user.is_superuser:
             return False
 
-        if user.is_superuser or user.has_perm('fotocopiadora.view_all_printrequest'):
+        if user.is_superuser:
             return True
 
-        memberships = PrintRequestQueryService.role_memberships(user, PrintMembershipRole.APPROVER)
+        # El rol de administrador (módulo) también puede aprobar por jerarquía
+        profile = PrintRequestQueryService.module_profile(user)
+        if profile in {PrintMembershipRole.ADMIN, PrintMembershipRole.SUPERADMIN}:
+            return True
+
+        # Validar membresía específica de JEFATURA para el área/depto
+        memberships = PrintRequestQueryService.active_memberships(user).filter(role=PrintMembershipRole.APPROVER)
         if request_obj.area_id and memberships.filter(area_id=request_obj.area_id).exists():
             return True
         if request_obj.departamento_id and memberships.filter(departamento_id=request_obj.departamento_id).exists():
@@ -197,18 +203,23 @@ class PrintRequestQueryService:
         if not user.is_authenticated or not user.has_perm('fotocopiadora.operate_printrequest'):
             return False
 
-        # Por segregación de funciones, el solicitante no debería operar su propio pedido
+        # Segregación: Creador no opera
         if request_obj.requester_id == user.id and not user.is_superuser:
             return False
 
-        if user.is_superuser or user.has_perm('fotocopiadora.view_all_printrequest'):
+        if user.is_superuser:
+            return True
+            
+        # El rol de administrador (módulo) también puede operar
+        profile = PrintRequestQueryService.module_profile(user)
+        if profile in {PrintMembershipRole.ADMIN, PrintMembershipRole.SUPERADMIN}:
             return True
 
-        memberships = PrintRequestQueryService.role_memberships(user, PrintMembershipRole.OPERATOR)
+        # Validar membresía específica de OPERADOR para el equipo/bodega
+        memberships = PrintRequestQueryService.active_memberships(user).filter(role=PrintMembershipRole.OPERATOR)
         if not memberships.exists():
             return False
-        if request_obj.equipo_id and memberships.filter(area_id=request_obj.area_id).exists(): # Corregido para usar area_id si equipo_id falla
-            return True
+            
         if request_obj.equipo_id and memberships.filter(equipo_id=request_obj.equipo_id).exists():
             return True
         return memberships.filter(equipo=None).exists()
