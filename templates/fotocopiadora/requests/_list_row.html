@@ -1,12 +1,12 @@
 <tr class="table-row-item">
-    <td class="ps-4">
-        <span class="fw-bold text-primary fs-5">{{ request_obj.numero }}</span>
+    <td class="ps-4 py-3">
+        <span class="fw-bold text-primary" style="font-size: 0.9rem; letter-spacing: -0.5px;">{{ request_obj.numero }}</span>
     </td>
-    <td>
+    <td class="py-3">
       <div class="d-flex align-items-center">
         <div class="flex-grow-1">
-            <h6 class="mb-0 fs-16 fw-semibold">{{ request_obj.title }}</h6>
-            <small class="text-muted"><i class="ri-user-star-line me-1"></i> {{ request_obj.requester.get_full_name|default:request_obj.requester.username }}</small>
+            <div class="mb-0 fw-bold text-dark" style="font-size: 0.85rem;">{{ request_obj.title|truncatechars:45 }}</div>
+            <div class="text-muted" style="font-size: 0.75rem;"><i class="ri-user-star-line me-1"></i> {{ request_obj.requester.get_full_name|default:request_obj.requester.username }}</div>
         </div>
       </div>
     </td>
@@ -29,9 +29,9 @@
            {% endif %}
     </td>
     <td class="fs-14">{% include 'fotocopiadora/requests/_status_badge.html' with status=request_obj.status %}</td>
-    <td class="text-end pe-4">
+    <td class="text-end pe-4 py-3">
       <div class="btn-group shadow-sm">
-        <a href="{% url 'fotocopiadora:detalle_solicitud_impresion' request_obj.pk %}" class="btn btn-primary btn-sm px-3 fw-bold">OPERAR / VER</a>
+        <a href="{% url 'fotocopiadora:detalle_solicitud_impresion' request_obj.pk %}" class="btn btn-primary btn-sm px-3 fw-bold" style="font-size: 0.75rem;">VER DETALLE</a>
         {% if request_obj.requester_id == request.user.id and request_obj.status == 'DRAFT' %}
         <a href="{% url 'fotocopiadora:editar_solicitud_impresion' request_obj.pk %}" class="btn btn-sm btn-soft-secondary"><i class="ri-edit-line"></i></a>
         {% endif %}

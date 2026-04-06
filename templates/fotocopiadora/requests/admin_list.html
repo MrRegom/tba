@@ -8,35 +8,35 @@
     /* Estilos para el Control Global */
     .stat-card {
         border: none;
-        border-radius: 12px;
-        transition: transform 0.2s;
+        border-radius: 16px;
+        transition: all 0.3s;
+        background: #ffffff;
     }
-    .stat-card:hover { transform: translateY(-5px); }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important; }
     
+    .icon-shape {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+    }
+
     .nav-tabs-custom .nav-link {
-        font-weight: 600;
-        padding: 1rem 1.5rem;
-        font-size: 1.1rem;
+        font-weight: 700;
+        padding: 0.8rem 1.2rem;
+        font-size: 0.85rem;
         border: none;
         border-bottom: 3px solid transparent;
-        color: #475467;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
     .nav-tabs-custom .nav-link.active {
-        color: #3b71ca;
-        border-bottom-color: #3b71ca;
+        color: #2563eb;
+        border-bottom-color: #2563eb;
         background: transparent;
-    }
-    .count-badge {
-        font-size: 0.8rem;
-        background: #f3f4f6;
-        color: #475467;
-        padding: 2px 8px;
-        border-radius: 10px;
-        margin-left: 5px;
-    }
-    .nav-link.active .count-badge {
-        background: #3b71ca;
-        color: white;
     }
 </style>
 {% endblock %}
@@ -46,11 +46,11 @@
     <div class="col-12">
         <div class="page-title-box d-sm-flex align-items-center justify-content-between">
             <div>
-                <h4 class="mb-sm-0 text-primary fw-bold fs-3">Control Global de Solicitudes</h4>
-                <p class="text-muted mb-0">Vista unificada para la gestión administrativa del módulo.</p>
+                <h4 class="mb-sm-0 text-primary fw-bold fs-4">Control Global de Solicitudes</h4>
+                <p class="text-muted mb-0 small">Administración centralizada de requerimientos.</p>
             </div>
-            <a href="{% url 'fotocopiadora:menu_fotocopiadora' %}" class="btn btn-outline-secondary btn-lg px-4 fs-5">
-                <i class="ri-arrow-left-line me-1"></i> Volver al Menú
+            <a href="{% url 'fotocopiadora:menu_fotocopiadora' %}" class="btn btn-outline-secondary btn-sm px-3 fw-bold">
+                <i class="ri-arrow-left-line me-1"></i> VOLVER
             </a>
         </div>
     </div>
@@ -59,26 +59,47 @@
 <!-- Resumen Elegante (Cards) -->
 <div class="row g-3 mb-4">
     <div class="col-md-4">
-        <div class="card stat-card shadow-sm border-start border-4 border-warning">
-            <div class="card-body p-4 text-center">
-                <div class="display-6 fw-bold text-warning mb-1" id="count-pendientes">0</div>
-                <div class="text-muted fw-bold text-uppercase">Pendientes</div>
+        <div class="card stat-card shadow-sm">
+            <div class="card-body p-3">
+                <div class="d-flex align-items-center">
+                    <div class="icon-shape bg-warning-subtle text-warning me-3">
+                        <i class="ri-timer-2-line fs-3"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark" id="count-pendientes">0</div>
+                        <div class="text-muted small fw-bold text-uppercase" style="letter-spacing: 0.5px;">Pendientes</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card stat-card shadow-sm border-start border-4 border-success">
-            <div class="card-body p-4 text-center">
-                <div class="display-6 fw-bold text-success mb-1" id="count-cerrados">0</div>
-                <div class="text-muted fw-bold text-uppercase">Entregados / Listos</div>
+        <div class="card stat-card shadow-sm">
+            <div class="card-body p-3">
+                <div class="d-flex align-items-center">
+                    <div class="icon-shape bg-success-subtle text-success me-3">
+                        <i class="ri-checkbox-circle-line fs-3"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark" id="count-cerrados">0</div>
+                        <div class="text-muted small fw-bold text-uppercase" style="letter-spacing: 0.5px;">Entregados</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card stat-card shadow-sm border-start border-4 border-danger">
-            <div class="card-body p-4 text-center">
-                <div class="display-6 fw-bold text-danger mb-1" id="count-otros">0</div>
-                <div class="text-muted fw-bold text-uppercase">Otros / Cancelados</div>
+        <div class="card stat-card shadow-sm">
+            <div class="card-body p-3">
+                <div class="d-flex align-items-center">
+                    <div class="icon-shape bg-danger-subtle text-danger me-3">
+                        <i class="ri-close-circle-line fs-3"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark" id="count-otros">0</div>
+                        <div class="text-muted small fw-bold text-uppercase" style="letter-spacing: 0.5px;">Otros</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
