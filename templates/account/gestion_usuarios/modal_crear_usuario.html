@@ -66,6 +66,11 @@
                 {{ form.fecha_nacimiento }}
                 {% if form.fecha_nacimiento.errors %}<div class="text-danger small">{{ form.fecha_nacimiento.errors }}</div>{% endif %}
             </div>
+            <div class="col-md-6">
+                <label class="form-label">{{ form.departamento.label }}</label>
+                {{ form.departamento }}
+                {% if form.departamento.errors %}<div class="text-danger small">{{ form.departamento.errors }}</div>{% endif %}
+            </div>
         </div>
 
         <hr class="my-2">

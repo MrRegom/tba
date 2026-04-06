@@ -168,6 +168,11 @@
                             <label class="form-label">{{ form.numero_zapato.label }}</label>
                             {{ form.numero_zapato }}
                         </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{ form.departamento.label }}</label>
+                            {{ form.departamento }}
+                            {% if form.departamento.errors %}<div class="text-danger small mt-1">{{ form.departamento.errors }}</div>{% endif %}
+                        </div>
                         <div class="col-md-5">
                             <label class="form-label">{{ form.foto_perfil.label }}</label>
                             {% if persona.foto_perfil %}
