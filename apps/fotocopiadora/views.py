@@ -55,10 +55,10 @@ class MenuFotocopiadoraView(BaseAuditedViewMixin, TemplateView):
         context['primary_membership'] = primary_membership
         card_definitions = {
             'my_requests': {
-                'tag': 'MIS SOLICITUDES',
+                'tag': 'PEDIDOS',
                 'title': 'Mis Solicitudes',
-                'color': 'primary',
-                'icon': 'bi bi-collection',
+                'color': 'dark',
+                'icon': 'bi bi-card-list',
                 'description': 'Consulte el estado, historial y observaciones de sus requerimientos.',
                 'actions': [
                     {'label': 'Ver bandeja', 'url': reverse('fotocopiadora:mis_solicitudes_impresion'), 'style': 'primary'},
