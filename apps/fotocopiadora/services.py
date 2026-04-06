@@ -66,26 +66,37 @@ class PrintRequestQueryService:
 
     @classmethod
     def module_profile(cls, user) -> str | None:
-        membership = cls.primary_membership(user)
-        if membership is None:
-            if getattr(user, 'is_superuser', False):
-                return PrintMembershipRole.SUPERADMIN
-            if (
-                user.has_perm('fotocopiadora.manage_print_memberships')
-                or user.has_perm('fotocopiadora.manage_print_settings')
-                or user.has_perm('fotocopiadora.manage_print_cost_centers')
-            ):
-                return PrintMembershipRole.ADMIN
-            if user.has_perm('fotocopiadora.view_all_printrequest'):
-                return PrintMembershipRole.AUDITOR
-            if user.has_perm('fotocopiadora.operate_printrequest'):
-                return PrintMembershipRole.OPERATOR
-            if user.has_perm('fotocopiadora.approve_printrequest'):
-                return PrintMembershipRole.APPROVER
-            if user.has_perm('fotocopiadora.add_printrequest') or user.has_perm('fotocopiadora.view_printrequest'):
-                return PrintMembershipRole.REQUESTER
+        if not user.is_authenticated:
             return None
-        return membership['role'] if isinstance(membership, dict) else membership.role
+        if getattr(user, 'is_superuser', False):
+            return PrintMembershipRole.SUPERADMIN
+
+        # PRIORIDAD 1: Membresía en Base de Datos (Configurada manualmente por Admin)
+        membership = cls.primary_membership(user)
+        if membership:
+            return membership['role'] if isinstance(membership, dict) else membership.role
+
+        # PRIORIDAD 2: Solo si no hay membresía, miramos permisos específicos de Django (Fallback seguro)
+        if (
+            user.has_perm('fotocopiadora.manage_print_memberships')
+            or user.has_perm('fotocopiadora.manage_print_settings')
+            or user.has_perm('fotocopiadora.manage_print_cost_centers')
+            or user.has_perm('fotocopiadora.view_all_printrequest')
+        ):
+            # Si tiene permisos globales de gestión o auditoría, es ADMIN o AUDITOR
+            if user.has_perm('fotocopiadora.manage_print_memberships'):
+                return PrintMembershipRole.ADMIN
+            return PrintMembershipRole.AUDITOR
+
+        # PRIORIDAD 3: Permisos de acción
+        if user.has_perm('fotocopiadora.approve_printrequest'):
+            return PrintMembershipRole.APPROVER
+        if user.has_perm('fotocopiadora.operate_printrequest'):
+            return PrintMembershipRole.OPERATOR
+        if user.has_perm('fotocopiadora.add_printrequest') or user.has_perm('fotocopiadora.view_printrequest'):
+            return PrintMembershipRole.REQUESTER
+            
+        return None
 
     @staticmethod
     def for_user(queryset, user):
@@ -178,16 +189,20 @@ class PrintRequestQueryService:
         if not user.is_authenticated or not user.has_perm('fotocopiadora.approve_printrequest'):
             return False
         
-        # Segregación: Creador no aprueba
+        # PROHIBICIÓN RADICAL: Un operador NUNCA aprueba (segregación de funciones)
+        profile = PrintRequestQueryService.module_profile(user)
+        if profile == PrintMembershipRole.OPERATOR and not user.is_superuser:
+            return False
+
+        # Un usuario nunca debe aprobar su propia solicitud
         if request_obj.requester_id == user.id and not user.is_superuser:
             return False
 
-        if user.is_superuser:
+        if user.is_superuser or profile == PrintMembershipRole.SUPERADMIN:
             return True
 
         # El rol de administrador (módulo) también puede aprobar por jerarquía
-        profile = PrintRequestQueryService.module_profile(user)
-        if profile in {PrintMembershipRole.ADMIN, PrintMembershipRole.SUPERADMIN}:
+        if profile == PrintMembershipRole.ADMIN:
             return True
 
         # Validar membresía específica de JEFATURA para el área/depto
@@ -203,17 +218,17 @@ class PrintRequestQueryService:
         if not user.is_authenticated or not user.has_perm('fotocopiadora.operate_printrequest'):
             return False
 
-        # Segregación: Creador no opera
+        # El solicitante no debería operar su propio pedido
         if request_obj.requester_id == user.id and not user.is_superuser:
             return False
 
-        if user.is_superuser:
-            return True
-            
-        # El rol de administrador (módulo) también puede operar
         profile = PrintRequestQueryService.module_profile(user)
-        if profile in {PrintMembershipRole.ADMIN, PrintMembershipRole.SUPERADMIN}:
+        if user.is_superuser or profile in {PrintMembershipRole.ADMIN, PrintMembershipRole.SUPERADMIN}:
             return True
+
+        # Solo si su perfil es explícitamente OPERADOR (o SuperUser/Admin arriba)
+        if profile != PrintMembershipRole.OPERATOR:
+            return False
 
         # Validar membresía específica de OPERADOR para el equipo/bodega
         memberships = PrintRequestQueryService.active_memberships(user).filter(role=PrintMembershipRole.OPERATOR)
