@@ -119,7 +119,7 @@
                                         </td>
                                         <td>
                                             {% if perms.activos.change_categoriaactivo %}
-                                            <button type="button" class="btn btn-sm btn-soft-primary btn-modal-inv"
+                                            <button type="button" class="btn btn-sm btn-outline-primary btn-modal-inv"
                                                 data-url="{% url 'activos:editar_categoria' cat.pk %}"
                                                 title="Editar">
                                                 <i class="ri-pencil-line"></i>
@@ -203,7 +203,7 @@
                                         </td>
                                         <td>
                                             {% if perms.activos.change_estadoactivo %}
-                                            <button type="button" class="btn btn-sm btn-soft-primary btn-modal-inv"
+                                            <button type="button" class="btn btn-sm btn-outline-primary btn-modal-inv"
                                                 data-url="{% url 'activos:editar_estado' estado.pk %}"
                                                 title="Editar">
                                                 <i class="ri-pencil-line"></i>
@@ -267,7 +267,7 @@
                                         </td>
                                         <td>
                                             {% if perms.activos.change_marca %}
-                                            <button type="button" class="btn btn-sm btn-soft-primary btn-modal-inv"
+                                            <button type="button" class="btn btn-sm btn-outline-primary btn-modal-inv"
                                                 data-url="{% url 'activos:editar_marca' marca.pk %}"
                                                 title="Editar">
                                                 <i class="ri-pencil-line"></i>
@@ -331,7 +331,7 @@
                                         </td>
                                         <td>
                                             {% if perms.activos.change_tipomovimientoactivo %}
-                                            <button type="button" class="btn btn-sm btn-soft-primary btn-modal-inv"
+                                            <button type="button" class="btn btn-sm btn-outline-primary btn-modal-inv"
                                                 data-url="{% url 'activos:editar_tipo_movimiento' tipo.pk %}"
                                                 title="Editar">
                                                 <i class="ri-pencil-line"></i>
@@ -403,7 +403,7 @@
                                         <td>{{ activo.numero_serie|default:"-" }}</td>
                                         <td>
                                             {% if perms.activos.change_activo %}
-                                            <a href="{% url 'activos:editar_activo' activo.pk %}" class="btn btn-sm btn-soft-primary" title="Editar">
+                                            <a href="{% url 'activos:editar_activo' activo.pk %}" class="btn btn-sm btn-outline-primary" title="Editar">
                                                 <i class="ri-pencil-line"></i>
                                             </a>
                                             {% endif %}

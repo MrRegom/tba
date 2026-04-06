@@ -24,7 +24,7 @@
             <!-- prettier-ignore -->
             <h3 class="page-title text-capitalize fw-semibold fs-3xl mb-0" style="margin-top: -10px;">Bienvenido <b
                     class="text-warning">{{ user.get_full_name|default:user.username }}</b> 👋</h3>
-            <p class="mb-0 page-sub-title text-muted mt-1">Sistema de gestión de inventario del colegio.</p>
+            <p class="mb-0 page-sub-title text-muted mt-1">Consola Operativa Monitoreo de Infraestructura TIC</p>
         </div>
     </div>
 </div>
@@ -179,7 +179,7 @@
             <div class="card-header align-items-center d-flex">
                 <h4 class="card-title mb-0 flex-grow-1">Artículos Stock Bajo</h4>
                 <div class="flex-shrink-0">
-                    <a href="{% url 'bodega:articulo_lista' %}" class="btn btn-sm btn-subtle-primary">Ver Todos</a>
+                    <a href="{% url 'bodega:articulo_lista' %}" class="btn btn-sm btn-outline-primary">Ver Todos</a>
                 </div>
             </div><!-- end card header -->
             <div class="card-body">
@@ -239,7 +239,7 @@
             <div class="card-header d-flex align-items-center">
                 <h5 class="card-title flex-grow-1 mb-0">Actividades Recientes</h5>
                 <div class="flex-shrink-0">
-                    <a href="{% url 'reportes:auditoria_actividades' %}" class="btn btn-subtle-primary btn-sm">Ver Más
+                    <a href="{% url 'reportes:auditoria_actividades' %}" class="btn btn-outline-primary btn-sm">Ver Más
                         <i class="ph-caret-right align-middle"></i></a>
                 </div>
             </div>
@@ -284,7 +284,7 @@
             <div class="card-header align-items-center d-flex">
                 <h4 class="card-title mb-0 flex-grow-1">Últimos 10 Productos</h4>
                 <div class="flex-shrink-0">
-                    <a href="{% url 'bodega:articulo_lista' %}" class="btn btn-sm btn-subtle-primary">Ver Todos</a>
+                    <a href="{% url 'bodega:articulo_lista' %}" class="btn btn-sm btn-outline-primary">Ver Todos</a>
                 </div>
             </div>
             <div class="card-body">
@@ -330,7 +330,7 @@
             <div class="card-header align-items-center d-flex">
                 <h4 class="card-title mb-0 flex-grow-1">Top 10 Productos por Stock</h4>
                 <div class="flex-shrink-0">
-                    <a href="{% url 'bodega:articulo_lista' %}" class="btn btn-sm btn-subtle-primary">Ver Todos</a>
+                    <a href="{% url 'bodega:articulo_lista' %}" class="btn btn-sm btn-outline-primary">Ver Todos</a>
                 </div>
             </div>
             <div class="card-body">
@@ -379,7 +379,7 @@
             <div class="card-header align-items-center d-flex">
                 <h4 class="card-title mb-0 flex-grow-1">Últimas 10 Entregas de Inventario</h4>
                 <div class="flex-shrink-0">
-                    <a href="{% url 'bodega:entrega_articulo_lista' %}" class="btn btn-sm btn-subtle-primary">Ver
+                    <a href="{% url 'bodega:entrega_articulo_lista' %}" class="btn btn-sm btn-outline-primary">Ver
                         Todas</a>
                 </div>
             </div>
@@ -424,9 +424,9 @@
     <div class="col-xl-6">
         <div class="card">
             <div class="card-header align-items-center d-flex">
-                <h4 class="card-title mb-0 flex-grow-1">Últimos 10 Movimientos</h4>
+                <h4 class="card-title mb-0 flex-grow-1">Últimos Equipos Procesados</h4>
                 <div class="flex-shrink-0">
-                    <a href="{% url 'bodega:movimiento_lista' %}" class="btn btn-sm btn-subtle-primary">Ver Todos</a>
+                    <a href="{% url 'bodega:movimiento_lista' %}" class="btn btn-sm btn-outline-primary">Ver Todos</a>
                 </div>
             </div>
             <div class="card-body">

@@ -61,23 +61,23 @@
 }
 
 .dashboard-stat-primary {
-    color: #405189;
+    color: #1e3a8a;
 }
 
 .dashboard-stat-success {
-    color: #0ab39c;
+    color: #069483;
 }
 
 .dashboard-stat-info {
-    color: #299cdb;
+    color: #1565c0;
 }
 
 .dashboard-stat-warning {
-    color: #f7b84b;
+    color: #d97706;
 }
 
 .dashboard-stat-danger {
-    color: #f06548;
+    color: #c53030;
 }
 
 .dashboard-stat-icon {
@@ -95,17 +95,17 @@
 
 /* Colores institucionales para los iconos */
 .dashboard-stat-primary .dashboard-stat-icon {
-    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);
     color: #ffffff;
 }
 
 .dashboard-stat-success .dashboard-stat-icon {
-    background: linear-gradient(135deg, #0ab39c 0%, #10d9c4 100%);
+    background: linear-gradient(135deg, #065f46 0%, #059669 100%);
     color: #ffffff;
 }
 
 .dashboard-stat-info .dashboard-stat-icon {
-    background: linear-gradient(135deg, #299cdb 0%, #4db8f0 100%);
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
     color: #ffffff;
 }
 
