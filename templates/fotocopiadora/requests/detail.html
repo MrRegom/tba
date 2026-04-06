@@ -130,7 +130,7 @@
     </div>
     {% endif %}
 
-    {% if can_approve and not is_operator %}
+    {% if can_approve %}
     <div class="card">
       <div class="card-header"><h5 class="mb-0">Resolver aprobación</h5></div>
       <div class="card-body">
@@ -177,8 +177,14 @@
           </div>
 
           <div class="d-grid gap-2">
-            {% if print_request.status == 'PENDING_APPROVAL' or print_request.status == 'APPROVED' %}
-            <button type="submit" name="action" value="START" class="btn btn-primary btn-lg fw-bold">EMPEZAR PREPARACIÓN</button>
+            {% if print_request.status == 'PENDING_APPROVAL' %}
+              <div class="alert alert-danger py-2 small mb-0 text-center fw-bold">
+                  <i class="ri-lock-2-line me-1"></i> ESPERANDO APROBACIÓN DE JEFATURA
+              </div>
+            {% elif print_request.status == 'APPROVED' %}
+            <button type="submit" name="action" value="START" class="btn btn-primary btn-lg fw-bold shadow-sm w-100 py-3">
+                <i class="ri-play-fill me-1"></i> EMPEZAR PREPARACIÓN
+            </button>
             {% elif print_request.status == 'IN_PROGRESS' %}
             <button type="submit" name="action" value="READY" class="btn btn-warning btn-lg fw-bold">MARCAR TRABAJO LISTO</button>
             {% elif print_request.status == 'READY_FOR_PICKUP' %}

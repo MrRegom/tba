@@ -191,7 +191,7 @@ class PrintRequestType(models.TextChoices):
 
 class PrintRequestStatus(models.TextChoices):
     DRAFT = "DRAFT", "Borrador"
-    PENDING_APPROVAL = "PENDING_APPROVAL", "Pendiente de aprobacion"
+    PENDING_APPROVAL = "PENDING_APPROVAL", "POR APROBAR"
     APPROVED = "APPROVED", "Aprobada"
     REJECTED = "REJECTED", "Rechazada"
     IN_PROGRESS = "IN_PROGRESS", "En preparacion"
