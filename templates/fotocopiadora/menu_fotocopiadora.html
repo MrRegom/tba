@@ -68,8 +68,8 @@
 
 {% block content %}
 
-{% if is_operator %}
-<!-- PROFIL OPERADOR (3 COLUMNAS SIMÉTRICAS) -->
+{% if cards %}
+<!-- DASHBOARD DINÁMICO (SEGÚN ROLES ACTIVOS) -->
 <div class="row g-4 mb-5">
   <div class="col-12">
     <div class="alert alert-info border-0 shadow-sm p-3 text-center" style="border-radius: 12px; background-color: #e3f2fd;">
@@ -77,53 +77,28 @@
     </div>
   </div>
 
-  <div class="col-md-4 text-center">
-    <div class="card border-0 shadow-sm h-100 admin-tool-card" style="border-radius: 20px;">
-      <div class="card-body p-4">
-        <!-- ICONO REAL -->
-        <div class="bg-primary bg-opacity-10 p-3 rounded-circle mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-          <i class="bi bi-clipboard-check text-primary" style="font-size: 2.5rem;"></i>
-        </div>
-        <h2 class="fw-bold h3 mb-2">Pedidos</h2>
-        <p class="text-muted small mb-4">Ver y procesar las solicitudes de hoy.</p>
-        <a href="{% url 'fotocopiadora:bandeja_operativa_impresion' %}" class="btn btn-primary rounded-pill w-100 py-2 fw-bold shadow-sm">
-          ABRIR LISTA
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <!-- MEMBERSHIPS -->
-  <div class="col-md-4">
+  {% for card in cards %}
+  <div class="col-md-{% if cards|length == 1 %}12{% elif cards|length == 2 %}6{% elif cards|length == 3 %}4{% else %}3{% endif %}">
     <div class="card border-0 shadow-sm h-100 admin-tool-card text-center" style="border-radius: 20px;">
       <div class="card-body p-4 d-flex flex-column align-items-center justify-content-center">
-        <div class="bg-success bg-opacity-10 p-3 rounded-circle mb-3">
-          <i class="bi bi-people text-success" style="font-size: 3rem;"></i>
+        <div class="bg-{{ card.color }} bg-opacity-10 p-3 rounded-circle mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+          <i class="{{ card.icon }} text-{{ card.color }}" style="font-size: 2.5rem;"></i>
         </div>
-        <h2 class="fw-bold h3 mb-2">Usuarios</h2>
-        <p class="text-muted small mb-4">Administrar quiénes pueden pedir copias.</p>
-        <a href="{% url 'fotocopiadora:lista_memberships' %}" class="btn btn-success rounded-pill w-100 py-3 fw-bold fs-5 shadow">
-          GESTIONAR
-        </a>
+        <div class="badge bg-{{ card.color }} bg-opacity-10 text-{{ card.color }} mb-2 rounded-pill px-3">{{ card.tag }}</div>
+        <h2 class="fw-bold h4 mb-2">{{ card.title }}</h2>
+        <p class="text-muted small mb-4">{{ card.description }}</p>
+        
+        <div class="d-grid gap-2 w-100">
+          {% for action in card.actions %}
+          <a href="{{ action.url }}" class="btn btn-{{ action.style|default:card.color }} rounded-pill w-100 py-2 fw-bold shadow-sm">
+            {{ action.label|upper }}
+          </a>
+          {% endfor %}
+        </div>
       </div>
     </div>
   </div>
-
-  <!-- EQUIPOS -->
-  <div class="col-md-4">
-    <div class="card border-0 shadow-sm h-100 admin-tool-card text-center" style="border-radius: 20px;">
-      <div class="card-body p-4 d-flex flex-column align-items-center justify-content-center">
-        <div class="bg-warning bg-opacity-10 p-3 rounded-circle mb-3">
-          <i class="bi bi-printer text-warning" style="font-size: 3rem;"></i>
-        </div>
-        <h2 class="fw-bold h3 mb-2">Máquinas</h2>
-        <p class="text-muted small mb-4">Configurar las fotocopiadoras del liceo.</p>
-        <a href="{% url 'fotocopiadora:lista_equipos' %}" class="btn btn-warning rounded-pill w-100 py-3 fw-bold fs-5 shadow">
-          GESTIONAR
-        </a>
-      </div>
-    </div>
-  </div>
+  {% endfor %}
 </div>
 {% else %}
 <!-- PROFIL SOLICITANTE / PROFESOR -->
