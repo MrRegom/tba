@@ -188,13 +188,13 @@ class PrintRequestQueryService:
     def can_approve(user, request_obj: PrintRequest) -> bool:
         if not user.is_authenticated or not user.has_perm('fotocopiadora.approve_printrequest'):
             return False
-        
-        # PROHIBICIÓN RADICAL: Un operador NUNCA aprueba (segregación de funciones)
+            
+        # BLOQUEO DE HIERRO: Un operador NO aprueba
         profile = PrintRequestQueryService.module_profile(user)
         if profile == PrintMembershipRole.OPERATOR and not user.is_superuser:
             return False
 
-        # Un usuario nunca debe aprobar su propia solicitud
+        # Segregación: Solicitante no aprueba lo suyo
         if request_obj.requester_id == user.id and not user.is_superuser:
             return False
 
