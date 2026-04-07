@@ -189,7 +189,11 @@ class PrintRequestQueryService:
         if not user.is_authenticated or not user.has_perm('fotocopiadora.approve_printrequest'):
             return False
             
-        # BLOQUEO DE HIERRO: Un operador NO aprueba NUNCA (aunque tenga otros permisos)
+        # BLOQUEO DE PÁNICO (EMERGENCIA): Bloqueo directo por nombre de usuario
+        if user.username == 'bodega' and not user.is_superuser:
+            return False
+
+        # BLOQUEO DE HIERRO: Si es operador, NO aprueba NUNCA
         has_operator_membership = PrintRequestQueryService.active_memberships(user).filter(role=PrintMembershipRole.OPERATOR).exists()
         if has_operator_membership and not user.is_superuser:
             return False
