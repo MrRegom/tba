@@ -68,8 +68,13 @@ class PrintRequestQueryService:
     def module_profile(cls, user) -> str | None:
         if not user.is_authenticated:
             return None
-        if getattr(user, 'is_superuser', False):
-            return PrintMembershipRole.SUPERADMIN
+
+        # PRIORIDAD 0: Jerarquía Oficial de la Institución (Responsables de Depto/Area)
+        from apps.solicitudes.models import Departamento, Area
+        if Departamento.objects.filter(responsable=user, activo=True).exists():
+            return PrintMembershipRole.APPROVER
+        if Area.objects.filter(responsable=user, activo=True).exists():
+            return PrintMembershipRole.APPROVER
 
         # PRIORIDAD 1: Membresía en Base de Datos (Configurada manualmente por Admin)
         membership = cls.primary_membership(user)
@@ -108,16 +113,25 @@ class PrintRequestQueryService:
 
         profile = PrintRequestQueryService.module_profile(user)
         
-        # SI ES JEFATURA, APLICAR SILO ESTRICTO (No importa si tiene otros permisos de visión)
+        # SI ES JEFATURA, APLICAR SILO ESTRICTO
         if profile == PrintMembershipRole.APPROVER:
+            from apps.solicitudes.models import Departamento, Area
+            # 1. Obtener IDs de membresías manuales (si existen)
             memberships = PrintRequestQueryService.active_memberships(user).filter(role=PrintMembershipRole.APPROVER)
-            if not memberships.exists():
-                return queryset.none()
             department_ids = list(memberships.exclude(departamento=None).values_list('departamento_id', flat=True))
             area_ids = list(memberships.exclude(area=None).values_list('area_id', flat=True))
+            
+            # 2. Obtener IDs de jerarquía oficial
+            official_dept_ids = list(Departamento.objects.filter(responsable=user, activo=True).values_list('id', flat=True))
+            official_area_ids = list(Area.objects.filter(responsable=user, activo=True).values_list('id', flat=True))
+            
+            # Combinar ambos mundos
+            final_dept_ids = list(set(department_ids + official_dept_ids))
+            final_area_ids = list(set(area_ids + official_area_ids))
+
             return queryset.filter(
-                models.Q(departamento_id__in=department_ids) |
-                models.Q(area_id__in=area_ids) |
+                models.Q(departamento_id__in=final_dept_ids) |
+                models.Q(area_id__in=final_area_ids) |
                 models.Q(requester=user) |
                 models.Q(approver=user)
             ).distinct()
