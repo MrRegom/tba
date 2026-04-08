@@ -107,14 +107,10 @@ class PrintRequestQueryService:
             return queryset
 
         profile = PrintRequestQueryService.module_profile(user)
-        if profile in {PrintMembershipRole.ADMIN, PrintMembershipRole.AUDITOR, PrintMembershipRole.SUPERADMIN}:
-            return queryset
-
-        if user.has_perm('fotocopiadora.manage_print_memberships') or user.has_perm('fotocopiadora.manage_print_settings'):
-            return queryset
-
+        
+        # SI ES JEFATURA, APLICAR SILO ESTRICTO (No importa si tiene otros permisos de visión)
         if profile == PrintMembershipRole.APPROVER:
-            memberships = PrintRequestQueryService.role_memberships(user, PrintMembershipRole.APPROVER)
+            memberships = PrintRequestQueryService.active_memberships(user).filter(role=PrintMembershipRole.APPROVER)
             if not memberships.exists():
                 return queryset.none()
             department_ids = list(memberships.exclude(departamento=None).values_list('departamento_id', flat=True))
@@ -125,6 +121,12 @@ class PrintRequestQueryService:
                 models.Q(requester=user) |
                 models.Q(approver=user)
             ).distinct()
+
+        if profile in {PrintMembershipRole.ADMIN, PrintMembershipRole.AUDITOR, PrintMembershipRole.SUPERADMIN}:
+            return queryset
+
+        if user.has_perm('fotocopiadora.manage_print_memberships') or user.has_perm('fotocopiadora.manage_print_settings'):
+            return queryset
 
         if profile == PrintMembershipRole.OPERATOR:
             memberships = PrintRequestQueryService.role_memberships(user, PrintMembershipRole.OPERATOR)
