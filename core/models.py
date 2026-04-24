@@ -53,15 +53,15 @@ class AutoCodeMixin(models.Model):
         from core.utils.business import generar_codigo_unico
 
         for attempt in range(self.AUTO_CODE_MAX_RETRIES):
-            codigo = generar_codigo_unico(
-                self.AUTO_CODE_PREFIX,
-                self.__class__,
-                campo,
-                self.AUTO_CODE_LENGTH,
-            )
-            setattr(self, campo, codigo)
             try:
                 with transaction.atomic():
+                    codigo = generar_codigo_unico(
+                        self.AUTO_CODE_PREFIX,
+                        self.__class__,
+                        campo,
+                        self.AUTO_CODE_LENGTH,
+                    )
+                    setattr(self, campo, codigo)
                     super().save(*args, **kwargs)
                 return  # guardado exitoso
             except IntegrityError:
