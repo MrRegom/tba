@@ -18,68 +18,76 @@ class Command(BaseCommand):
             return
 
         try:
+            from django.contrib.auth.models import User
+            from apps.bodega.models import Bodega
+            
             wb = openpyxl.load_workbook(file_path, data_only=True)
-            sheet = wb.active
             
-            # Mapeo de columnas (basado en el análisis previo)
-            # 0: ID (ignorar)
-            # 1: Nombre
-            # 2: Descripción
-            # 3: Categoría
-            # 4: Marca
-            # 5: Unidad Medida
-            # 6: Stock Mínimo
-            # 7: Stock Máximo
-            # 8: Retirado
-            # 9: Stock Actual
+            # 1. Asegurar una Bodega física para la restricción not-null
+            admin_user = User.objects.filter(is_superuser=True).first()
+            if not admin_user:
+                admin_user = User.objects.first()
+                
+            bodega_principal, _ = Bodega.objects.get_or_create(
+                codigo="BOD-001",
+                defaults={
+                    "nombre": "Bodega Principal",
+                    "responsable": admin_user
+                }
+            )
             
-            rows = list(sheet.iter_rows(min_row=2, values_only=True))
-            total = len(rows)
-            created = 0
-            updated = 0
+            total_created = 0
+            total_updated = 0
             
-            self.stdout.write(f"Iniciando importación de {total} registros...")
-
             with transaction.atomic():
-                for row in rows:
-                    if not row[1]: # Si no hay nombre, saltar
-                        continue
-                        
-                    nombre = str(row[1]).strip()
-                    descripcion = str(row[2]).strip() if row[2] else ""
-                    cat_name = str(row[3]).strip() if row[3] else "Sin Categoría"
-                    marca_name = str(row[4]).strip() if row[4] else "Genérico"
-                    unidad_name = str(row[5]).strip() if row[5] else "UND"
-                    stock_min = int(row[6]) if row[6] is not None else 0
-                    stock_actual = int(row[9]) if row[9] is not None else 0
+                for sheet in wb.worksheets:
+                    cat_name = sheet.title.strip()
+                    self.stdout.write(f"Procesando categoría (pestaña): {cat_name}...")
                     
-                    # 1. Obtener o crear maestros
+                    # Obtener o crear la categoría basada en el nombre de la pestaña
                     categoria, _ = Categoria.objects.get_or_create(nombre=cat_name)
-                    marca, _ = Marca.objects.get_or_create(nombre=marca_name)
-                    unidad, _ = UnidadMedida.objects.get_or_create(nombre=unidad_name)
                     
-                    # 2. Crear o actualizar artículo
-                    articulo, was_created = Articulo.objects.update_or_create(
-                        nombre=nombre,
-                        defaults={
-                            'descripcion': descripcion,
-                            'categoria': categoria,
-                            'marca': marca,
-                            'unidad_medida': unidad,
-                            'stock_minimo': stock_min,
-                            'stock_actual': stock_actual,
-                            'activo': True
-                        }
-                    )
+                    # Leer filas de esta pestaña (saltando encabezado)
+                    rows = list(sheet.iter_rows(min_row=2, values_only=True))
                     
-                    if was_created:
-                        created += 1
-                    else:
-                        updated += 1
+                    for row in rows:
+                        if not row or not row[1]: # Si no hay nombre, saltar
+                            continue
+                            
+                        nombre = str(row[1]).strip()
+                        descripcion = str(row[2]).strip() if row[2] else ""
+                        marca_name = str(row[4]).strip() if row[4] else "Genérico"
+                        unidad_name = str(row[5]).strip() if row[5] else "UND"
+                        stock_min = int(row[6]) if row[6] is not None else 0
+                        stock_actual = int(row[9]) if row[9] is not None else 0
+                        
+                        # Obtener o crear maestros
+                        marca, _ = Marca.objects.get_or_create(nombre=marca_name)
+                        unidad, _ = UnidadMedida.objects.get_or_create(nombre=unidad_name)
+                        
+                        # Crear o actualizar artículo
+                        articulo, was_created = Articulo.objects.update_or_create(
+                            nombre=nombre,
+                            categoria=categoria, # Incluimos categoría en el lookup para evitar colisiones entre hojas
+                            defaults={
+                                'descripcion': descripcion,
+                                'marca': marca,
+                                'unidad_medida': unidad,
+                                'stock_minimo': stock_min,
+                                'stock_actual': stock_actual,
+                                'ubicacion_fisica': bodega_principal,
+                                'activo': True
+                            }
+                        )
+                        
+                        if was_created:
+                            total_created += 1
+                        else:
+                            total_updated += 1
 
             self.stdout.write(self.style.SUCCESS(
                 f"Importación finalizada con éxito. "
-                f"Creados: {created}, Actualizados: {updated}"
+                f"Total Creados: {total_created}, Total Actualizados: {total_updated}"
             ))
 
         except Exception as e:
