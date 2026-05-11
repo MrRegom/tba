@@ -280,7 +280,7 @@ def crear_usuario(request):
                         from .models import UserSecure, AuditoriaPin
                         user_secure, _ = UserSecure.objects.get_or_create(
                             user=usuario,
-                            defaults={'activo': True, 'eliminado': False}
+                            defaults={'activo': True, 'eliminado': False, 'pin': 'PENDING'}
                         )
                         user_secure.set_pin(pin_texto)
                         user_secure.save()
@@ -411,7 +411,7 @@ def editar_usuario(request, pk):
                 pin_texto = form.cleaned_data.get('pin', '').strip()
                 if pin_texto:
                     user_secure, created = UserSecure.objects.get_or_create(
-                        user=usuario, defaults={'activo': True, 'eliminado': False}
+                        user=usuario, defaults={'activo': True, 'eliminado': False, 'pin': 'PENDING'}
                     )
                     if not created and user_secure.eliminado:
                         user_secure.eliminado = False

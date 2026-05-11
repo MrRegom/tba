@@ -264,7 +264,7 @@ class UserCreateForm(forms.ModelForm):
     )
     fecha_nacimiento = forms.DateField(
         label="Fecha de Nacimiento",
-        required=True,
+        required=False,
         widget=forms.DateInput(attrs={"class": "form-control", "type": "date"}),
     )
     talla = forms.CharField(
@@ -540,16 +540,32 @@ class UserUpdateForm(forms.ModelForm):
 
         return pin_confirmacion
 
+    def clean_documento_identidad(self):
+        """Validar que el documento de identidad sea único."""
+        doc = self.cleaned_data.get('documento_identidad', '').strip()
+        if doc:
+            from .models import Persona
+            # Excluir al usuario actual de la búsqueda
+            exists = Persona.objects.filter(
+                documento_identidad=doc, 
+                eliminado=False
+            ).exclude(user=self.instance).exists()
+            
+            if exists:
+                raise forms.ValidationError("Este documento de identidad ya está registrado en otro usuario.")
+        return doc
+
     def clean_password2(self):
-        """Validar que las contraseñas coincidan."""
+        """Validar que las contraseñas coincidan y tengan el largo mínimo."""
         p1 = self.cleaned_data.get('password1')
         p2 = self.cleaned_data.get('password2')
-        if p1 and p2 and p1 != p2:
-            raise forms.ValidationError("Las contraseñas no coinciden.")
         
-        if p1 and len(p1) < 8:
-            raise forms.ValidationError("La contraseña es muy corta (mínimo 8 caracteres).")
-            
+        if p1 or p2:
+            if p1 != p2:
+                raise forms.ValidationError("Las contraseñas no coinciden.")
+            if len(p1) < 8:
+                raise forms.ValidationError("La contraseña es muy corta (mínimo 8 caracteres).")
+        
         return p2
 
 

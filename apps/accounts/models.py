@@ -214,7 +214,7 @@ class Persona(BaseModel):
         choices=[("M", "Masculino"), ("F", "Femenino"), ("O", "Otro")],
         verbose_name="Sexo",
     )
-    fecha_nacimiento = models.DateField(verbose_name="Fecha de Nacimiento")
+    fecha_nacimiento = models.DateField(null=True, blank=True, verbose_name="Fecha de Nacimiento")
     talla = models.CharField(
         max_length=10,
         blank=True,
