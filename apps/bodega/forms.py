@@ -300,19 +300,29 @@ class MovimientoForm(forms.ModelForm):
         # Filtrar solo artículos activos y no eliminados
         self.fields["articulo"].queryset = (
             Articulo.objects.filter(activo=True, eliminado=False)
-            .select_related("categoria")
+            .select_related("categoria", "unidad_medida")
             .order_by("codigo")
+        )
+        self.fields["articulo"].empty_label = "Seleccione un artículo..."
+        self.fields["articulo"].label_from_instance = (
+            lambda articulo: (
+                f"{articulo.codigo} - {articulo.nombre} "
+                f"(Stock: {articulo.stock_actual} "
+                f"{getattr(articulo.unidad_medida, 'simbolo', 'unidad')})"
+            )
         )
 
         # Filtrar solo tipos de movimiento activos
         self.fields["tipo"].queryset = TipoMovimiento.objects.filter(
             activo=True, eliminado=False
         ).order_by("codigo")
+        self.fields["tipo"].empty_label = "Seleccione..."
 
         # Filtrar solo operaciones activas
         self.fields["operacion"].queryset = Operacion.objects.filter(
             activo=True, eliminado=False
         ).order_by("codigo")
+        self.fields["operacion"].empty_label = "Seleccione..."
 
     def clean_cantidad(self):
         """Validar que la cantidad sea positiva."""

@@ -1,71 +1,81 @@
 ﻿{% extends 'partials/base.html' %}
 
 {% block content %}
-        <div class="row">
-            <div class="col-12">
-                <div class="page-title-box">
-                    <h4 class="mb-sm-0">{{ titulo }}</h4>
-                </div>
-            </div>
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box">
+            <h4 class="mb-sm-0">{{ titulo }}</h4>
         </div>
+    </div>
+</div>
 
-        <div class="row">
-            <div class="col-lg-8">
-                <div class="card">
-                    <div class="card-body">
-                        <form method="post">
-                            {% csrf_token %}
-                            <div class="row">
-                                <div class="col-md-12 mb-3">
-                                    <label for="articulo" class="form-label">Artículo *</label>
-                                    <select class="form-select" id="articulo" name="articulo" required>
-                                        <option value="">Seleccione un artículo...</option>
-                                        {% for art in articulos %}
-                                        <option value="{{ art.id }}">{{ art.codigo }} - {{ art.nombre }} (Stock: {{ art.stock_actual }} {{ art.unidad_medida.simbolo|default:"unidad" }})</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="tipo" class="form-label">Tipo de Movimiento *</label>
-                                    <select class="form-select" id="tipo" name="tipo" required>
-                                        <option value="">Seleccione...</option>
-                                        {% for tipo in tipos %}
-                                        <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="operacion" class="form-label">Operación *</label>
-                                    <select class="form-select" id="operacion" name="operacion" required>
-                                        <option value="">Seleccione...</option>
-                                        <option value="ENTRADA">Entrada</option>
-                                        <option value="SALIDA">Salida</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="cantidad" class="form-label">Cantidad *</label>
-                                    <input type="number" step="0.01" min="0.01" class="form-control" id="cantidad" name="cantidad" required>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="motivo" class="form-label">Motivo *</label>
-                                <textarea class="form-control" id="motivo" name="motivo" rows="3" required></textarea>
-                            </div>
-                            <div class="mt-4">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="ri-save-line"></i> Registrar Movimiento
-                                </button>
-                                <a href="{% url 'bodega:movimiento_lista' %}" class="btn btn-secondary">
-                                    <i class="ri-arrow-left-line"></i> Cancelar
-                                </a>
-                            </div>
-                        </form>
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
                     </div>
-                </div>
+                    {% endif %}
+
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="{{ form.articulo.id_for_label }}" class="form-label">Artículo *</label>
+                            {{ form.articulo }}
+                            {% if form.articulo.errors %}
+                            <div class="text-danger small mt-1">{{ form.articulo.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.tipo.id_for_label }}" class="form-label">Tipo de Movimiento *</label>
+                            {{ form.tipo }}
+                            {% if form.tipo.errors %}
+                            <div class="text-danger small mt-1">{{ form.tipo.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.operacion.id_for_label }}" class="form-label">Operación *</label>
+                            {{ form.operacion }}
+                            {% if form.operacion.errors %}
+                            <div class="text-danger small mt-1">{{ form.operacion.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.cantidad.id_for_label }}" class="form-label">Cantidad *</label>
+                            {{ form.cantidad }}
+                            {% if form.cantidad.errors %}
+                            <div class="text-danger small mt-1">{{ form.cantidad.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.motivo.id_for_label }}" class="form-label">Motivo *</label>
+                        {{ form.motivo }}
+                        {% if form.motivo.errors %}
+                        <div class="text-danger small mt-1">{{ form.motivo.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="ri-save-line"></i> Registrar Movimiento
+                        </button>
+                        <a href="{% url 'bodega:movimiento_lista' %}" class="btn btn-secondary">
+                            <i class="ri-arrow-left-line"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

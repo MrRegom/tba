@@ -83,6 +83,16 @@ class MenuBodegaView(LoginRequiredMixin, TemplateView):
     """
     template_name = 'bodega/menu_bodega.html'
 
+    @staticmethod
+    def _filter_by_code_or_name(queryset, query: str):
+        """Aplica búsqueda case-insensitive por código y/o nombre."""
+        if not query:
+            return queryset
+        return queryset.filter(
+            Q(codigo__icontains=query) |
+            Q(nombre__icontains=query)
+        )
+
     def get_context_data(self, **kwargs) -> dict:
         """Agrega los querysets de todas las tablas para los tabs."""
         from apps.bodega.models import (
@@ -93,17 +103,49 @@ class MenuBodegaView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
 
-        # Querysets para cada tab
-        context['articulos'] = scope_articulos_for_user(
+        articulos_q = self.request.GET.get('articulos_q', '').strip()
+        articulos_categoria = self.request.GET.get('articulos_categoria', '').strip()
+        categorias_q = self.request.GET.get('categorias_q', '').strip()
+        operaciones_q = self.request.GET.get('operaciones_q', '').strip()
+        tipos_movimiento_q = self.request.GET.get('tipos_movimiento_q', '').strip()
+        unidades_q = self.request.GET.get('unidades_q', '').strip()
+        estados_recepcion_q = self.request.GET.get('estados_recepcion_q', '').strip()
+        tipos_recepcion_q = self.request.GET.get('tipos_recepcion_q', '').strip()
+
+        articulos = scope_articulos_for_user(
             Articulo.objects.select_related('categoria', 'unidad_medida', 'marca').all(),
             user
         )
-        context['categorias'] = Categoria.objects.all()
-        context['operaciones'] = Operacion.objects.all()
-        context['tipos_movimiento'] = TipoMovimiento.objects.all()
-        context['unidades_medida'] = UnidadMedida.objects.all()
-        context['estados_recepcion'] = EstadoRecepcion.objects.all()
-        context['tipos_recepcion'] = TipoRecepcion.objects.all()
+        articulos = self._filter_by_code_or_name(articulos, articulos_q)
+        if articulos_categoria:
+            articulos = articulos.filter(categoria__nombre__icontains=articulos_categoria)
+
+        categorias = self._filter_by_code_or_name(Categoria.objects.all(), categorias_q)
+        operaciones = self._filter_by_code_or_name(Operacion.objects.all(), operaciones_q)
+        tipos_movimiento = self._filter_by_code_or_name(TipoMovimiento.objects.all(), tipos_movimiento_q)
+        unidades_medida = self._filter_by_code_or_name(UnidadMedida.objects.all(), unidades_q)
+        estados_recepcion = self._filter_by_code_or_name(EstadoRecepcion.objects.all(), estados_recepcion_q)
+        tipos_recepcion = self._filter_by_code_or_name(TipoRecepcion.objects.all(), tipos_recepcion_q)
+
+        # Querysets para cada tab
+        context['articulos'] = articulos
+        context['categorias'] = categorias
+        context['operaciones'] = operaciones
+        context['tipos_movimiento'] = tipos_movimiento
+        context['unidades_medida'] = unidades_medida
+        context['estados_recepcion'] = estados_recepcion
+        context['tipos_recepcion'] = tipos_recepcion
+        context['active_tab'] = self.request.GET.get('tab', 'articulos')
+        context['filtros_menu'] = {
+            'articulos_q': articulos_q,
+            'articulos_categoria': articulos_categoria,
+            'categorias_q': categorias_q,
+            'operaciones_q': operaciones_q,
+            'tipos_movimiento_q': tipos_movimiento_q,
+            'unidades_q': unidades_q,
+            'estados_recepcion_q': estados_recepcion_q,
+            'tipos_recepcion_q': tipos_recepcion_q,
+        }
 
         # Permisos del usuario
         context['permisos'] = {
@@ -780,6 +822,15 @@ class MovimientoCreateView(BaseAuditedViewMixin, AtomicTransactionMixin, CreateV
     audit_action = 'CREAR'
     success_message = 'Movimiento registrado exitosamente. Stock actualizado: {obj.stock_despues}'
 
+    def get_form(self, form_class=None):
+        """Restringe los artículos visibles según el alcance del usuario."""
+        form = super().get_form(form_class)
+        form.fields['articulo'].queryset = scope_articulos_for_user(
+            form.fields['articulo'].queryset,
+            self.request.user,
+        )
+        return form
+
     def form_valid(self, form):
         """
         Procesa el formulario válido usando MovimientoService.
@@ -796,17 +847,19 @@ class MovimientoCreateView(BaseAuditedViewMixin, AtomicTransactionMixin, CreateV
                 articulo=form.cleaned_data['articulo'],
                 tipo=form.cleaned_data['tipo'],
                 cantidad=form.cleaned_data['cantidad'],
-                operacion=form.cleaned_data['operacion'],
+                operacion=form.cleaned_data['operacion'].tipo,
                 usuario=self.request.user,
                 motivo=form.cleaned_data['motivo']
             )
 
             self.object = movimiento
 
-            # Continuar con el flujo normal (mensaje y redirección)
-            response = super().form_valid(form)
+            messages.success(
+                self.request,
+                self.success_message.format(obj=self.object),
+            )
             self.log_action(self.object, self.request)
-            return response
+            return redirect(self.get_success_url())
 
         except ValidationError as e:
             messages.error(self.request, str(e))

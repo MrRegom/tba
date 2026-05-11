@@ -25,51 +25,51 @@
     <div class="col-lg-12">
         <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="articulos-tab" data-bs-toggle="pill"
+                <button class="nav-link {% if active_tab == 'articulos' %}active{% endif %}" id="articulos-tab" data-bs-toggle="pill"
                     data-bs-target="#articulos" type="button" role="tab"
-                    aria-controls="articulos" aria-selected="true">
+                    aria-controls="articulos" aria-selected="{% if active_tab == 'articulos' %}true{% else %}false{% endif %}">
                     <i class="ri-shopping-bag-3-line me-1"></i>Artículos
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="categorias-tab" data-bs-toggle="pill"
+                <button class="nav-link {% if active_tab == 'categorias' %}active{% endif %}" id="categorias-tab" data-bs-toggle="pill"
                     data-bs-target="#categorias" type="button" role="tab"
-                    aria-controls="categorias" aria-selected="false">
+                    aria-controls="categorias" aria-selected="{% if active_tab == 'categorias' %}true{% else %}false{% endif %}">
                     <i class="ri-folder-line me-1"></i>Categorías
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="operaciones-tab" data-bs-toggle="pill"
+                <button class="nav-link {% if active_tab == 'operaciones' %}active{% endif %}" id="operaciones-tab" data-bs-toggle="pill"
                     data-bs-target="#operaciones" type="button" role="tab"
-                    aria-controls="operaciones" aria-selected="false">
+                    aria-controls="operaciones" aria-selected="{% if active_tab == 'operaciones' %}true{% else %}false{% endif %}">
                     <i class="ri-settings-2-line me-1"></i>Operaciones
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tipos-movimiento-tab" data-bs-toggle="pill"
+                <button class="nav-link {% if active_tab == 'tipos-movimiento' %}active{% endif %}" id="tipos-movimiento-tab" data-bs-toggle="pill"
                     data-bs-target="#tipos-movimiento" type="button" role="tab"
-                    aria-controls="tipos-movimiento" aria-selected="false">
+                    aria-controls="tipos-movimiento" aria-selected="{% if active_tab == 'tipos-movimiento' %}true{% else %}false{% endif %}">
                     <i class="ri-arrow-left-right-line me-1"></i>Tipos de Movimiento
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="unidades-medida-tab" data-bs-toggle="pill"
+                <button class="nav-link {% if active_tab == 'unidades-medida' %}active{% endif %}" id="unidades-medida-tab" data-bs-toggle="pill"
                     data-bs-target="#unidades-medida" type="button" role="tab"
-                    aria-controls="unidades-medida" aria-selected="false">
+                    aria-controls="unidades-medida" aria-selected="{% if active_tab == 'unidades-medida' %}true{% else %}false{% endif %}">
                     <i class="ri-ruler-line me-1"></i>Unidades de Medida
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="estados-recepcion-tab" data-bs-toggle="pill"
+                <button class="nav-link {% if active_tab == 'estados-recepcion' %}active{% endif %}" id="estados-recepcion-tab" data-bs-toggle="pill"
                     data-bs-target="#estados-recepcion" type="button" role="tab"
-                    aria-controls="estados-recepcion" aria-selected="false">
+                    aria-controls="estados-recepcion" aria-selected="{% if active_tab == 'estados-recepcion' %}true{% else %}false{% endif %}">
                     <i class="ri-checkbox-circle-line me-1"></i>Estados de Recepción
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tipos-recepcion-tab" data-bs-toggle="pill"
+                <button class="nav-link {% if active_tab == 'tipos-recepcion' %}active{% endif %}" id="tipos-recepcion-tab" data-bs-toggle="pill"
                     data-bs-target="#tipos-recepcion" type="button" role="tab"
-                    aria-controls="tipos-recepcion" aria-selected="false">
+                    aria-controls="tipos-recepcion" aria-selected="{% if active_tab == 'tipos-recepcion' %}true{% else %}false{% endif %}">
                     <i class="ri-inbox-line me-1"></i>Tipos de Recepción
                 </button>
             </li>
@@ -79,7 +79,7 @@
         <div class="tab-content" id="pills-tabContent">
             
             <!-- ============ ARTÍCULOS TAB ============ -->
-            <div class="tab-pane fade show active" id="articulos" role="tabpanel" aria-labelledby="articulos-tab">
+            <div class="tab-pane fade {% if active_tab == 'articulos' %}show active{% endif %}" id="articulos" role="tabpanel" aria-labelledby="articulos-tab">
                 <div class="card">
                     <div class="card-header d-flex align-items-center gap-2">
                         <h4 class="card-title flex-grow-1 mb-0">Gestión de Artículos</h4>
@@ -96,10 +96,28 @@
                         {% endif %}
                     </div>
                     <div class="card-body">
+                        <form method="get" class="row g-2 align-items-end mb-3">
+                            <input type="hidden" name="tab" value="articulos">
+                            <div class="col-md-5">
+                                <label for="articulos_q" class="form-label">Código o nombre</label>
+                                <input type="text" id="articulos_q" name="articulos_q" class="form-control" placeholder="Buscar por código o nombre" value="{{ filtros_menu.articulos_q }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="articulos_categoria" class="form-label">Categoría</label>
+                                <input type="text" id="articulos_categoria" name="articulos_categoria" class="form-control" placeholder="Buscar categoría" value="{{ filtros_menu.articulos_categoria }}">
+                            </div>
+                            <div class="col-md-3 d-flex gap-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="ri-search-line me-1"></i>Filtrar
+                                </button>
+                                <a href="{% url 'bodega:menu_bodega' %}?tab=articulos" class="btn btn-light w-100">Limpiar</a>
+                            </div>
+                        </form>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
                                 <thead class="table-light">
                                     <tr>
+                                        <th>Código</th>
                                         <th>Nombre</th>
                                         <th>Categoría</th>
                                         <th>Descripción</th>
@@ -113,6 +131,7 @@
                                 <tbody>
                                     {% for articulo in articulos %}
                                     <tr>
+                                        <td><code>{{ articulo.codigo }}</code></td>
                                         <td>{{ articulo.nombre }}</td>
                                         <td><span class="badge bg-primary-subtle text-primary">{{ articulo.categoria }}</span></td>
                                         <td>{{ articulo.descripcion|default:"-"|truncatewords:10 }}</td>
@@ -149,7 +168,7 @@
                                     </tr>
                                     {% empty %}
                                     <tr>
-                                        <td colspan="8" class="text-center text-muted py-4">No hay artículos registrados</td>
+                                        <td colspan="9" class="text-center text-muted py-4">No hay artículos registrados</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -160,7 +179,7 @@
             </div>
 
             <!-- ============ CATEGORÍAS TAB ============ -->
-            <div class="tab-pane fade" id="categorias" role="tabpanel" aria-labelledby="categorias-tab">
+            <div class="tab-pane fade {% if active_tab == 'categorias' %}show active{% endif %}" id="categorias" role="tabpanel" aria-labelledby="categorias-tab">
                 <div class="card">
                     <div class="card-header d-flex align-items-center gap-2">
                         <h4 class="card-title flex-grow-1 mb-0">Gestión de Categorías</h4>
@@ -177,6 +196,19 @@
                         {% endif %}
                     </div>
                     <div class="card-body">
+                        <form method="get" class="row g-2 align-items-end mb-3">
+                            <input type="hidden" name="tab" value="categorias">
+                            <div class="col-md-9">
+                                <label for="categorias_q" class="form-label">Código o nombre</label>
+                                <input type="text" id="categorias_q" name="categorias_q" class="form-control" placeholder="Buscar por código o nombre" value="{{ filtros_menu.categorias_q }}">
+                            </div>
+                            <div class="col-md-3 d-flex gap-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="ri-search-line me-1"></i>Filtrar
+                                </button>
+                                <a href="{% url 'bodega:menu_bodega' %}?tab=categorias" class="btn btn-light w-100">Limpiar</a>
+                            </div>
+                        </form>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
                                 <thead class="table-light">
@@ -213,7 +245,7 @@
             </div>
 
             <!-- ============ OPERACIONES TAB ============ -->
-            <div class="tab-pane fade" id="operaciones" role="tabpanel" aria-labelledby="operaciones-tab">
+            <div class="tab-pane fade {% if active_tab == 'operaciones' %}show active{% endif %}" id="operaciones" role="tabpanel" aria-labelledby="operaciones-tab">
                 <div class="card">
                     <div class="card-header d-flex align-items-center gap-2">
                         <h4 class="card-title flex-grow-1 mb-0">Gestión de Operaciones</h4>
@@ -230,6 +262,19 @@
                         {% endif %}
                     </div>
                     <div class="card-body">
+                        <form method="get" class="row g-2 align-items-end mb-3">
+                            <input type="hidden" name="tab" value="operaciones">
+                            <div class="col-md-9">
+                                <label for="operaciones_q" class="form-label">Código o nombre</label>
+                                <input type="text" id="operaciones_q" name="operaciones_q" class="form-control" placeholder="Buscar por código o nombre" value="{{ filtros_menu.operaciones_q }}">
+                            </div>
+                            <div class="col-md-3 d-flex gap-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="ri-search-line me-1"></i>Filtrar
+                                </button>
+                                <a href="{% url 'bodega:menu_bodega' %}?tab=operaciones" class="btn btn-light w-100">Limpiar</a>
+                            </div>
+                        </form>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
                                 <thead class="table-light">
@@ -266,7 +311,7 @@
             </div>
 
             <!-- ============ TIPOS DE MOVIMIENTO TAB ============ -->
-            <div class="tab-pane fade" id="tipos-movimiento" role="tabpanel" aria-labelledby="tipos-movimiento-tab">
+            <div class="tab-pane fade {% if active_tab == 'tipos-movimiento' %}show active{% endif %}" id="tipos-movimiento" role="tabpanel" aria-labelledby="tipos-movimiento-tab">
                 <div class="card">
                     <div class="card-header d-flex align-items-center gap-2">
                         <h4 class="card-title flex-grow-1 mb-0">Gestión de Tipos de Movimiento</h4>
@@ -283,6 +328,19 @@
                         {% endif %}
                     </div>
                     <div class="card-body">
+                        <form method="get" class="row g-2 align-items-end mb-3">
+                            <input type="hidden" name="tab" value="tipos-movimiento">
+                            <div class="col-md-9">
+                                <label for="tipos_movimiento_q" class="form-label">Código o nombre</label>
+                                <input type="text" id="tipos_movimiento_q" name="tipos_movimiento_q" class="form-control" placeholder="Buscar por código o nombre" value="{{ filtros_menu.tipos_movimiento_q }}">
+                            </div>
+                            <div class="col-md-3 d-flex gap-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="ri-search-line me-1"></i>Filtrar
+                                </button>
+                                <a href="{% url 'bodega:menu_bodega' %}?tab=tipos-movimiento" class="btn btn-light w-100">Limpiar</a>
+                            </div>
+                        </form>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
                                 <thead class="table-light">
@@ -317,7 +375,7 @@
             </div>
 
             <!-- ============ UNIDADES DE MEDIDA TAB ============ -->
-            <div class="tab-pane fade" id="unidades-medida" role="tabpanel" aria-labelledby="unidades-medida-tab">
+            <div class="tab-pane fade {% if active_tab == 'unidades-medida' %}show active{% endif %}" id="unidades-medida" role="tabpanel" aria-labelledby="unidades-medida-tab">
                 <div class="card">
                     <div class="card-header d-flex align-items-center gap-2">
                         <h4 class="card-title flex-grow-1 mb-0">Gestión de Unidades de Medida</h4>
@@ -334,6 +392,19 @@
                         {% endif %}
                     </div>
                     <div class="card-body">
+                        <form method="get" class="row g-2 align-items-end mb-3">
+                            <input type="hidden" name="tab" value="unidades-medida">
+                            <div class="col-md-9">
+                                <label for="unidades_q" class="form-label">Código o nombre</label>
+                                <input type="text" id="unidades_q" name="unidades_q" class="form-control" placeholder="Buscar por código o nombre" value="{{ filtros_menu.unidades_q }}">
+                            </div>
+                            <div class="col-md-3 d-flex gap-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="ri-search-line me-1"></i>Filtrar
+                                </button>
+                                <a href="{% url 'bodega:menu_bodega' %}?tab=unidades-medida" class="btn btn-light w-100">Limpiar</a>
+                            </div>
+                        </form>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
                                 <thead class="table-light">
@@ -370,7 +441,7 @@
             </div>
 
             <!-- ============ ESTADOS DE RECEPCIÓN TAB ============ -->
-            <div class="tab-pane fade" id="estados-recepcion" role="tabpanel" aria-labelledby="estados-recepcion-tab">
+            <div class="tab-pane fade {% if active_tab == 'estados-recepcion' %}show active{% endif %}" id="estados-recepcion" role="tabpanel" aria-labelledby="estados-recepcion-tab">
                 <div class="card">
                     <div class="card-header d-flex align-items-center gap-2">
                         <h4 class="card-title flex-grow-1 mb-0">Gestión de Estados de Recepción</h4>
@@ -387,6 +458,19 @@
                         {% endif %}
                     </div>
                     <div class="card-body">
+                        <form method="get" class="row g-2 align-items-end mb-3">
+                            <input type="hidden" name="tab" value="estados-recepcion">
+                            <div class="col-md-9">
+                                <label for="estados_recepcion_q" class="form-label">Código o nombre</label>
+                                <input type="text" id="estados_recepcion_q" name="estados_recepcion_q" class="form-control" placeholder="Buscar por código o nombre" value="{{ filtros_menu.estados_recepcion_q }}">
+                            </div>
+                            <div class="col-md-3 d-flex gap-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="ri-search-line me-1"></i>Filtrar
+                                </button>
+                                <a href="{% url 'bodega:menu_bodega' %}?tab=estados-recepcion" class="btn btn-light w-100">Limpiar</a>
+                            </div>
+                        </form>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
                                 <thead class="table-light">
@@ -423,7 +507,7 @@
             </div>
 
             <!-- ============ TIPOS DE RECEPCIÓN TAB ============ -->
-            <div class="tab-pane fade" id="tipos-recepcion" role="tabpanel" aria-labelledby="tipos-recepcion-tab">
+            <div class="tab-pane fade {% if active_tab == 'tipos-recepcion' %}show active{% endif %}" id="tipos-recepcion" role="tabpanel" aria-labelledby="tipos-recepcion-tab">
                 <div class="card">
                     <div class="card-header d-flex align-items-center gap-2">
                         <h4 class="card-title flex-grow-1 mb-0">Gestión de Tipos de Recepción</h4>
@@ -440,6 +524,19 @@
                         {% endif %}
                     </div>
                     <div class="card-body">
+                        <form method="get" class="row g-2 align-items-end mb-3">
+                            <input type="hidden" name="tab" value="tipos-recepcion">
+                            <div class="col-md-9">
+                                <label for="tipos_recepcion_q" class="form-label">Código o nombre</label>
+                                <input type="text" id="tipos_recepcion_q" name="tipos_recepcion_q" class="form-control" placeholder="Buscar por código o nombre" value="{{ filtros_menu.tipos_recepcion_q }}">
+                            </div>
+                            <div class="col-md-3 d-flex gap-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="ri-search-line me-1"></i>Filtrar
+                                </button>
+                                <a href="{% url 'bodega:menu_bodega' %}?tab=tipos-recepcion" class="btn btn-light w-100">Limpiar</a>
+                            </div>
+                        </form>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
                                 <thead class="table-light">
@@ -562,4 +659,3 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock extra_js %}
-
