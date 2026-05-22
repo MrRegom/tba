@@ -1,0 +1,72 @@
+<!-- Modal Registrar Movimiento -->
+<form method="post" action="{% url 'bodega:articulo_modal_registrar_movimiento' articulo.pk %}" class="d-flex flex-column" style="max-height: inherit; overflow: hidden;">
+    {% csrf_token %}
+    <div class="modal-header">
+        <h5 class="modal-title">
+            <i class="ri-add-circle-line me-1"></i>Registrar Movimiento: {{ articulo.nombre }}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+    </div>
+    <div class="modal-body">
+        <!-- Errores no relacionados a campos (como validaciones del service de stock) -->
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="ri-error-warning-line me-2 fs-4"></i>
+                <div>
+                    {% for error in form.non_field_errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
+
+        <div class="row g-3">
+            <div class="col-md-12">
+                <label for="{{ form.articulo.id_for_label }}" class="form-label">Artículo <span class="text-danger">*</span></label>
+                {{ form.articulo }}
+                {% if form.articulo.errors %}
+                <div class="invalid-feedback d-block">{{ form.articulo.errors }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                <label for="{{ form.tipo.id_for_label }}" class="form-label">Tipo de Movimiento <span class="text-danger">*</span></label>
+                {{ form.tipo }}
+                {% if form.tipo.errors %}
+                <div class="invalid-feedback d-block">{{ form.tipo.errors }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                <label for="{{ form.operacion.id_for_label }}" class="form-label">Operación <span class="text-danger">*</span></label>
+                {{ form.operacion }}
+                {% if form.operacion.errors %}
+                <div class="invalid-feedback d-block">{{ form.operacion.errors }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-12">
+                <label for="{{ form.cantidad.id_for_label }}" class="form-label">Cantidad <span class="text-danger">*</span></label>
+                {{ form.cantidad }}
+                {% if form.cantidad.errors %}
+                <div class="invalid-feedback d-block">{{ form.cantidad.errors }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-12">
+                <label for="{{ form.motivo.id_for_label }}" class="form-label">Motivo <span class="text-danger">*</span></label>
+                {{ form.motivo }}
+                {% if form.motivo.errors %}
+                <div class="invalid-feedback d-block">{{ form.motivo.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="ri-arrow-left-line me-1"></i>Cancelar
+        </button>
+        <button type="submit" class="btn btn-primary">
+            <i class="ri-save-line me-1"></i>Registrar Movimiento
+        </button>
+    </div>
+</form>

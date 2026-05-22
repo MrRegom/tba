@@ -158,6 +158,7 @@ class MenuBodegaView(LoginRequiredMixin, TemplateView):
             'puede_crear_unidad': user.has_perm('bodega.add_unidadmedida'),
             'puede_crear_estado_recepcion': user.has_perm('bodega.add_estadorecepcion'),
             'puede_crear_tipo_recepcion': user.has_perm('bodega.add_tiporecepcion'),
+            'puede_crear_movimiento': user.has_perm('bodega.add_movimiento'),
         }
         context['titulo'] = 'Gestores - Bodega'
         return context
@@ -752,6 +753,55 @@ class ArticuloModalMovimientos(LoginRequiredMixin, DetailView):
             self.object, limit=20
         )
         return context
+
+
+class ArticuloModalRegistrarMovimiento(LoginRequiredMixin, CreateView):
+    """Devuelve el parcial HTML del modal de registro rápido de movimiento y procesa el POST."""
+    model = Movimiento
+    form_class = MovimientoForm
+    template_name = 'bodega/articulo/partials/modal_registrar_movimiento.html'
+
+    def get_articulo(self) -> Articulo:
+        from django.shortcuts import get_object_or_404
+        queryset = scope_articulos_for_user(
+            Articulo.objects.filter(eliminado=False),
+            self.request.user
+        )
+        return get_object_or_404(queryset, pk=self.kwargs.get('pk'))
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        articulo = self.get_articulo()
+        # Limitar el queryset a sólo este artículo para pre-seleccionarlo e impedir cambios
+        form.fields['articulo'].queryset = Articulo.objects.filter(pk=articulo.pk)
+        form.fields['articulo'].initial = articulo.pk
+        return form
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['articulo'] = self.get_articulo()
+        return context
+
+    def form_valid(self, form):
+        try:
+            service = MovimientoService()
+            movimiento = service.registrar_movimiento(
+                articulo=form.cleaned_data['articulo'],
+                tipo=form.cleaned_data['tipo'],
+                cantidad=form.cleaned_data['cantidad'],
+                operacion=form.cleaned_data['operacion'].tipo,
+                usuario=self.request.user,
+                motivo=form.cleaned_data['motivo']
+            )
+            return JsonResponse({'success': True})
+        except ValidationError as e:
+            form.add_error(None, e)
+            return self.form_invalid(form)
+
+    def form_invalid(self, form):
+        from django.template.loader import render_to_string
+        html = render_to_string(self.template_name, self.get_context_data(form=form), request=self.request)
+        return HttpResponse(html)
 
 
 # ==================== VISTAS DE MOVIMIENTO ====================

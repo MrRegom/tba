@@ -31,6 +31,7 @@ urlpatterns = [
     path('articulos/<int:pk>/modal/editar/', views.ArticuloModalEditar.as_view(), name='articulo_modal_editar'),
     path('articulos/<int:pk>/modal/eliminar/', views.ArticuloModalEliminar.as_view(), name='articulo_modal_eliminar'),
     path('articulos/<int:pk>/modal/movimientos/', views.ArticuloModalMovimientos.as_view(), name='articulo_modal_movimientos'),
+    path('articulos/<int:pk>/modal/registrar-movimiento/', views.ArticuloModalRegistrarMovimiento.as_view(), name='articulo_modal_registrar_movimiento'),
 
     # Movimientos
     path('movimientos/', views.MovimientoListView.as_view(), name='movimiento_lista'),

@@ -1,4 +1,4 @@
-﻿{% extends 'partials/base.html' %}
+{% extends 'partials/base.html' %}
 {% load static %}
 
 {% block title %}Gestores - Bodega{% endblock %}
@@ -153,6 +153,11 @@
                                                 {% if permisos.puede_editar_articulo %}
                                                 <button type="button" class="btn btn-sm btn-soft-primary btn-modal-articulo" data-url="{% url 'bodega:articulo_modal_editar' articulo.pk %}" title="Editar">
                                                     <i class="ri-pencil-line"></i>
+                                                </button>
+                                                {% endif %}
+                                                {% if permisos.puede_crear_movimiento %}
+                                                <button type="button" class="btn btn-sm btn-soft-success btn-modal-articulo" data-url="{% url 'bodega:articulo_modal_registrar_movimiento' articulo.pk %}" title="Registrar Movimiento">
+                                                    <i class="ri-add-circle-line"></i>
                                                 </button>
                                                 {% endif %}
                                                 <button type="button" class="btn btn-sm btn-soft-warning btn-modal-articulo" data-url="{% url 'bodega:articulo_modal_movimientos' articulo.pk %}" data-size="modal-xl" title="Movimientos">
@@ -606,6 +611,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const modalDialog = modalEl.querySelector('.modal-dialog');
     const modal = new bootstrap.Modal(modalEl);
 
+    // Cargar contenido via AJAX al hacer clic en los botones
     document.addEventListener('click', function(e) {
         const btn = e.target.closest('.btn-modal-articulo');
         if (!btn) return;
@@ -626,35 +632,40 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.text())
             .then(html => {
                 modalContent.innerHTML = html;
-                // Manejar formularios dentro del modal
-                const form = modalContent.querySelector('form');
-                if (form) {
-                    form.addEventListener('submit', function(ev) {
-                        ev.preventDefault();
-                        const formData = new FormData(form);
-                        fetch(form.action, {
-                            method: 'POST',
-                            body: formData,
-                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                        })
-                        .then(resp => {
-                            if (resp.headers.get('content-type')?.includes('application/json')) {
-                                return resp.json().then(data => {
-                                    if (data.success) {
-                                        modal.hide();
-                                        location.reload();
-                                    }
-                                });
-                            } else {
-                                // El servidor devolvió HTML (errores de validación)
-                                return resp.text().then(html => {
-                                    modalContent.innerHTML = html;
-                                });
-                            }
-                        });
-                    });
-                }
             });
+    });
+
+    // Delegación de eventos para manejar el envío de todos los formularios dentro del modal via AJAX de forma robusta
+    modalContent.addEventListener('submit', function(ev) {
+        const form = ev.target.closest('form');
+        if (!form) return;
+
+        ev.preventDefault();
+        const formData = new FormData(form);
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(resp => {
+            if (resp.headers.get('content-type')?.includes('application/json')) {
+                return resp.json().then(data => {
+                    if (data.success) {
+                        modal.hide();
+                        location.reload();
+                    }
+                });
+            } else {
+                // El servidor devolvió HTML (errores de validación)
+                return resp.text().then(html => {
+                    modalContent.innerHTML = html;
+                });
+            }
+        })
+        .catch(err => {
+            console.error('Error al enviar el formulario del modal:', err);
+        });
     });
 });
 </script>

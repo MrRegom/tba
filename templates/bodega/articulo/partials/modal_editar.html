@@ -1,5 +1,5 @@
 <!-- Modal Editar Articulo -->
-<form method="post" action="{% url 'bodega:articulo_modal_editar' articulo.pk %}" class="d-flex flex-column h-100">
+<form method="post" action="{% url 'bodega:articulo_modal_editar' articulo.pk %}" class="d-flex flex-column" style="max-height: inherit; overflow: hidden;">
     {% csrf_token %}
     <div class="modal-header">
         <h5 class="modal-title">
