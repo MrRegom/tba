@@ -64,34 +64,17 @@
             document.body.appendChild(newScript);
         });
 
-        // 3. Inicializar Choices.js en los nuevos selectores
-        if (typeof Choices !== 'undefined') {
-            modalBody.querySelectorAll('[data-choices]').forEach(function(el){
-                // Evitar doble inicialización
-                if (!el.classList.contains('choices__input') && !el.closest('.choices')) {
-                    var searchFalse = el.getAttribute('data-choices-search-false') === 'false';
-                    var searchTrue = el.getAttribute('data-choices-search-true') === 'true';
-                    var shouldSearch = searchTrue || (el.hasAttribute('data-choices') && el.getAttribute('data-choices-search-false') !== 'true');
-                    // En nuestro HTML data-choices-search-false="false" significa que queremos buscar (algo confuso del template)
-                    if (el.getAttribute('data-choices-search-false') === 'false') {
-                        shouldSearch = true; 
-                    }
-                    
-                    var choiceInstance = new Choices(el, {
-                        searchEnabled: shouldSearch,
-                        searchPlaceholderValue: 'Buscar...',
-                        itemSelectText: '',
-                        shouldSort: false
-                    });
-
-                    // Fix para overflow oculto en modal: expandir padding cuando se abre
-                    el.addEventListener('showDropdown', function() {
-                        var mBody = el.closest('.modal-body');
-                        if (mBody) mBody.style.paddingBottom = '250px';
-                    });
-                    el.addEventListener('hideDropdown', function() {
-                        var mBody = el.closest('.modal-body');
-                        if (mBody) mBody.style.paddingBottom = '';
+        // 3. Inicializar Select2 en lugar de Choices
+        if (typeof jQuery !== 'undefined' && $.fn.select2) {
+            $(modalBody).find('select:not(.no-select2)').each(function() {
+                var el = $(this);
+                if (!el.hasClass('select2-hidden-accessible')) {
+                    el.select2({
+                        theme: 'bootstrap-5',
+                        dropdownParent: $('#bodegaModal'),
+                        language: 'es',
+                        width: '100%',
+                        placeholder: el.attr('placeholder') || 'Seleccione...'
                     });
                 }
             });

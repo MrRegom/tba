@@ -345,25 +345,17 @@ const EntregaArticulos = {
             </option>`;
         });
 
-        select.addEventListener('change', () => this.actualizarStock(idFila));
+        $(select).on('change', () => this.actualizarStock(idFila));
 
-        // Inicializar Choices.js después de que el elemento se agregue al DOM
+        // Inicializar Select2
         setTimeout(() => {
-            if (typeof Choices !== 'undefined') {
-                var choiceInstance = new Choices(select, {
-                    searchEnabled: true,
-                    searchPlaceholderValue: 'Buscar artículo...',
-                    itemSelectText: '',
-                    shouldSort: false
-                });
-
-                select.addEventListener('showDropdown', function() {
-                    var mBody = select.closest('.modal-body');
-                    if (mBody) mBody.style.paddingBottom = '250px';
-                });
-                select.addEventListener('hideDropdown', function() {
-                    var mBody = select.closest('.modal-body');
-                    if (mBody) mBody.style.paddingBottom = '';
+            if (typeof jQuery !== 'undefined' && $.fn.select2) {
+                $(select).select2({
+                    theme: 'bootstrap-5',
+                    dropdownParent: $('#bodegaModal'),
+                    language: 'es',
+                    width: '100%',
+                    placeholder: 'Buscar artículo...'
                 });
             }
         }, 100);
