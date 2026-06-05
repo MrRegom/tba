@@ -799,216 +799,27 @@ class TipoMovimientoForm(forms.ModelForm):
         fields = ["codigo", "nombre", "descripcion", "activo"]
         widgets = {
             "codigo": forms.TextInput(
-                attrs={"class": "form-control", "placeholder": "Ej: COMPRA, VENTA", "maxlength": "20"}
-            ),
-            "nombre": forms.TextInput(
-                attrs={"class": "form-control", "placeholder": "Ej: Por Compra, Por Venta", "maxlength": "50"}
-            ),
-            "descripcion": forms.Textarea(
-                attrs={"class": "form-control", "placeholder": "Descripción (opcional)", "rows": 3}
-            ),
-            "activo": forms.CheckboxInput(attrs={"class": "form-check-input"}),
-        }
-        labels = {
-            "codigo": "Código",
-            "nombre": "Nombre",
-            "descripcion": "Descripción",
-            "activo": "Activo",
-        }
-        help_texts = {
-            "codigo": "Código único identificador del tipo de movimiento",
-                .values_list("solicitud_id", flat=True)
-                .distinct()
-            )
-
-            self.fields["solicitud"].queryset = (
-                Solicitud.objects.filter(
-                    id__in=solicitudes_pendientes_ids, tipo="ACTIVO", eliminado=False
-                )
-                .select_related("estado", "solicitante")
-                .order_by("-numero")
-            )
-
-            self.fields["solicitud"].empty_label = "Seleccione solicitud (opcional)"
-            # Personalizar cómo se muestra cada solicitud en el dropdown
-            self.fields["solicitud"].label_from_instance = (
-                lambda obj: f"{obj.numero} - {obj.estado.nombre} - {obj.solicitante.get_full_name() or obj.solicitante.username}"
-            )
-        except Exception as e:
-            print(f"ERROR cargando solicitudes en EntregaBienForm: {e}")
-            self.fields["solicitud"].queryset = Solicitud.objects.none()
-            self.fields["solicitud"].empty_label = "Error cargando solicitudes"
-
-        # Filtrar solo tipos activos
-        self.fields["tipo"].queryset = TipoEntrega.objects.filter(
-            activo=True, eliminado=False
-        ).order_by("codigo")
-
-        # Filtrar usuarios activos
-        from django.contrib.auth.models import User
-
-        self.fields["recibido_por"].queryset = User.objects.filter(
-            is_active=True
-        ).order_by("first_name", "last_name")
-
-        # Personalizar cómo se muestra cada usuario en el dropdown
-        self.fields["recibido_por"].label_from_instance = (
-            lambda obj: f"{obj.username} - {obj.get_full_name()}"
-            if obj.get_full_name()
-            else obj.username
-        )
-
-        # Filtrar departamentos activos
-        from apps.solicitudes.models import Departamento
-
-        self.fields["departamento_destino"].queryset = Departamento.objects.filter(
-            activo=True, eliminado=False
-        ).order_by("nombre")
-        self.fields[
-            "departamento_destino"
-        ].empty_label = "Seleccione departamento (opcional)"
-
-    def clean_motivo(self):
-        """Validar que el motivo no esté vacío."""
-        motivo = self.cleaned_data.get("motivo", "").strip()
-        if not motivo:
-            raise ValidationError("El motivo de la entrega es obligatorio.")
-        return motivo
-
-    def clean_recibido_por(self):
-        """Validar que recibido_por no sea vacío."""
-        recibido_por = self.cleaned_data.get("recibido_por")
-        if not recibido_por:
-            raise ValidationError(
-                "Debe seleccionar el usuario que recibirá los bienes."
-            )
-        return recibido_por
-
-
-# ==================== FORMULARIOS DE MANTENEDORES ====================
-
-
-class MarcaForm(forms.ModelForm):
-    """Formulario para crear y editar marcas de artículos."""
-
-    class Meta:
-        model = Marca
-        fields = ["nombre", "descripcion", "activo"]
-        widgets = {
-            "nombre": forms.TextInput(
-                attrs={"class": "form-control", "placeholder": "Nombre de la marca"}
-            ),
-            "descripcion": forms.Textarea(
                 attrs={
                     "class": "form-control",
-                    "placeholder": "Descripción de la marca (opcional)",
-                    "rows": 3,
-                }
-            ),
-            "activo": forms.CheckboxInput(attrs={"class": "form-check-input"}),
-        }
-        labels = {
-            "nombre": "Nombre",
-            "descripcion": "Descripción",
-            "activo": "Activo",
-        }
-
-    def clean_nombre(self):
-        """Limpiar y validar el nombre."""
-        nombre = self.cleaned_data.get("nombre", "").strip()
-        if not nombre:
-            raise ValidationError("El nombre es obligatorio.")
-        return nombre
-
-
-class OperacionForm(forms.ModelForm):
-    """Formulario para crear y editar operaciones de movimiento."""
-
-    class Meta:
-        model = Operacion
-        fields = ["codigo", "nombre", "tipo", "descripcion", "activo"]
-        widgets = {
-            "codigo": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "Ej: ENTRADA-COMP, SALIDA-VENTA",
+                    "placeholder": "Ej: ENT-COMP",
                     "maxlength": "20",
                 }
             ),
             "nombre": forms.TextInput(
                 attrs={
                     "class": "form-control",
-                    "placeholder": "Ej: Entrada por Compra, Salida por Venta",
-                    "maxlength": "50",
+                    "placeholder": "Ej: Entrada por Compra",
+                    "maxlength": "100",
                 }
             ),
-            "tipo": forms.Select(attrs={"class": "form-select", "required": True}),
             "descripcion": forms.Textarea(
                 attrs={
                     "class": "form-control",
-                    "placeholder": "Descripción de la operación (opcional)",
                     "rows": 3,
+                    "placeholder": "Descripción detallada del tipo de movimiento (opcional)...",
                 }
             ),
             "activo": forms.CheckboxInput(attrs={"class": "form-check-input"}),
-        }
-        labels = {
-            "codigo": "Código",
-            "nombre": "Nombre",
-            "tipo": "Tipo de Operación",
-            "descripcion": "Descripción",
-            "activo": "Activo",
-        }
-        help_texts = {
-            "tipo": "ENTRADA suma al stock, SALIDA resta del stock",
-            "activo": "Solo las operaciones activas estarán disponibles",
-        }
-
-    def clean_codigo(self):
-        """Validar que el código sea único (en mayúsculas)."""
-        codigo = self.cleaned_data.get("codigo", "").strip().upper()
-
-        # Si estamos editando, excluir la instancia actual
-        queryset = Operacion.objects.filter(codigo=codigo)
-        if self.instance and self.instance.pk:
-            queryset = queryset.exclude(pk=self.instance.pk)
-
-        if queryset.exists():
-            raise ValidationError(f'Ya existe una operación con el código "{codigo}".')
-
-        return codigo
-
-    def clean_nombre(self):
-        """Limpiar y validar el nombre."""
-        nombre = self.cleaned_data.get("nombre", "").strip()
-        if not nombre:
-            raise ValidationError("El nombre es obligatorio.")
-        return nombre
-
-
-class TipoMovimientoForm(forms.ModelForm):
-    """Formulario para crear y editar tipos de movimiento de inventario."""
-
-    class Meta:
-        model = TipoMovimiento
-        fields = ["codigo", "nombre", "descripcion", "activo"]
-        widgets = {
-            "codigo": forms.TextInput(
-                attrs={"class": "form-control", "placeholder": "Ej: COMPRA, VENTA", "maxlength": "20"}
-            ),
-            "nombre": forms.TextInput(
-                attrs={"class": "form-control", "placeholder": "Ej: Por Compra, Por Venta", "maxlength": "50"}
-            ),
-            "descripcion": forms.Textarea(
-                attrs={"class": "form-control", "placeholder": "Descripción (opcional)", "rows": 3}
-            ),
-            "activo": forms.CheckboxInput(attrs={"class": "form-check-input"}),
-        }
-        labels = {
-            "codigo": "Código",
-            "nombre": "Nombre",
-            "descripcion": "Descripción",
-            "activo": "Activo",
         }
         help_texts = {
             "codigo": "Código único identificador del tipo de movimiento",
