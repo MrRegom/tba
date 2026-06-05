@@ -77,11 +77,21 @@
                         shouldSearch = true; 
                     }
                     
-                    new Choices(el, {
+                    var choiceInstance = new Choices(el, {
                         searchEnabled: shouldSearch,
                         searchPlaceholderValue: 'Buscar...',
                         itemSelectText: '',
                         shouldSort: false
+                    });
+
+                    // Fix para overflow oculto en modal: expandir padding cuando se abre
+                    el.addEventListener('showDropdown', function() {
+                        var mBody = el.closest('.modal-body');
+                        if (mBody) mBody.style.paddingBottom = '250px';
+                    });
+                    el.addEventListener('hideDropdown', function() {
+                        var mBody = el.closest('.modal-body');
+                        if (mBody) mBody.style.paddingBottom = '';
                     });
                 }
             });

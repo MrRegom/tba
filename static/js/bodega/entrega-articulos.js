@@ -350,11 +350,20 @@ const EntregaArticulos = {
         // Inicializar Choices.js después de que el elemento se agregue al DOM
         setTimeout(() => {
             if (typeof Choices !== 'undefined') {
-                new Choices(select, {
+                var choiceInstance = new Choices(select, {
                     searchEnabled: true,
                     searchPlaceholderValue: 'Buscar artículo...',
                     itemSelectText: '',
                     shouldSort: false
+                });
+
+                select.addEventListener('showDropdown', function() {
+                    var mBody = select.closest('.modal-body');
+                    if (mBody) mBody.style.paddingBottom = '250px';
+                });
+                select.addEventListener('hideDropdown', function() {
+                    var mBody = select.closest('.modal-body');
+                    if (mBody) mBody.style.paddingBottom = '';
                 });
             }
         }, 100);
