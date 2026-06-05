@@ -413,16 +413,16 @@ class EntregaArticuloForm(forms.ModelForm):
         ]
         widgets = {
             "solicitud": forms.Select(
-                attrs={"class": "form-select", "id": "id_solicitud"}
+                attrs={"class": "form-select", "id": "id_solicitud", "data-choices": "true", "data-choices-search-false": "false"}
             ),
             "bodega_origen": forms.Select(
-                attrs={"class": "form-select", "required": True}
+                attrs={"class": "form-select", "required": True, "data-choices": "true", "data-choices-search-false": "false"}
             ),
-            "tipo": forms.Select(attrs={"class": "form-select", "required": True}),
+            "tipo": forms.Select(attrs={"class": "form-select", "required": True, "data-choices": "true", "data-choices-search-false": "false"}),
             "recibido_por": forms.Select(
-                attrs={"class": "form-select", "required": True}
+                attrs={"class": "form-select", "required": True, "data-choices": "true", "data-choices-search-false": "false"}
             ),
-            "departamento_destino": forms.Select(attrs={"class": "form-select"}),
+            "departamento_destino": forms.Select(attrs={"class": "form-select", "data-choices": "true", "data-choices-search-false": "false"}),
             "motivo": forms.Textarea(
                 attrs={
                     "class": "form-control",
