@@ -2246,7 +2246,8 @@ class TipoEntregaCreateView(BaseAuditedViewMixin, CreateView):
     form_class = TipoEntregaForm
     template_name = 'bodega/mantenedores/tipo_entrega/form.html'
     permission_required = 'bodega.add_tipoentrega'
-    success_url = reverse_lazy('bodega:menu_bodega') + "?tab=tipos-entrega"
+    def get_success_url(self):
+        return str(reverse_lazy('bodega:menu_bodega')) + "?tab=tipos-entrega"
     audit_action = 'CREAR'
     audit_description_template = 'Creado tipo de entrega {obj.codigo} - {obj.nombre}'
     success_message = 'Tipo de entrega {obj.nombre} creado exitosamente.'
@@ -2267,7 +2268,8 @@ class TipoEntregaUpdateView(BaseAuditedViewMixin, UpdateView):
     form_class = TipoEntregaForm
     template_name = 'bodega/mantenedores/tipo_entrega/form.html'
     permission_required = 'bodega.change_tipoentrega'
-    success_url = reverse_lazy('bodega:menu_bodega') + "?tab=tipos-entrega"
+    def get_success_url(self):
+        return str(reverse_lazy('bodega:menu_bodega')) + "?tab=tipos-entrega"
     audit_action = 'EDITAR'
     audit_description_template = 'Actualizado tipo de entrega {obj.codigo} - {obj.nombre}'
     success_message = 'Tipo de entrega {obj.nombre} actualizado exitosamente.'
@@ -2291,7 +2293,8 @@ class TipoEntregaDeleteView(BaseAuditedViewMixin, DeleteView):
     model = TipoEntrega
     template_name = 'bodega/mantenedores/tipo_entrega/eliminar.html'
     permission_required = 'bodega.delete_tipoentrega'
-    success_url = reverse_lazy('bodega:menu_bodega') + "?tab=tipos-entrega"
+    def get_success_url(self):
+        return str(reverse_lazy('bodega:menu_bodega')) + "?tab=tipos-entrega"
     audit_action = 'ELIMINAR'
     audit_description_template = 'Eliminó tipo de entrega {obj.codigo} - {obj.nombre}'
     success_message = 'Tipo de entrega {obj.nombre} eliminado exitosamente.'
