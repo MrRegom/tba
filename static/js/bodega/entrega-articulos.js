@@ -335,7 +335,9 @@ const EntregaArticulos = {
         const select = document.createElement('select');
         select.className = 'form-select form-select-sm';
         select.id = `articulo_${idFila}`;
-        select.innerHTML = '<option value="">Seleccione...</option>';
+        select.setAttribute('data-choices', 'true');
+        select.setAttribute('data-choices-search-false', 'false');
+        select.innerHTML = '<option value="">Seleccione un artículo...</option>';
 
         this.articulosDisponibles.forEach(art => {
             select.innerHTML += `<option value="${art.id}" data-stock="${art.stock}" data-unidad="${this.escapeHtml(art.unidad)}">
@@ -344,6 +346,18 @@ const EntregaArticulos = {
         });
 
         select.addEventListener('change', () => this.actualizarStock(idFila));
+
+        // Inicializar Choices.js después de que el elemento se agregue al DOM
+        setTimeout(() => {
+            if (typeof Choices !== 'undefined') {
+                new Choices(select, {
+                    searchEnabled: true,
+                    searchPlaceholderValue: 'Buscar artículo...',
+                    itemSelectText: '',
+                    shouldSort: false
+                });
+            }
+        }, 100);
 
         return select;
     },
