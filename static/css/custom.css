@@ -1758,3 +1758,20 @@ form .form-control[readonly] {
 .page-title-box ol.breadcrumb {
   display: none !important;
 }
+/* Fix para Choices.js en modales y tablas */
+.table-responsive {
+    overflow: visible !important;
+}
+.choices__list--dropdown, .choices__list[aria-expanded] {
+    z-index: 1060 !important;
+}
+td .choices {
+    min-width: 250px;
+    margin-bottom: 0;
+}
+
+
+.modal-dialog-scrollable .modal-body {
+    overflow: visible !important;
+}
+
