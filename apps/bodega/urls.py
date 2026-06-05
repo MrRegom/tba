@@ -77,6 +77,12 @@ urlpatterns = [
     path('mantenedores/tipos-movimiento/<int:pk>/eliminar/', views.TipoMovimientoDeleteView.as_view(), name='tipo_movimiento_eliminar'),
     path('mantenedores/tipos-movimiento/importar/plantilla/', views.tipo_movimiento_descargar_plantilla, name='tipo_movimiento_descargar_plantilla'),
     path('mantenedores/tipos-movimiento/importar/', views.tipo_movimiento_importar_excel, name='tipo_movimiento_importar_excel'),
+
+    # Tipos de Entrega
+    path('mantenedores/tipos-entrega/', views.TipoEntregaListView.as_view(), name='tipo_entrega_lista'),
+    path('mantenedores/tipos-entrega/crear/', views.TipoEntregaCreateView.as_view(), name='tipo_entrega_crear'),
+    path('mantenedores/tipos-entrega/<int:pk>/editar/', views.TipoEntregaUpdateView.as_view(), name='tipo_entrega_editar'),
+    path('mantenedores/tipos-entrega/<int:pk>/eliminar/', views.TipoEntregaDeleteView.as_view(), name='tipo_entrega_eliminar'),
     
     # Operaciones - Importacion
     path('mantenedores/operaciones/importar/plantilla/', views.operacion_descargar_plantilla, name='operacion_descargar_plantilla'),

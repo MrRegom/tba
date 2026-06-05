@@ -96,7 +96,7 @@ class MenuBodegaView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs) -> dict:
         """Agrega los querysets de todas las tablas para los tabs."""
         from apps.bodega.models import (
-            Articulo, Categoria, Operacion, TipoMovimiento,
+            Articulo, Categoria, Operacion, TipoMovimiento, TipoEntrega,
             UnidadMedida, EstadoRecepcion, TipoRecepcion
         )
         
@@ -108,6 +108,7 @@ class MenuBodegaView(LoginRequiredMixin, TemplateView):
         categorias_q = self.request.GET.get('categorias_q', '').strip()
         operaciones_q = self.request.GET.get('operaciones_q', '').strip()
         tipos_movimiento_q = self.request.GET.get('tipos_movimiento_q', '').strip()
+        tipos_entrega_q = self.request.GET.get('tipos_entrega_q', '').strip()
         unidades_q = self.request.GET.get('unidades_q', '').strip()
         estados_recepcion_q = self.request.GET.get('estados_recepcion_q', '').strip()
         tipos_recepcion_q = self.request.GET.get('tipos_recepcion_q', '').strip()
@@ -123,6 +124,7 @@ class MenuBodegaView(LoginRequiredMixin, TemplateView):
         categorias = self._filter_by_code_or_name(Categoria.objects.all(), categorias_q)
         operaciones = self._filter_by_code_or_name(Operacion.objects.all(), operaciones_q)
         tipos_movimiento = self._filter_by_code_or_name(TipoMovimiento.objects.all(), tipos_movimiento_q)
+        tipos_entrega = self._filter_by_code_or_name(TipoEntrega.objects.all(), tipos_entrega_q)
         unidades_medida = self._filter_by_code_or_name(UnidadMedida.objects.all(), unidades_q)
         estados_recepcion = self._filter_by_code_or_name(EstadoRecepcion.objects.all(), estados_recepcion_q)
         tipos_recepcion = self._filter_by_code_or_name(TipoRecepcion.objects.all(), tipos_recepcion_q)
@@ -132,6 +134,7 @@ class MenuBodegaView(LoginRequiredMixin, TemplateView):
         context['categorias'] = categorias
         context['operaciones'] = operaciones
         context['tipos_movimiento'] = tipos_movimiento
+        context['tipos_entrega'] = tipos_entrega
         context['unidades_medida'] = unidades_medida
         context['estados_recepcion'] = estados_recepcion
         context['tipos_recepcion'] = tipos_recepcion
@@ -142,6 +145,7 @@ class MenuBodegaView(LoginRequiredMixin, TemplateView):
             'categorias_q': categorias_q,
             'operaciones_q': operaciones_q,
             'tipos_movimiento_q': tipos_movimiento_q,
+            'tipos_entrega_q': tipos_entrega_q,
             'unidades_q': unidades_q,
             'estados_recepcion_q': estados_recepcion_q,
             'tipos_recepcion_q': tipos_recepcion_q,
@@ -159,6 +163,7 @@ class MenuBodegaView(LoginRequiredMixin, TemplateView):
             'puede_crear_estado_recepcion': user.has_perm('bodega.add_estadorecepcion'),
             'puede_crear_tipo_recepcion': user.has_perm('bodega.add_tiporecepcion'),
             'puede_crear_movimiento': user.has_perm('bodega.add_movimiento'),
+            'puede_crear_tipo_entrega': user.has_perm('bodega.add_tipoentrega'),
         }
         context['titulo'] = 'Gestores - Bodega'
         return context
@@ -2203,6 +2208,117 @@ class TipoMovimientoDeleteView(BaseAuditedViewMixin, DeleteView):
 
         return redirect(self.success_url)
 
+
+# ==================== VISTAS DE TIPO DE ENTREGA ====================
+
+from apps.bodega.forms import TipoEntregaForm
+
+class TipoEntregaListView(BaseAuditedViewMixin, PaginatedListMixin, ListView):
+    """
+    Vista para listar tipos de entrega con paginación y filtros.
+
+    Permisos: bodega.view_tipoentrega
+    """
+    model = TipoEntrega
+    template_name = 'bodega/mantenedores/tipo_entrega/lista.html'
+    context_object_name = 'tipos_entrega'
+    permission_required = 'bodega.view_tipoentrega'
+    paginate_by = 25
+
+    def get_queryset(self) -> QuerySet:
+        queryset = super().get_queryset().filter(eliminado=False)
+        q: str = self.request.GET.get('q', '').strip()
+        if q:
+            queryset = queryset.filter(
+                Q(codigo__icontains=q) |
+                Q(nombre__icontains=q)
+            )
+        return queryset.order_by('codigo')
+
+    def get_context_data(self, **kwargs) -> dict:
+        context = super().get_context_data(**kwargs)
+        context['titulo'] = 'Tipos de Entrega'
+        context['query'] = self.request.GET.get('q', '')
+        return context
+
+class TipoEntregaCreateView(BaseAuditedViewMixin, CreateView):
+    model = TipoEntrega
+    form_class = TipoEntregaForm
+    template_name = 'bodega/mantenedores/tipo_entrega/form.html'
+    permission_required = 'bodega.add_tipoentrega'
+    success_url = reverse_lazy('bodega:menu_bodega') + "?tab=tipos-entrega"
+    audit_action = 'CREAR'
+    audit_description_template = 'Creado tipo de entrega {obj.codigo} - {obj.nombre}'
+    success_message = 'Tipo de entrega {obj.nombre} creado exitosamente.'
+
+    def get_context_data(self, **kwargs) -> dict:
+        context = super().get_context_data(**kwargs)
+        context['titulo'] = 'Crear Tipo de Entrega'
+        context['action'] = 'Crear'
+        return context
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        self.log_action(self.object, self.request)
+        return response
+
+class TipoEntregaUpdateView(BaseAuditedViewMixin, UpdateView):
+    model = TipoEntrega
+    form_class = TipoEntregaForm
+    template_name = 'bodega/mantenedores/tipo_entrega/form.html'
+    permission_required = 'bodega.change_tipoentrega'
+    success_url = reverse_lazy('bodega:menu_bodega') + "?tab=tipos-entrega"
+    audit_action = 'EDITAR'
+    audit_description_template = 'Actualizado tipo de entrega {obj.codigo} - {obj.nombre}'
+    success_message = 'Tipo de entrega {obj.nombre} actualizado exitosamente.'
+
+    def get_queryset(self) -> QuerySet:
+        return super().get_queryset().filter(eliminado=False)
+
+    def get_context_data(self, **kwargs) -> dict:
+        context = super().get_context_data(**kwargs)
+        context['titulo'] = f'Editar Tipo de Entrega: {self.object.nombre}'
+        context['action'] = 'Actualizar'
+        context['tipo'] = self.object
+        return context
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        self.log_action(self.object, self.request)
+        return response
+
+class TipoEntregaDeleteView(BaseAuditedViewMixin, DeleteView):
+    model = TipoEntrega
+    template_name = 'bodega/mantenedores/tipo_entrega/eliminar.html'
+    permission_required = 'bodega.delete_tipoentrega'
+    success_url = reverse_lazy('bodega:menu_bodega') + "?tab=tipos-entrega"
+    audit_action = 'ELIMINAR'
+    audit_description_template = 'Eliminó tipo de entrega {obj.codigo} - {obj.nombre}'
+    success_message = 'Tipo de entrega {obj.nombre} eliminado exitosamente.'
+
+    def get_queryset(self) -> QuerySet:
+        return super().get_queryset().filter(eliminado=False)
+
+    def get_context_data(self, **kwargs) -> dict:
+        context = super().get_context_data(**kwargs)
+        context['titulo'] = f'Eliminar Tipo de Entrega: {self.object.nombre}'
+        context['tipo'] = self.object
+        context['tiene_entregas'] = False
+        if hasattr(self.object, 'entregas_articulo'):
+            context['tiene_entregas'] = self.object.entregas_articulo.filter(eliminado=False).exists()
+        return context
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if hasattr(self.object, 'entregas_articulo') and self.object.entregas_articulo.filter(eliminado=False).exists():
+            messages.error(request, f'No se puede eliminar el tipo "{self.object.nombre}" porque tiene entregas asociadas.')
+            return redirect(self.success_url)
+        self.object.eliminado = True
+        self.object.activo = False
+        self.object.save()
+        messages.success(request, self.get_success_message(self.object))
+        self.log_action(self.object, request)
+        return redirect(self.success_url)
 
 # ==================== IMPORTACION EXCEL PARA MANTENEDORES ====================
 
