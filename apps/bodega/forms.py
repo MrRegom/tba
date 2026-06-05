@@ -272,7 +272,7 @@ class MovimientoForm(forms.ModelForm):
         fields = ["articulo", "tipo", "cantidad", "operacion", "motivo"]
         widgets = {
             "articulo": forms.Select(
-                attrs={"class": "form-select", "required": True, "id": "id_articulo", "data-choices": "true", "data-choices-search-false": "false"}
+                attrs={"class": "form-select", "required": True, "id": "id_articulo"}
             ),
             "tipo": forms.Select(attrs={"class": "form-select", "required": True}),
             "cantidad": forms.NumberInput(
