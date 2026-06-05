@@ -63,6 +63,29 @@
             oldScript.parentNode.removeChild(oldScript);
             document.body.appendChild(newScript);
         });
+
+        // 3. Inicializar Choices.js en los nuevos selectores
+        if (typeof Choices !== 'undefined') {
+            modalBody.querySelectorAll('[data-choices]').forEach(function(el){
+                // Evitar doble inicialización
+                if (!el.classList.contains('choices__input') && !el.closest('.choices')) {
+                    var searchFalse = el.getAttribute('data-choices-search-false') === 'false';
+                    var searchTrue = el.getAttribute('data-choices-search-true') === 'true';
+                    var shouldSearch = searchTrue || (el.hasAttribute('data-choices') && el.getAttribute('data-choices-search-false') !== 'true');
+                    // En nuestro HTML data-choices-search-false="false" significa que queremos buscar (algo confuso del template)
+                    if (el.getAttribute('data-choices-search-false') === 'false') {
+                        shouldSearch = true; 
+                    }
+                    
+                    new Choices(el, {
+                        searchEnabled: shouldSearch,
+                        searchPlaceholderValue: 'Buscar...',
+                        itemSelectText: '',
+                        shouldSort: false
+                    });
+                }
+            });
+        }
     }
 
     /**
