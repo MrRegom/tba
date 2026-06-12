@@ -1812,8 +1812,9 @@ class ImportacionExcelService:
         from django.contrib.auth.models import User
         from apps.accounts.models import Persona
         from django.db import connection
-        from datetime import datetime
-        columnas_esperadas = ['Username', 'Password', 'Email', 'Nombres', 'Apellido1', 'Apellido2', 'DocumentoIdentidad', 'Sexo', 'FechaNacimiento', 'Activo']
+        
+        # Leemos sin forzar columnas exactas para aceptar distintos formatos
+        columnas_esperadas = []
         datos = ImportacionExcelService.leer_datos_desde_excel(archivo, columnas_esperadas)
         creadas = 0
         actualizadas = 0
@@ -1821,70 +1822,48 @@ class ImportacionExcelService:
         with transaction.atomic():
             for idx, fila in enumerate(datos, start=2):
                 try:
-                    username = str(fila.get('Username', '') or '').strip()
+                    # Convertimos llaves a minúscula para ser flexibles
+                    fila_lower = {k.lower() if isinstance(k, str) else k: v for k, v in fila.items()}
+                    
+                    username = str(fila_lower.get('username', '')).strip()
                     if not username:
                         errores.append(f"Fila {idx}: Username es obligatorio")
                         continue
-                    nombres = str(fila.get('Nombres', '') or '').strip()
-                    apellido1 = str(fila.get('Apellido1', '') or '').strip()
-                    documento = str(fila.get('DocumentoIdentidad', '') or '').strip() or f'TEMP-{username}'
-                    sexo = str(fila.get('Sexo', 'M') or 'M').strip().upper()
+                        
+                    nombres = str(fila_lower.get('nombre', fila_lower.get('nombres', ''))).strip()
+                    apellido = str(fila_lower.get('apellido', fila_lower.get('apellido1', ''))).strip()
+                    documento = str(fila_lower.get('documentoidentidad', '')).strip() or f'TEMP-{username}'
+                    sexo = str(fila_lower.get('sexo', 'M')).strip().upper()
                     if sexo not in ('M', 'F', 'O'):
                         sexo = 'M'
-                    fecha_str = str(fila.get('FechaNacimiento', '') or '').strip()
-                    fecha_nac = None
-                    for fmt in ('%d/%m/%Y', '%Y-%m-%d', '%d-%m-%Y'):
-                        try:
-                            fecha_nac = datetime.strptime(fecha_str, fmt).date()
-                            break
-                        except Exception:
-                            pass
-                    activo = str(fila.get('Activo', 'SI') or 'SI').strip().upper() in ('SI', 'S', 'TRUE', '1', 'ACTIVO')
-                    email = str(fila.get('Email', '') or '').strip()
-                    password = str(fila.get('Password', '') or '').strip()
+                        
+                    activo = str(fila_lower.get('activo', 'SI')).strip().upper() in ('SI', 'S', 'TRUE', '1', 'ACTIVO')
+                    email = str(fila_lower.get('email', '')).strip()
+                    password = 'tba2026..' # Contraseña por defecto solicitada
 
-                    user_exists = User.objects.filter(username=username).first()
+                    user_exists = User.objects.filter(username=username).exists()
                     if user_exists:
-                        # Actualizar datos básicos
-                        user_exists.email = email or user_exists.email
-                        user_exists.first_name = nombres
-                        user_exists.last_name = apellido1
-                        user_exists.is_active = activo
-                        if password:
-                            user_exists.set_password(password)
-                        user_exists.save()
-                        # Actualizar Persona si existe
-                        if hasattr(user_exists, 'persona'):
-                            p = user_exists.persona
-                            p.nombres = nombres or p.nombres
-                            p.apellido1 = apellido1 or p.apellido1
-                            p.apellido2 = str(fila.get('Apellido2', '') or '').strip() or p.apellido2
-                            p.sexo = sexo
-                            if fecha_nac:
-                                p.fecha_nacimiento = fecha_nac
-                            p.save()
-                        actualizadas += 1
+                        # REQUERIMIENTO DEL USUARIO: "no quiero subirlos y pisar los que ya existen"
+                        actualizadas += 0 # Se omiten los existentes
+                        continue
                     else:
-                        u = User(username=username, email=email, first_name=nombres, last_name=apellido1, is_active=activo)
-                        if password:
-                            u.set_password(password)
-                        else:
-                            u.set_unusable_password()
+                        u = User(username=username, email=email, first_name=nombres, last_name=apellido, is_active=activo)
+                        u.set_password(password)
                         u.save()
                         Persona.objects.create(
                             user=u,
                             documento_identidad=documento,
                             nombres=nombres,
-                            apellido1=apellido1,
-                            apellido2=str(fila.get('Apellido2', '') or '').strip(),
+                            apellido1=apellido,
+                            apellido2=str(fila_lower.get('apellido2', '')).strip(),
                             sexo=sexo,
-                            fecha_nacimiento=fecha_nac,
-                            activo=activo,
-                            eliminado=False,
+                            fecha_nacimiento=None
                         )
                         creadas += 1
+                        
                 except Exception as e:
                     errores.append(f"Fila {idx}: {str(e)}")
+        
         # Resincronizar sequence para evitar IntegrityError posterior
         with connection.cursor() as cursor:
             cursor.execute(
