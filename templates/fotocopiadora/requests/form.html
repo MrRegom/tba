@@ -149,20 +149,25 @@
                                     {{ item_form.document_title.errors }}
                                 </div>
                                 
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <label class="form-label fw-bold small">Tamaño</label>
                                     {{ item_form.page_size }}
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <label class="form-label fw-bold small">Caras</label>
                                     {{ item_form.print_side }}
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <label class="form-label fw-bold small">Color</label>
                                     {{ item_form.color_mode }}
                                 </div>
                                 <div class="col-md-3">
-                                    <label class="form-label fw-bold small {% if item_form.copy_count_requested.field.required %}mandatory{% endif %}">Cantidad</label>
+                                    <label class="form-label fw-bold small {% if item_form.original_page_count.field.required %}mandatory{% endif %}">Nro. Pags</label>
+                                    {{ item_form.original_page_count }}
+                                    {{ item_form.original_page_count.errors }}
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold small {% if item_form.copy_count_requested.field.required %}mandatory{% endif %}">Copias a Imprimir</label>
                                     {{ item_form.copy_count_requested }}
                                     {{ item_form.copy_count_requested.errors }}
                                 </div>

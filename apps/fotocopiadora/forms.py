@@ -238,6 +238,7 @@ class PrintRequestItemForm(forms.ModelForm):
             "page_size",
             "print_side",
             "color_mode",
+            "original_page_count",
             "copy_count_requested",
             "stapled",
             "collated",
@@ -251,6 +252,9 @@ class PrintRequestItemForm(forms.ModelForm):
             "page_size": forms.Select(attrs={"class": "form-select"}),
             "print_side": forms.Select(attrs={"class": "form-select"}),
             "color_mode": forms.Select(attrs={"class": "form-select"}),
+            "original_page_count": forms.NumberInput(
+                attrs={"class": "form-control", "min": "1", "placeholder": "Nro. Pags"}
+            ),
             "copy_count_requested": forms.NumberInput(
                 attrs={"class": "form-control", "min": "1"}
             ),
