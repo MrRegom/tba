@@ -196,9 +196,9 @@
         const filas = document.querySelectorAll('#tbody-lista-articulos tr');
 
         filas.forEach(fila => {
-            const sku = fila.dataset.articuloSku.toLowerCase();
-            const codigo = fila.dataset.articuloCodigo.toLowerCase();
-            const nombre = fila.dataset.articuloNombre.toLowerCase();
+            const sku = (fila.dataset.articuloSku || '').toLowerCase();
+            const codigo = (fila.dataset.articuloCodigo || '').toLowerCase();
+            const nombre = (fila.dataset.articuloNombre || '').toLowerCase();
 
             if (sku.includes(termino) || codigo.includes(termino) || nombre.includes(termino)) {
                 fila.style.display = '';
@@ -225,10 +225,10 @@
         // Agregar artículo a la lista
         const articulo = {
             id: articuloId,
-            sku: fila.dataset.articuloSku,
-            codigo: fila.dataset.articuloCodigo,
-            nombre: fila.dataset.articuloNombre,
-            unidad: fila.dataset.articuloUnidad,
+            sku: fila.dataset.articuloSku || '',
+            codigo: fila.dataset.articuloCodigo || '',
+            nombre: fila.dataset.articuloNombre || '',
+            unidad: fila.dataset.articuloUnidad || '',
             tipo: 'articulo'
         };
 
