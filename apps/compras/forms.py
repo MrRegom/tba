@@ -117,8 +117,13 @@ class OrdenCompraForm(forms.ModelForm):
         # Establecer fecha de orden automáticamente como hoy
         if not self.instance.pk:
             from django.utils import timezone
+            from apps.compras.models import EstadoOrdenCompra
 
             self.fields["fecha_orden"].initial = timezone.now().date()
+            
+            estado_borrador = EstadoOrdenCompra.objects.filter(codigo="BORRADOR").first()
+            if estado_borrador:
+                self.fields["estado"].initial = estado_borrador.pk
 
         # Filtrar proveedores activos
         self.fields["proveedor"].queryset = Proveedor.objects.filter(
