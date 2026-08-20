@@ -1091,14 +1091,16 @@ class EntregaArticuloCreateView(BaseAuditedViewMixin, AtomicTransactionMixin, Cr
                 from apps.solicitudes.models import EstadoSolicitud
                 try:
                     estado_despachada = EstadoSolicitud.objects.get(codigo='DESPACHADA', activo=True)
-                    if self.object.solicitud.estado.codigo != 'DESPACHADA':
+                    estado_actual = getattr(self.object.solicitud, 'estado', None)
+                    if estado_actual and estado_actual.codigo != 'DESPACHADA':
                         self.object.solicitud.estado = estado_despachada
                         self.object.solicitud.save()
                         print(f"DEBUG: Solicitud {self.object.solicitud.numero} actualizada a estado 'Despachada'")
                 except EstadoSolicitud.DoesNotExist:
                     print("ERROR: No se encontró el estado 'DESPACHADA' para solicitudes")
+                except Exception as ex:
+                    print(f"ERROR: Fallo al actualizar la solicitud {self.object.solicitud.numero}: {ex}")
 
-            # Continuar con el flujo normal (mensaje y redirección)
             # Continuar con el flujo normal (mensaje y redirección)
             # NO llamar a super().form_valid(form) porque intenta guardar el formulario
             # y falla por campos faltantes (entregado_por). El objeto ya fue creado por el servicio.
@@ -1115,6 +1117,12 @@ class EntregaArticuloCreateView(BaseAuditedViewMixin, AtomicTransactionMixin, Cr
 
         except ValidationError as e:
             messages.error(self.request, str(e))
+            return self.form_invalid(form)
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error inesperado al crear entrega de artículos: {e}", exc_info=True)
+            messages.error(self.request, f"Ha ocurrido un error interno al registrar la entrega. Verifique los datos o contacte a soporte.")
             return self.form_invalid(form)
 
     def get_context_data(self, **kwargs) -> dict:
