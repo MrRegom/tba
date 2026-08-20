@@ -151,6 +151,7 @@
                         <tbody id="tbody-lista-articulos">
                             {% for articulo in articulos %}
                             <tr data-articulo-id="{{ articulo.id }}"
+                                data-articulo-sku="{{ articulo.codigo_barras|default:'' }}"
                                 data-articulo-codigo="{{ articulo.codigo }}"
                                 data-articulo-nombre="{{ articulo.nombre }}"
                                 data-articulo-unidad="{% for u in articulo.unidades_medida.all %}{{ u.simbolo }}{% if not forloop.last %}, {% endif %}{% empty %}unidad{% endfor %}">
